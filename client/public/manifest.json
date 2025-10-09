@@ -1,0 +1,41 @@
+{
+  "name": "CalcPro - Multi Calculator",
+  "short_name": "CalcPro",
+  "description": "A comprehensive calculator application with multiple specialized calculators",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#4B0082",
+  "theme_color": "#4B0082",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "prefer_related_applications": true,
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "com.calcpro.app"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Basic Calculator",
+      "short_name": "Basic",
+      "description": "Open the basic calculator",
+      "url": "/basic",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    },
+    {
+      "name": "Unit Converter",
+      "short_name": "Convert",
+      "description": "Open the unit converter",
+      "url": "/convert",
+      "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+    }
+  ]
+}
