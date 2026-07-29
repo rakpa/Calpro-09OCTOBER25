@@ -41,15 +41,16 @@ flutter build ios --release --no-codesign
 GitHub Actions workflow: `.github/workflows/ios-build.yml`
 
 - Runs tests on Ubuntu
-- Builds unsigned iOS release on macOS
-- TestFlight upload job is stubbed until Apple Developer credentials are provided
+- Signs + archives on macOS using App Store Connect API key (automatic signing)
+- Exports IPA and uploads to TestFlight
 
-### Secrets needed for TestFlight (later)
+### Required GitHub Actions secrets
 
 | Secret | Purpose |
 |--------|---------|
-| `APP_STORE_CONNECT_API_KEY_ID` | ASC API Key ID |
-| `APP_STORE_CONNECT_API_ISSUER_ID` | ASC Issuer ID |
-| `APP_STORE_CONNECT_API_KEY` | Base64-encoded `.p8` key |
+| `ASC_KEY_ID` | App Store Connect API Key ID |
+| `ASC_ISSUER_ID` | App Store Connect Issuer ID |
+| `ASC_PRIVATE_KEY` | `.p8` private key contents (PEM text or base64) |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
-| Distribution cert + provisioning profile (or Match) | Code signing |
+
+Manual trigger: **Actions → iOS Build & TestFlight → Run workflow**

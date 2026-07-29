@@ -1,4 +1,4 @@
-name: iOS Build
+name: iOS Build & TestFlight
 
 on:
   push:
@@ -16,6 +16,10 @@ on:
 concurrency:
   group: ios-build-${{ github.ref }}
   cancel-in-progress: true
+
+env:
+  BUNDLE_ID: www.calpro.app
+  APP_NAME: CalcPro
 
 jobs:
   test:
@@ -41,87 +45,191 @@ jobs:
       - name: Test
         run: flutter test
 
-  build-ios:
-    name: Build iOS (no codesign)
+  testflight:
+    name: Sign, build IPA & upload TestFlight
     needs: test
+    # Skip on pull_request from forks (no secrets). Same-repo PRs and pushes run.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: macos-14
     defaults:
       run:
         working-directory: calcpro
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Validate secrets
+        run: |
+          missing=0
+          for name in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name"
+              missing=1
+            fi
+          done
+          exit "$missing"
 
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
           cache: true
 
+      - name: Show Xcode version
+        run: xcodebuild -version
+
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS release (unsigned)
+      - name: Install App Store Connect API key
         run: |
-          flutter build ios --release --no-codesign
-
-      - name: Archive build artifact paths
-        run: |
-          mkdir -p ../artifacts
-          # Unsigned build produces Runner.app under build/ios/iphoneos
-          if [ -d build/ios/iphoneos/Runner.app ]; then
-            ditto -c -k --sequesterRsrc --keepParent \
-              build/ios/iphoneos/Runner.app \
-              ../artifacts/CalcPro-Runner.app.zip
+          mkdir -p "$HOME/private_keys" "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/private_keys"
+          KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          # Support raw PEM or base64-encoded secret contents
+          if printf '%s' "$ASC_PRIVATE_KEY" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY_PATH"
+          else
+            printf '%s' "$ASC_PRIVATE_KEY" | base64 --decode > "$KEY_PATH"
           fi
-          ls -la build/ios/iphoneos || true
+          # Normalize newlines
+          if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
+            echo "::error::ASC_PRIVATE_KEY does not look like a valid .p8 private key"
+            exit 1
+          fi
+          cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/"
+          cp "$KEY_PATH" "$RUNNER_TEMP/private_keys/"
+          echo "API_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+          ls -la "$HOME/private_keys"
 
-      - name: Upload iOS artifact
+      - name: Ensure App Store Connect app exists
+        run: |
+          sudo gem install jwt --no-document
+          ruby <<'RUBY'
+          require 'jwt'
+          require 'net/http'
+          require 'json'
+          require 'openssl'
+          require 'uri'
+
+          key_id = ENV.fetch('ASC_KEY_ID')
+          issuer_id = ENV.fetch('ASC_ISSUER_ID')
+          key_path = ENV.fetch('API_KEY_PATH')
+          bundle_id = ENV.fetch('BUNDLE_ID')
+          app_name = ENV.fetch('APP_NAME')
+
+          private_key = OpenSSL::PKey.read(File.read(key_path))
+          token = JWT.encode(
+            {
+              iss: issuer_id,
+              exp: Time.now.to_i + 20 * 60,
+              aud: 'appstoreconnect-v1'
+            },
+            private_key,
+            'ES256',
+            { kid: key_id, typ: 'JWT' }
+          )
+
+          def request(method, path, token, body: nil)
+            uri = URI("https://api.appstoreconnect.apple.com#{path}")
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = true
+            req = case method
+                  when :get then Net::HTTP::Get.new(uri)
+                  when :post then Net::HTTP::Post.new(uri)
+                  else raise "unsupported #{method}"
+                  end
+            req['Authorization'] = "Bearer #{token}"
+            req['Content-Type'] = 'application/json'
+            req.body = JSON.generate(body) if body
+            res = http.request(req)
+            [res.code.to_i, res.body]
+          end
+
+          code, body = request(:get, "/v1/apps?filter[bundleId]=#{bundle_id}", token)
+          raise "List apps failed (#{code}): #{body}" unless code == 200
+          apps = JSON.parse(body).fetch('data')
+          if apps.any?
+            puts "App already exists: #{apps.first.dig('id')} (#{bundle_id})"
+            exit 0
+          end
+
+          payload = {
+            data: {
+              type: 'apps',
+              attributes: {
+                bundleId: bundle_id,
+                name: app_name,
+                primaryLocale: 'en-US',
+                sku: 'calcpro-ios',
+                platform: 'IOS'
+              }
+            }
+          }
+          code, body = request(:post, '/v1/apps', token, body: payload)
+          if code.between?(200, 299)
+            puts "Created App Store Connect app for #{bundle_id}"
+          else
+            # Fallback: ensure bundle ID exists on developer portal, app may need manual create
+            warn "Could not auto-create ASC app (#{code}): #{body}"
+            warn "If upload fails, create an iOS app with bundle ID #{bundle_id} in App Store Connect."
+          end
+          RUBY
+
+      - name: Flutter build ios (compile, no codesign)
+        run: flutter build ios --release --no-codesign
+
+      - name: Archive with automatic signing
+        run: |
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ios/Runner.xcarchive \
+            -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
+            -authenticationKeyPath "$API_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID"
+
+      - name: Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/ios/Runner.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions-local.plist \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$API_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          ls -la build/ios/ipa
+          echo "IPA_PATH=$(find build/ios/ipa -name '*.ipa' | head -n 1)" >> "$GITHUB_ENV"
+
+      - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
         with:
-          name: calcpro-ios-unsigned
-          path: artifacts/CalcPro-Runner.app.zip
-          if-no-files-found: warn
+          name: calcpro-ios-ipa
+          path: calcpro/build/ios/ipa/*.ipa
+          if-no-files-found: error
           retention-days: 14
 
-  # Placeholder job for TestFlight upload — activate after Apple credentials are provided.
-  # Required GitHub secrets (to be added later):
-  #   APP_STORE_CONNECT_API_KEY_ID
-  #   APP_STORE_CONNECT_API_ISSUER_ID
-  #   APP_STORE_CONNECT_API_KEY (base64 .p8 contents)
-  #   APPLE_TEAM_ID
-  #   MATCH_PASSWORD / or certificate+provisioning profile secrets
-  testflight:
-    name: Upload to TestFlight (disabled until secrets)
-    needs: build-ios
-    if: ${{ false }}
-    runs-on: macos-14
-    defaults:
-      run:
-        working-directory: calcpro
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build IPA
-        env:
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        run: |
-          echo "Configure signing with provided Apple Developer credentials, then:"
-          echo "flutter build ipa --release"
-          exit 1
-
       - name: Upload to TestFlight
-        env:
-          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
         run: |
-          # Decode API key and use xcrun altool / notarytool / Transporter / fastlane pilot
-          echo "TestFlight upload step reserved for credentials configuration"
-          exit 1
+          set -euo pipefail
+          echo "Uploading $IPA_PATH to App Store Connect / TestFlight..."
+          xcrun altool --upload-app \
+            --type ios \
+            --file "$IPA_PATH" \
+            --apiKey "$ASC_KEY_ID" \
+            --apiIssuer "$ASC_ISSUER_ID" \
+            --verbose
+
+      - name: Clean API key
+        if: always()
+        run: rm -rf "$HOME/private_keys" "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/private_keys"
