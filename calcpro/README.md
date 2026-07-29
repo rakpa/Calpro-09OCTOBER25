@@ -52,9 +52,20 @@ GitHub Actions workflow: `.github/workflows/ios-build.yml`
 | `ASC_ISSUER_ID` | App Store Connect Issuer ID |
 | `ASC_PRIVATE_KEY` | `.p8` private key contents (PEM text or base64) |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
+| `BUILD_CERTIFICATE_BASE64` | Base64-encoded Apple **Distribution** `.p12` |
+| `P12_PASSWORD` | Password for that `.p12` |
+| `BUILD_PROVISION_PROFILE_BASE64` | Optional: base64 App Store `.mobileprovision` for `www.calpro.app` |
 
-CI uses Fastlane (`cert` + `sigh`) to create/sync an iOS Distribution certificate and App Store provisioning profile for `www.calpro.app`, then uploads to TestFlight.
+**Why the `.p12` is required:** App Store Connect API auth works, and the app `www.calpro.app` already exists. But this Apple team already has the **maximum Distribution certificates**, and their private keys are only on the Mac that created them. CI cannot invent those keys, and cannot create another cert.
+
+#### Export `.p12` on your Mac
+1. Open **Keychain Access** → **My Certificates**
+2. Find **Apple Distribution: … (Rakesh Patil)** (or similar)
+3. Right-click → **Export…** → save as `.p12` with a password
+4. Encode and copy:
+   ```bash
+   base64 -i Certificates.p12 | pbcopy
+   ```
+5. Paste into GitHub secret `BUILD_CERTIFICATE_BASE64`, and set `P12_PASSWORD`
 
 Manual trigger: **Actions → iOS Build & TestFlight → Run workflow**
-
-**Note:** If a later CI run fails because an existing Distribution certificate’s private key is not on the runner, either revoke unused Distribution certs in the Apple Developer portal (Certificates) or add a reusable `.p12` signing secret for stable CI.
