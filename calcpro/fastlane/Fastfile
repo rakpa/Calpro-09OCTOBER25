@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require 'fileutils'
-require 'base64'
 
 default_platform(:ios)
 
@@ -20,8 +19,14 @@ platform :ios do
 
     team_id = ENV.fetch('APPLE_TEAM_ID').strip
     bundle_id = ENV.fetch('BUNDLE_ID', 'www.calpro.app')
+
+    # setup_ci creates fastlane_tmp_keychain; use its password (usually empty).
     keychain_path = ENV['KEYCHAIN_PATH'] || File.expand_path('~/Library/Keychains/fastlane_tmp_keychain-db')
-    keychain_password = ENV['KEYCHAIN_PASSWORD'] || 'fastlane_tmp'
+    keychain_password = ENV['MATCH_KEYCHAIN_PASSWORD'] || ENV['KEYCHAIN_PASSWORD'] || ''
+
+    project_root = File.expand_path('..', __dir__)
+    signing_dir = File.join(project_root, 'build/ios/signing')
+    FileUtils.mkdir_p(signing_dir)
 
     p12_path = ENV['BUILD_CERTIFICATE_PATH']
     p12_password = ENV['P12_PASSWORD']
@@ -35,8 +40,7 @@ platform :ios do
         keychain_password: keychain_password
       )
     else
-      UI.important('No BUILD_CERTIFICATE_BASE64 provided — creating a Distribution certificate in CI')
-      UI.important('This requires an available certificate slot (revoke an unused Distribution cert first if at the limit).')
+      UI.important('No BUILD_CERTIFICATE_BASE64 — creating/installing a Distribution certificate in CI')
 
       begin
         cert(
@@ -47,19 +51,16 @@ platform :ios do
           keychain_password: keychain_password
         )
       rescue StandardError => e
-        UI.error(e.message)
         UI.user_error!(
-          "Could not create a Distribution certificate.\n" \
-          "On Windows (browser): https://developer.apple.com/account/resources/certificates/list\n" \
-          "Revoke ONE unused 'Apple Distribution' certificate, then re-run this workflow.\n" \
+          "Could not create/install a Distribution certificate.\n" \
+          "If at the certificate limit, revoke an unused Apple Distribution cert at:\n" \
+          "https://developer.apple.com/account/resources/certificates/list\n" \
           "Original error: #{e.message}"
         )
       end
 
-      # Export the newly created identity so it can be saved as a GitHub secret (no Mac needed).
-      export_password = p12_password.to_s.empty? ? 'CalcProTempExport!' : p12_password
-      export_path = File.expand_path('build/ios/signing/distribution.p12')
-      FileUtils.mkdir_p(File.dirname(export_path))
+      export_password = (p12_password.nil? || p12_password.empty?) ? 'CalcProTempExport!' : p12_password
+      export_path = File.join(signing_dir, 'distribution.p12')
 
       sh(
         'security', 'export',
@@ -70,23 +71,24 @@ platform :ios do
         '-o', export_path
       )
 
-      ENV['EXPORTED_P12_PATH'] = export_path
-      ENV['EXPORTED_P12_PASSWORD'] = export_password
       File.write(
-        File.expand_path('build/ios/signing/README.txt'),
+        File.join(signing_dir, 'README.txt'),
         <<~TXT
-          Distribution certificate was created by CI.
+          Distribution certificate created by CI.
 
-          1. Download the artifact "calcpro-distribution-p12"
-          2. On Windows PowerShell:
+          1. Download Actions artifact "calcpro-distribution-p12"
+          2. Windows PowerShell:
              [Convert]::ToBase64String([IO.File]::ReadAllBytes("distribution.p12")) | Set-Clipboard
-          3. Add GitHub secret BUILD_CERTIFICATE_BASE64 (paste)
-          4. Add GitHub secret P12_PASSWORD = #{export_password}
-          5. Future runs will reuse this cert and will not need to create another one.
+          3. GitHub secret BUILD_CERTIFICATE_BASE64 = paste
+          4. GitHub secret P12_PASSWORD = #{export_password}
         TXT
       )
-      UI.success("Exported distribution.p12 for secret storage (password set from P12_PASSWORD or default).")
+      UI.success("Exported #{export_path}")
     end
+
+    # setup_ci sets MATCH_READONLY=true which conflicts with sigh(force:). Override.
+    ENV['MATCH_READONLY'] = 'false'
+    ENV['SIGH_READONLY'] = 'false'
 
     if ENV['BUILD_PROVISION_PROFILE_PATH'] && File.exist?(ENV['BUILD_PROVISION_PROFILE_PATH'])
       install_provisioning_profile(path: ENV['BUILD_PROVISION_PROFILE_PATH'])
@@ -97,16 +99,14 @@ platform :ios do
         api_key: api_key,
         app_identifier: bundle_id,
         adhoc: false,
-        readonly: false,
-        force: true,
-        fail_on_name_taken: false
+        readonly: false
       )
       profile_name = ENV['SIGH_NAME']
     end
 
     update_code_signing_settings(
       use_automatic_signing: false,
-      path: 'ios/Runner.xcodeproj',
+      path: File.join(project_root, 'ios/Runner.xcodeproj'),
       team_id: team_id,
       targets: ['Runner'],
       bundle_identifier: bundle_id,
@@ -116,12 +116,12 @@ platform :ios do
     )
 
     build_app(
-      workspace: 'ios/Runner.xcworkspace',
+      workspace: File.join(project_root, 'ios/Runner.xcworkspace'),
       scheme: 'Runner',
       configuration: 'Release',
       clean: false,
       export_method: 'app-store',
-      output_directory: 'build/ios/ipa',
+      output_directory: File.join(project_root, 'build/ios/ipa'),
       output_name: 'CalcPro.ipa',
       export_team_id: team_id,
       export_options: {
@@ -136,7 +136,7 @@ platform :ios do
 
     upload_to_testflight(
       api_key: api_key,
-      ipa: 'build/ios/ipa/CalcPro.ipa',
+      ipa: File.join(project_root, 'build/ios/ipa/CalcPro.ipa'),
       skip_waiting_for_build_processing: true,
       distribute_external: false
     )
