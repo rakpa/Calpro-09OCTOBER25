@@ -134,11 +134,27 @@ platform :ios do
       }
     )
 
-    upload_to_testflight(
-      api_key: api_key,
-      ipa: File.join(project_root, 'build/ios/ipa/CalcPro.ipa'),
-      skip_waiting_for_build_processing: true,
-      distribute_external: false
-    )
+    ipa_path = File.join(project_root, 'build/ios/ipa/CalcPro.ipa')
+    UI.success("IPA ready at #{ipa_path}")
+
+    # App Store Connect occasionally returns transient 500s during upload.
+    attempts = 0
+    begin
+      attempts += 1
+      upload_to_testflight(
+        api_key: api_key,
+        ipa: ipa_path,
+        skip_waiting_for_build_processing: true,
+        distribute_external: false
+      )
+    rescue StandardError => e
+      if attempts < 3 && e.message.to_s.match?(/500|internal server error|Could not download\/upload/i)
+        UI.important("TestFlight upload failed (attempt #{attempts}/3): #{e.message}")
+        UI.important('Retrying in 60 seconds...')
+        sleep 60
+        retry
+      end
+      raise e
+    end
   end
 end
