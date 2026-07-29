@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:calcpro/theme/app_theme.dart';
 
 class CalcScaffold extends StatelessWidget {
@@ -21,118 +22,74 @@ class CalcScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-        actions: [
-          if (onClear != null)
-            TextButton(
-              onPressed: onClear,
-              child: const Text(
-                'Clear All',
-                style: TextStyle(color: Colors.white),
+    return AppBackdrop(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          flexibleSpace: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [AppColors.primary, AppColors.primaryDeep],
               ),
             ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.06),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (purpleHeader)
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF9333EA), Color(0xFF7E22CE)],
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(icon, color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(icon, color: Colors.white),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (description != null)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: Text(
-                      description!,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        height: 1.4,
-                      ),
-                    ),
-                  ),
-                Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: body,
-                ),
-              ],
-            ),
           ),
-        ],
+          title: Text(title),
+          actions: [
+            if (onClear != null)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: TextButton(
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    onClear!();
+                  },
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.white.withValues(alpha: 0.14),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: const Text('Clear'),
+                ),
+              ),
+          ],
+        ),
+        body: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+          children: [
+            if (description != null) ...[
+              Text(
+                description!,
+                style: TextStyle(
+                  color: AppColors.muted,
+                  height: 1.45,
+                  fontSize: 15,
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
+            Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: AppColors.line),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.06),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(20),
+              child: body,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -154,23 +111,27 @@ class ResultPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(top: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: background ?? AppColors.resultBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: border ?? AppColors.resultBorder),
-      ),
-      child: DefaultTextStyle(
-        style: TextStyle(
-          color: foreground ?? AppColors.resultText,
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          height: 1.4,
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(top: 18),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: background ?? AppColors.resultBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: border ?? AppColors.resultBorder),
         ),
-        child: child,
+        child: DefaultTextStyle(
+          style: TextStyle(
+            color: foreground ?? AppColors.resultText,
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            height: 1.45,
+          ),
+          child: child,
+        ),
       ),
     );
   }
@@ -199,13 +160,23 @@ class LabeledField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            color: AppColors.muted,
+            letterSpacing: 0.2,
+          ),
         ),
         const SizedBox(height: 8),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           onChanged: onChanged,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            color: AppColors.ink,
+          ),
           decoration: InputDecoration(hintText: hint),
         ),
       ],
@@ -230,20 +201,24 @@ class KeypadButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final child = Material(
-      color: isOperator ? AppColors.primary : const Color(0xFFF3F4F6),
-      borderRadius: BorderRadius.circular(12),
+      color: isOperator ? AppColors.primary : AppColors.keyBg,
+      borderRadius: BorderRadius.circular(16),
       child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        borderRadius: BorderRadius.circular(16),
         child: SizedBox(
-          height: 56,
+          height: 58,
           child: Center(
             child: Text(
               label,
               style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: isOperator ? Colors.white : Colors.black87,
+                fontSize: label.length > 2 ? 15 : 22,
+                fontWeight: FontWeight.w700,
+                color: isOperator ? Colors.white : AppColors.keyText,
+                letterSpacing: label.length > 2 ? 0 : -0.3,
               ),
             ),
           ),
@@ -253,5 +228,59 @@ class KeypadButton extends StatelessWidget {
 
     if (expand) return child;
     return Expanded(child: child);
+  }
+}
+
+class CalcDisplay extends StatelessWidget {
+  final String value;
+  final String? subtitle;
+
+  const CalcDisplay({super.key, required this.value, this.subtitle});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.displayBg, AppColors.primaryDeep],
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (subtitle != null && subtitle!.isNotEmpty) ...[
+            Text(
+              subtitle!,
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.55),
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 6),
+          ],
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              maxLines: 1,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 40,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.8,
+                height: 1.1,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

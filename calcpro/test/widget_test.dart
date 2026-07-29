@@ -7,19 +7,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('CalcPro'), findsOneWidget);
-    expect(find.text('Multi-Purpose Calculator'), findsOneWidget);
-    expect(find.text('Basic Calculator'), findsOneWidget);
-    expect(find.text('Percentage Calculator'), findsOneWidget);
+    expect(find.textContaining('Every calculation'), findsOneWidget);
+    expect(find.text('Basic'), findsOneWidget);
+    expect(find.text('Percentage'), findsOneWidget);
   });
 
   testWidgets('navigates to basic calculator', (tester) async {
     await tester.pumpWidget(const CalcProApp());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Basic Calculator'));
+    await tester.tap(find.text('Basic'));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Basic Calculator'), findsWidgets);
+    expect(find.textContaining('Basic'), findsWidgets);
     expect(find.text('C'), findsWidgets);
   });
 }

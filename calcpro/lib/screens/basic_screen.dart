@@ -102,22 +102,9 @@ class _BasicScreenState extends State<BasicScreen> {
       onClear: _clear,
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              display,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'monospace',
-              ),
-            ),
+          CalcDisplay(
+            value: display,
+            subtitle: operation.isEmpty ? null : operation,
           ),
           const SizedBox(height: 16),
           for (final row in rows) ...[
