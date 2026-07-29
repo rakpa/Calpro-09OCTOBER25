@@ -95,6 +95,36 @@ jobs:
           echo "BUILD_CERTIFICATE_PATH=$CERT_PATH" >> "$GITHUB_ENV"
           ls -la "$CERT_PATH"
 
+      # Previous run built a valid Distribution identity but failed later on SDK upload.
+      # Reuse that .p12 artifact so we don't hit Apple's Distribution cert limit again.
+      - name: Restore Distribution .p12 from prior CI artifact
+        if: ${{ env.BUILD_CERTIFICATE_BASE64 == '' }}
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: calcpro-distribution-p12
+          workflow: ios-build.yml
+          workflow_conclusion: completed
+          search_artifacts: true
+          path: ${{ runner.temp }}/restored-signing
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          if_no_artifact_found: warn
+
+      - name: Use restored Distribution .p12
+        if: ${{ env.BUILD_CERTIFICATE_BASE64 == '' }}
+        run: |
+          set -euo pipefail
+          CANDIDATE="$RUNNER_TEMP/restored-signing/distribution.p12"
+          if [ -f "$CANDIDATE" ]; then
+            echo "BUILD_CERTIFICATE_PATH=$CANDIDATE" >> "$GITHUB_ENV"
+            if [ -z "${P12_PASSWORD:-}" ]; then
+              echo "P12_PASSWORD=CalcProTempExport!" >> "$GITHUB_ENV"
+            fi
+            echo "Restored Distribution .p12 ($(wc -c < "$CANDIDATE") bytes)"
+          else
+            echo "::warning::No prior .p12 artifact found; cert creation may hit Apple limit"
+          fi
+
       - name: Decode provisioning profile (optional)
         if: ${{ env.BUILD_PROVISION_PROFILE_BASE64 != '' }}
         run: |
