@@ -156,15 +156,50 @@ jobs:
             exit 0
           end
 
+          # Ensure bundle ID exists on the developer portal
+          code, body = request(:get, "/v1/bundleIds?filter[identifier]=#{bundle_id}", token)
+          raise "List bundleIds failed (#{code}): #{body}" unless code == 200
+          bundle_ids = JSON.parse(body).fetch('data')
+          if bundle_ids.empty?
+            payload = {
+              data: {
+                type: 'bundleIds',
+                attributes: {
+                  identifier: bundle_id,
+                  name: app_name,
+                  platform: 'IOS'
+                }
+              }
+            }
+            code, body = request(:post, '/v1/bundleIds', token, body: payload)
+            if code.between?(200, 299)
+              puts "Registered bundle ID #{bundle_id}"
+              bundle_id_resource = JSON.parse(body).fetch('data')
+            else
+              warn "Could not register bundle ID (#{code}): #{body}"
+              exit 0
+            end
+          else
+            puts "Bundle ID already registered: #{bundle_id}"
+            bundle_id_resource = bundle_ids.first
+          end
+
           payload = {
             data: {
               type: 'apps',
               attributes: {
-                bundleId: bundle_id,
                 name: app_name,
                 primaryLocale: 'en-US',
                 sku: 'calcpro-ios',
-                platform: 'IOS'
+                bundleId: bundle_id
+              },
+              relationships: {
+                bundleId: {
+                  data: {
+                    type: 'bundleIds',
+                    id: bundle_id_resource.fetch('id')
+                  }
+                }
               }
             }
           }
@@ -172,7 +207,6 @@ jobs:
           if code.between?(200, 299)
             puts "Created App Store Connect app for #{bundle_id}"
           else
-            # Fallback: ensure bundle ID exists on developer portal, app may need manual create
             warn "Could not auto-create ASC app (#{code}): #{body}"
             warn "If upload fails, create an iOS app with bundle ID #{bundle_id} in App Store Connect."
           end
