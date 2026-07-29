@@ -11,7 +11,7 @@ The original React/Vite app in this repository is kept as the product reference.
 - Age, Time, Date difference
 - Discount, Tip, Health (BMI / ideal weight)
 
-Bundle ID: `com.calcpro.app`
+Bundle ID: `www.calpro.app`
 
 ## Develop
 
