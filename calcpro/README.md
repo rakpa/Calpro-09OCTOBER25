@@ -53,4 +53,8 @@ GitHub Actions workflow: `.github/workflows/ios-build.yml`
 | `ASC_PRIVATE_KEY` | `.p8` private key contents (PEM text or base64) |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
 
+CI uses Fastlane (`cert` + `sigh`) to create/sync an iOS Distribution certificate and App Store provisioning profile for `www.calpro.app`, then uploads to TestFlight.
+
 Manual trigger: **Actions → iOS Build & TestFlight → Run workflow**
+
+**Note:** If a later CI run fails because an existing Distribution certificate’s private key is not on the runner, either revoke unused Distribution certs in the Apple Developer portal (Certificates) or add a reusable `.p12` signing secret for stable CI.
