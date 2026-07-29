@@ -304,7 +304,11 @@ jobs:
           RUBY
 
       - name: Flutter build ios (compile, no codesign)
-        run: flutter build ios --release --no-codesign
+        run: |
+          # Use GitHub run number so each CI upload has a unique CFBundleVersion.
+          flutter build ios --release --no-codesign \
+            --build-name=1.0.0 \
+            --build-number="${{ github.run_number }}"
 
       - name: Install Fastlane
         run: |
