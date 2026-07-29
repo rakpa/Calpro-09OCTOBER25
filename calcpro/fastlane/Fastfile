@@ -1,9 +1,12 @@
 # frozen_string_literal: true
 
+require 'fileutils'
+require 'base64'
+
 default_platform(:ios)
 
 platform :ios do
-  desc 'Import existing Distribution .p12, sync App Store profile, archive, upload TestFlight'
+  desc 'Sign with imported .p12 or create a new Distribution cert, then upload TestFlight'
   lane :beta do
     setup_ci
 
@@ -20,23 +23,76 @@ platform :ios do
     keychain_path = ENV['KEYCHAIN_PATH'] || File.expand_path('~/Library/Keychains/fastlane_tmp_keychain-db')
     keychain_password = ENV['KEYCHAIN_PASSWORD'] || 'fastlane_tmp'
 
-    certificate_path = ENV.fetch('BUILD_CERTIFICATE_PATH')
-    certificate_password = ENV.fetch('P12_PASSWORD')
+    p12_path = ENV['BUILD_CERTIFICATE_PATH']
+    p12_password = ENV['P12_PASSWORD']
 
-    # Import the Distribution identity you already own (required — Apple account is at cert limit).
-    import_certificate(
-      certificate_path: certificate_path,
-      certificate_password: certificate_password,
-      keychain_path: keychain_path,
-      keychain_password: keychain_password
-    )
+    if p12_path && File.exist?(p12_path) && !File.zero?(p12_path) && p12_password && !p12_password.empty?
+      UI.message('Importing existing Distribution .p12 from GitHub secrets')
+      import_certificate(
+        certificate_path: p12_path,
+        certificate_password: p12_password,
+        keychain_path: keychain_path,
+        keychain_password: keychain_password
+      )
+    else
+      UI.important('No BUILD_CERTIFICATE_BASE64 provided — creating a Distribution certificate in CI')
+      UI.important('This requires an available certificate slot (revoke an unused Distribution cert first if at the limit).')
+
+      begin
+        cert(
+          api_key: api_key,
+          development: false,
+          force: false,
+          keychain_path: keychain_path,
+          keychain_password: keychain_password
+        )
+      rescue StandardError => e
+        UI.error(e.message)
+        UI.user_error!(
+          "Could not create a Distribution certificate.\n" \
+          "On Windows (browser): https://developer.apple.com/account/resources/certificates/list\n" \
+          "Revoke ONE unused 'Apple Distribution' certificate, then re-run this workflow.\n" \
+          "Original error: #{e.message}"
+        )
+      end
+
+      # Export the newly created identity so it can be saved as a GitHub secret (no Mac needed).
+      export_password = p12_password.to_s.empty? ? 'CalcProTempExport!' : p12_password
+      export_path = File.expand_path('build/ios/signing/distribution.p12')
+      FileUtils.mkdir_p(File.dirname(export_path))
+
+      sh(
+        'security', 'export',
+        '-k', keychain_path,
+        '-t', 'identities',
+        '-f', 'pkcs12',
+        '-P', export_password,
+        '-o', export_path
+      )
+
+      ENV['EXPORTED_P12_PATH'] = export_path
+      ENV['EXPORTED_P12_PASSWORD'] = export_password
+      File.write(
+        File.expand_path('build/ios/signing/README.txt'),
+        <<~TXT
+          Distribution certificate was created by CI.
+
+          1. Download the artifact "calcpro-distribution-p12"
+          2. On Windows PowerShell:
+             [Convert]::ToBase64String([IO.File]::ReadAllBytes("distribution.p12")) | Set-Clipboard
+          3. Add GitHub secret BUILD_CERTIFICATE_BASE64 (paste)
+          4. Add GitHub secret P12_PASSWORD = #{export_password}
+          5. Future runs will reuse this cert and will not need to create another one.
+        TXT
+      )
+      UI.success("Exported distribution.p12 for secret storage (password set from P12_PASSWORD or default).")
+    end
 
     if ENV['BUILD_PROVISION_PROFILE_PATH'] && File.exist?(ENV['BUILD_PROVISION_PROFILE_PATH'])
       install_provisioning_profile(path: ENV['BUILD_PROVISION_PROFILE_PATH'])
       profile_uuid = ENV['PROVISIONING_PROFILE_UUID']
       profile_name = ENV['PROVISIONING_PROFILE_NAME']
     else
-      # Create/download an App Store profile for www.calpro.app using the imported cert.
       profile_uuid = sigh(
         api_key: api_key,
         app_identifier: bundle_id,
