@@ -86,25 +86,37 @@ jobs:
 
       - name: Install App Store Connect API key
         run: |
+          set -euo pipefail
           mkdir -p "$HOME/private_keys" "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/private_keys"
           KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
-          # Support raw PEM or base64-encoded secret contents
-          if printf '%s' "$ASC_PRIVATE_KEY" | grep -q "BEGIN PRIVATE KEY"; then
-            printf '%s\n' "$ASC_PRIVATE_KEY" > "$KEY_PATH"
+
+          # Normalize secret: trim, expand literal \n, support base64
+          RAW="$ASC_PRIVATE_KEY"
+          RAW="$(printf '%s' "$RAW" | sed -e 's/\r//g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          if printf '%s' "$RAW" | grep -q 'BEGIN PRIVATE KEY'; then
+            printf '%s' "$RAW" | sed 's/\\n/\n/g' > "$KEY_PATH"
           else
-            printf '%s' "$ASC_PRIVATE_KEY" | base64 --decode > "$KEY_PATH"
+            printf '%s' "$RAW" | base64 --decode > "$KEY_PATH"
           fi
-          # Normalize newlines
+          # Ensure trailing newline
+          printf '\n' >> "$KEY_PATH"
+
           if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
             echo "::error::ASC_PRIVATE_KEY does not look like a valid .p8 private key"
             exit 1
           fi
+
+          # Quick OpenSSL parse check
+          openssl pkey -in "$KEY_PATH" -noout
+          echo "Private key parses OK ($(wc -c < "$KEY_PATH") bytes)"
+
           cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/"
           cp "$KEY_PATH" "$RUNNER_TEMP/private_keys/"
           echo "API_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
           ls -la "$HOME/private_keys"
 
       - name: Ensure App Store Connect app exists
+        continue-on-error: true
         run: |
           sudo gem install jwt --no-document
           ruby <<'RUBY'
@@ -114,17 +126,20 @@ jobs:
           require 'openssl'
           require 'uri'
 
-          key_id = ENV.fetch('ASC_KEY_ID')
-          issuer_id = ENV.fetch('ASC_ISSUER_ID')
+          key_id = ENV.fetch('ASC_KEY_ID').strip
+          issuer_id = ENV.fetch('ASC_ISSUER_ID').strip
           key_path = ENV.fetch('API_KEY_PATH')
           bundle_id = ENV.fetch('BUNDLE_ID')
           app_name = ENV.fetch('APP_NAME')
 
+          puts "Using Key ID=#{key_id} Issuer=#{issuer_id}"
           private_key = OpenSSL::PKey.read(File.read(key_path))
+          now = Time.now.to_i
           token = JWT.encode(
             {
               iss: issuer_id,
-              exp: Time.now.to_i + 20 * 60,
+              iat: now,
+              exp: now + 20 * 60,
               aud: 'appstoreconnect-v1'
             },
             private_key,
@@ -149,7 +164,11 @@ jobs:
           end
 
           code, body = request(:get, "/v1/apps?filter[bundleId]=#{bundle_id}", token)
-          raise "List apps failed (#{code}): #{body}" unless code == 200
+          unless code == 200
+            warn "List apps failed (#{code}): #{body}"
+            warn "Check that ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY match the same App Store Connect API key."
+            exit 1
+          end
           apps = JSON.parse(body).fetch('data')
           if apps.any?
             puts "App already exists: #{apps.first.dig('id')} (#{bundle_id})"
@@ -158,7 +177,10 @@ jobs:
 
           # Ensure bundle ID exists on the developer portal
           code, body = request(:get, "/v1/bundleIds?filter[identifier]=#{bundle_id}", token)
-          raise "List bundleIds failed (#{code}): #{body}" unless code == 200
+          unless code == 200
+            warn "List bundleIds failed (#{code}): #{body}"
+            exit 1
+          end
           bundle_ids = JSON.parse(body).fetch('data')
           if bundle_ids.empty?
             payload = {
