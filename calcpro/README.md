@@ -52,20 +52,25 @@ GitHub Actions workflow: `.github/workflows/ios-build.yml`
 | `ASC_ISSUER_ID` | App Store Connect Issuer ID |
 | `ASC_PRIVATE_KEY` | `.p8` private key contents (PEM text or base64) |
 | `APPLE_TEAM_ID` | Apple Developer Team ID |
-| `BUILD_CERTIFICATE_BASE64` | Base64-encoded Apple **Distribution** `.p12` |
-| `P12_PASSWORD` | Password for that `.p12` |
-| `BUILD_PROVISION_PROFILE_BASE64` | Optional: base64 App Store `.mobileprovision` for `www.calpro.app` |
+| `BUILD_CERTIFICATE_BASE64` | Optional after first successful cert create — base64 Distribution `.p12` |
+| `P12_PASSWORD` | Optional — password used when exporting/importing the `.p12` |
+| `BUILD_PROVISION_PROFILE_BASE64` | Optional App Store `.mobileprovision` for `www.calpro.app` |
 
-**Why the `.p12` is required:** App Store Connect API auth works, and the app `www.calpro.app` already exists. But this Apple team already has the **maximum Distribution certificates**, and their private keys are only on the Mac that created them. CI cannot invent those keys, and cannot create another cert.
+### No Mac? Do this (Windows is fine)
 
-#### Export `.p12` on your Mac
-1. Open **Keychain Access** → **My Certificates**
-2. Find **Apple Distribution: … (Rakesh Patil)** (or similar)
-3. Right-click → **Export…** → save as `.p12` with a password
-4. Encode and copy:
-   ```bash
-   base64 -i Certificates.p12 | pbcopy
-   ```
-5. Paste into GitHub secret `BUILD_CERTIFICATE_BASE64`, and set `P12_PASSWORD`
+Your Apple team is at the **max Distribution certificates** limit. CI cannot use those certs without their private keys.
 
-Manual trigger: **Actions → iOS Build & TestFlight → Run workflow**
+1. Open (any browser): https://developer.apple.com/account/resources/certificates/list  
+2. Revoke **one unused** **Apple Distribution** certificate (only if you don’t need it for another live app)  
+3. Re-run the GitHub Action  
+4. CI will create a new Distribution cert, sign, upload to TestFlight, and attach artifact `calcpro-distribution-p12`  
+5. Download that `.p12` and save it as secrets for future runs:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("distribution.p12")) | Set-Clipboard
+```
+
+Add `BUILD_CERTIFICATE_BASE64` (paste) and `P12_PASSWORD` (see README inside the artifact).
+
+**Alternative:** If a previous iOS CI (Codemagic / Bitrise / another GitHub repo) already has a Distribution `.p12`, copy those secrets here instead of revoking.
+
