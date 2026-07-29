@@ -281,6 +281,17 @@ jobs:
           FL_OUTPUT_DIR: build/ios/ipa
         run: bundle exec fastlane beta
 
+      - name: Upload Distribution .p12 artifact (for saving as secret — no Mac needed)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calcpro-distribution-p12
+          path: |
+            calcpro/build/ios/signing/distribution.p12
+            calcpro/build/ios/signing/README.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Upload IPA artifact
         if: always()
         uses: actions/upload-artifact@v4
