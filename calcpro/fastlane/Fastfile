@@ -3,7 +3,7 @@
 default_platform(:ios)
 
 platform :ios do
-  desc 'Create/sync distribution cert + App Store profile, then archive, export, and upload to TestFlight'
+  desc 'Import existing Distribution .p12, sync App Store profile, archive, upload TestFlight'
   lane :beta do
     setup_ci
 
@@ -17,21 +17,36 @@ platform :ios do
 
     team_id = ENV.fetch('APPLE_TEAM_ID').strip
     bundle_id = ENV.fetch('BUNDLE_ID', 'www.calpro.app')
+    keychain_path = ENV['KEYCHAIN_PATH'] || File.expand_path('~/Library/Keychains/fastlane_tmp_keychain-db')
+    keychain_password = ENV['KEYCHAIN_PASSWORD'] || 'fastlane_tmp'
 
-    # Creates an iOS Distribution certificate when needed (private key stays in CI keychain for this job).
-    cert(
-      api_key: api_key,
-      development: false,
-      force: false
+    certificate_path = ENV.fetch('BUILD_CERTIFICATE_PATH')
+    certificate_password = ENV.fetch('P12_PASSWORD')
+
+    # Import the Distribution identity you already own (required — Apple account is at cert limit).
+    import_certificate(
+      certificate_path: certificate_path,
+      certificate_password: certificate_password,
+      keychain_path: keychain_path,
+      keychain_password: keychain_password
     )
 
-    profile_uuid = sigh(
-      api_key: api_key,
-      app_identifier: bundle_id,
-      adhoc: false,
-      force: true,
-      fail_on_name_taken: false
-    )
+    if ENV['BUILD_PROVISION_PROFILE_PATH'] && File.exist?(ENV['BUILD_PROVISION_PROFILE_PATH'])
+      install_provisioning_profile(path: ENV['BUILD_PROVISION_PROFILE_PATH'])
+      profile_uuid = ENV['PROVISIONING_PROFILE_UUID']
+      profile_name = ENV['PROVISIONING_PROFILE_NAME']
+    else
+      # Create/download an App Store profile for www.calpro.app using the imported cert.
+      profile_uuid = sigh(
+        api_key: api_key,
+        app_identifier: bundle_id,
+        adhoc: false,
+        readonly: false,
+        force: true,
+        fail_on_name_taken: false
+      )
+      profile_name = ENV['SIGH_NAME']
+    end
 
     update_code_signing_settings(
       use_automatic_signing: false,
@@ -41,7 +56,7 @@ platform :ios do
       bundle_identifier: bundle_id,
       code_sign_identity: 'iPhone Distribution',
       profile_uuid: profile_uuid,
-      profile_name: ENV['SIGH_NAME']
+      profile_name: profile_name
     )
 
     build_app(
@@ -53,8 +68,14 @@ platform :ios do
       output_directory: 'build/ios/ipa',
       output_name: 'CalcPro.ipa',
       export_team_id: team_id,
-      skip_profile_detection: false,
-      xcargs: "DEVELOPMENT_TEAM=#{team_id} -allowProvisioningUpdates"
+      export_options: {
+        method: 'app-store',
+        signingStyle: 'manual',
+        teamID: team_id,
+        provisioningProfiles: {
+          bundle_id => (profile_name || profile_uuid)
+        }
+      }
     )
 
     upload_to_testflight(
