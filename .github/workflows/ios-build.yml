@@ -1,0 +1,127 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [main, 'cursor/**']
+    paths:
+      - 'calcpro/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'calcpro/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Flutter tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calcpro
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  build-ios:
+    name: Build iOS (no codesign)
+    needs: test
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: calcpro
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build iOS release (unsigned)
+        run: |
+          flutter build ios --release --no-codesign
+
+      - name: Archive build artifact paths
+        run: |
+          mkdir -p ../artifacts
+          # Unsigned build produces Runner.app under build/ios/iphoneos
+          if [ -d build/ios/iphoneos/Runner.app ]; then
+            ditto -c -k --sequesterRsrc --keepParent \
+              build/ios/iphoneos/Runner.app \
+              ../artifacts/CalcPro-Runner.app.zip
+          fi
+          ls -la build/ios/iphoneos || true
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: calcpro-ios-unsigned
+          path: artifacts/CalcPro-Runner.app.zip
+          if-no-files-found: warn
+          retention-days: 14
+
+  # Placeholder job for TestFlight upload — activate after Apple credentials are provided.
+  # Required GitHub secrets (to be added later):
+  #   APP_STORE_CONNECT_API_KEY_ID
+  #   APP_STORE_CONNECT_API_ISSUER_ID
+  #   APP_STORE_CONNECT_API_KEY (base64 .p8 contents)
+  #   APPLE_TEAM_ID
+  #   MATCH_PASSWORD / or certificate+provisioning profile secrets
+  testflight:
+    name: Upload to TestFlight (disabled until secrets)
+    needs: build-ios
+    if: ${{ false }}
+    runs-on: macos-14
+    defaults:
+      run:
+        working-directory: calcpro
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build IPA
+        env:
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          echo "Configure signing with provided Apple Developer credentials, then:"
+          echo "flutter build ipa --release"
+          exit 1
+
+      - name: Upload to TestFlight
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          # Decode API key and use xcrun altool / notarytool / Transporter / fastlane pilot
+          echo "TestFlight upload step reserved for credentials configuration"
+          exit 1
