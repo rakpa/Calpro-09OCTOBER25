@@ -1,0 +1,4 @@
+app_identifier("www.calpro.app")
+apple_id(ENV["APPLE_ID"]) if ENV["APPLE_ID"]
+team_id(ENV.fetch("APPLE_TEAM_ID", "6H3GCT2F6D"))
+itc_team_id(ENV["ITC_TEAM_ID"]) if ENV["ITC_TEAM_ID"]

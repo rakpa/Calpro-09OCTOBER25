@@ -1,0 +1,67 @@
+# frozen_string_literal: true
+
+default_platform(:ios)
+
+platform :ios do
+  desc 'Create/sync distribution cert + App Store profile, then archive, export, and upload to TestFlight'
+  lane :beta do
+    setup_ci
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch('ASC_KEY_ID').strip,
+      issuer_id: ENV.fetch('ASC_ISSUER_ID').strip,
+      key_filepath: ENV.fetch('API_KEY_PATH'),
+      duration: 1200,
+      in_house: false
+    )
+
+    team_id = ENV.fetch('APPLE_TEAM_ID').strip
+    bundle_id = ENV.fetch('BUNDLE_ID', 'www.calpro.app')
+
+    # Creates an iOS Distribution certificate when needed (private key stays in CI keychain for this job).
+    cert(
+      api_key: api_key,
+      development: false,
+      force: false
+    )
+
+    profile_uuid = sigh(
+      api_key: api_key,
+      app_identifier: bundle_id,
+      adhoc: false,
+      force: true,
+      fail_on_name_taken: false
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: 'ios/Runner.xcodeproj',
+      team_id: team_id,
+      targets: ['Runner'],
+      bundle_identifier: bundle_id,
+      code_sign_identity: 'iPhone Distribution',
+      profile_uuid: profile_uuid,
+      profile_name: ENV['SIGH_NAME']
+    )
+
+    build_app(
+      workspace: 'ios/Runner.xcworkspace',
+      scheme: 'Runner',
+      configuration: 'Release',
+      clean: false,
+      export_method: 'app-store',
+      output_directory: 'build/ios/ipa',
+      output_name: 'CalcPro.ipa',
+      export_team_id: team_id,
+      skip_profile_detection: false,
+      xcargs: "DEVELOPMENT_TEAM=#{team_id} -allowProvisioningUpdates"
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: 'build/ios/ipa/CalcPro.ipa',
+      skip_waiting_for_build_processing: true,
+      distribute_external: false
+    )
+  end
+end
