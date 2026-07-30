@@ -171,65 +171,67 @@ class _PercentageScreenState extends State<PercentageScreen> {
   }
 
   Widget _buildBasic(bool dark) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
-          decoration: BoxDecoration(
-            color: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
-            borderRadius: BorderRadius.circular(AppRadii.xl),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _fieldChip('Percent', percent, editingPercent, () {
-                    setState(() => editingPercent = true);
-                  }),
-                  const SizedBox(width: 8),
-                  _fieldChip('Of', ofValue, !editingPercent, () {
-                    setState(() => editingPercent = false);
-                  }),
-                ],
-              ),
-              const SizedBox(height: 18),
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  _displayLine,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: dark ? AppColors.inkDark : AppColors.ink,
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+            decoration: BoxDecoration(
+              color: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(AppRadii.xl),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _fieldChip('Percent', percent, editingPercent, () {
+                      setState(() => editingPercent = true);
+                    }),
+                    const SizedBox(width: 8),
+                    _fieldChip('Of', ofValue, !editingPercent, () {
+                      setState(() => editingPercent = false);
+                    }),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    _displayLine,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: dark ? AppColors.inkDark : AppColors.ink,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        QuickActionRow(
-          onCopy: basicResult == null
-              ? null
-              : () {
-                  Clipboard.setData(ClipboardData(text: _displayLine));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Copied')),
-                  );
-                },
-          onShare: basicResult == null
-              ? null
-              : () {
-                  Clipboard.setData(ClipboardData(text: _displayLine));
-                },
-          onSave: () => AppState.instance.toggleFavorite('/percentage'),
-        ),
-        const Spacer(),
-        _keypad(),
-      ],
+          const SizedBox(height: 12),
+          QuickActionRow(
+            onCopy: basicResult == null
+                ? null
+                : () {
+                    Clipboard.setData(ClipboardData(text: _displayLine));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Copied')),
+                    );
+                  },
+            onShare: basicResult == null
+                ? null
+                : () {
+                    Clipboard.setData(ClipboardData(text: _displayLine));
+                  },
+            onSave: () => AppState.instance.toggleFavorite('/percentage'),
+          ),
+          const SizedBox(height: 16),
+          _keypad(),
+        ],
+      ),
     );
   }
 
@@ -312,7 +314,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                         },
                   borderRadius: BorderRadius.circular(AppRadii.lg),
                   child: SizedBox(
-                    height: 64,
+                    height: 58,
                     child: Center(
                       child: Text(
                         '=',

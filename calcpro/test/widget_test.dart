@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:calcpro/main.dart';
 import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/screens/percentage_screen.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -22,15 +24,18 @@ void main() {
     expect(find.text('Percentage'), findsWidgets);
   });
 
-  testWidgets('navigates to percentage calculator', (tester) async {
-    await tester.pumpWidget(const CalcProApp());
-    await tester.pump(const Duration(milliseconds: 1700));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Percentage').first);
+  testWidgets('percentage screen shows keypad', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        home: const PercentageScreen(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Percentage Calculator'), findsOneWidget);
+    expect(find.text('Basic'), findsOneWidget);
+    expect(find.text('Advanced'), findsOneWidget);
     expect(find.text('AC'), findsOneWidget);
   });
 }

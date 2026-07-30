@@ -318,7 +318,7 @@ class KeypadButton extends StatelessWidget {
         },
         customBorder: const CircleBorder(),
         child: SizedBox(
-          height: 64,
+          height: 58,
           child: Center(
             child: Text(
               label,
