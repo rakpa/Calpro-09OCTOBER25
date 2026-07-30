@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 
@@ -23,10 +24,9 @@ class SettingsScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 16, bottom: 16),
                 child: Text(
                   'Settings',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
+                  style: AppFonts.h1(
+                    color: dark ? AppColors.inkDark : AppColors.ink,
+                  ),
                 ),
               ),
             ),
@@ -41,6 +41,10 @@ class SettingsScreen extends StatelessWidget {
                     trailing: DropdownButtonHideUnderline(
                       child: DropdownButton<ThemeMode>(
                         value: mode,
+                        style: GoogleFonts.fredoka(
+                          color: dark ? AppColors.inkDark : AppColors.ink,
+                          fontSize: 14,
+                        ),
                         items: const [
                           DropdownMenuItem(
                             value: ThemeMode.system,
@@ -75,6 +79,19 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
+                    icon: Icons.apps_rounded,
+                    label: 'App Icon',
+                    trailing: Text(
+                      'Default',
+                      style: GoogleFonts.fredoka(
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -93,8 +110,16 @@ class SettingsScreen extends StatelessWidget {
                   const Divider(height: 1),
                   _switchTile(
                     context,
+                    icon: Icons.volume_up_outlined,
+                    label: 'Sound Effects',
+                    value: false,
+                    onChanged: (_) {},
+                  ),
+                  const Divider(height: 1),
+                  _switchTile(
+                    context,
                     icon: Icons.tips_and_updates_outlined,
-                    label: 'Tips',
+                    label: 'Show Tips',
                     value: true,
                     onChanged: (_) {},
                   ),
@@ -108,13 +133,13 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   _tile(
                     context,
-                    icon: Icons.info_outline_rounded,
-                    label: 'About CalcPro',
+                    icon: Icons.language_rounded,
+                    label: 'Language',
                     trailing: Text(
-                      '1.1.0',
-                      style: TextStyle(
+                      'English',
+                      style: GoogleFonts.fredoka(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -122,10 +147,23 @@ class SettingsScreen extends StatelessWidget {
                   _tile(
                     context,
                     icon: Icons.privacy_tip_outlined,
-                    label: 'Privacy',
+                    label: 'Privacy Policy',
                     trailing: Icon(
                       Icons.chevron_right_rounded,
                       color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
+                    icon: Icons.info_outline_rounded,
+                    label: 'About CalcPro',
+                    trailing: Text(
+                      '1.2.0',
+                      style: GoogleFonts.fredoka(
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -149,8 +187,8 @@ class SettingsScreen extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(
         label,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
+        style: GoogleFonts.fredoka(
+          fontWeight: FontWeight.w500,
           color: dark ? AppColors.inkDark : AppColors.ink,
         ),
       ),
@@ -168,7 +206,10 @@ class SettingsScreen extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
       leading: Icon(icon, color: AppColors.primary),
-      title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+      title: Text(
+        label,
+        style: GoogleFonts.fredoka(fontWeight: FontWeight.w500),
+      ),
       trailing: Switch.adaptive(
         value: value,
         activeColor: AppColors.primary,
@@ -194,8 +235,8 @@ class _Section extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             title,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
+            style: GoogleFonts.fredoka(
+              fontWeight: FontWeight.w600,
               fontSize: 13,
               color: dark ? AppColors.mutedDark : AppColors.muted,
             ),
@@ -205,9 +246,15 @@ class _Section extends StatelessWidget {
           decoration: BoxDecoration(
             color: dark ? AppColors.surfaceDark : Colors.white,
             borderRadius: BorderRadius.circular(AppRadii.xl),
-            border: Border.all(
-              color: dark ? AppColors.lineDark : AppColors.line,
-            ),
+            boxShadow: dark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
           ),
           child: child,
         ),

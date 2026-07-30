@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
+import 'package:calcpro/screens/search_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -29,10 +31,9 @@ class FavoritesScreen extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                   child: Text(
                     'Favorites',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.5,
-                        ),
+                    style: AppFonts.h1(
+                      color: dark ? AppColors.inkDark : AppColors.ink,
+                    ),
                   ),
                 ),
               ),
@@ -48,29 +49,31 @@ class FavoritesScreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.favorite_border_rounded,
-                          size: 52,
+                          size: 56,
                           color: dark ? AppColors.mutedDark : AppColors.muted,
                         ),
                         const SizedBox(height: 14),
-                        const Text(
+                        Text(
                           'No favorites yet',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                          style: AppFonts.h3(
+                            color: dark ? AppColors.inkDark : AppColors.ink,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Tap the heart on any calculator to save it here.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color:
-                                dark ? AppColors.mutedDark : AppColors.muted,
-                          ),
+                          style: AppFonts.body2(),
                         ),
                         const SizedBox(height: 20),
                         PrimaryButton(
                           label: 'Explore Calculators',
                           onPressed: () {
-                            // Pop to home tab is parent-managed; open search.
-                            Navigator.of(context).pushNamed('/basic');
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const SearchScreen(),
+                              ),
+                            );
                           },
                         ),
                       ],
@@ -95,20 +98,14 @@ class FavoritesScreen extends StatelessWidget {
                           Navigator.of(context).pushNamed(item.route);
                         },
                         borderRadius: BorderRadius.circular(AppRadii.xl),
-                        child: Container(
+                        child: Padding(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(AppRadii.xl),
-                            border: Border.all(
-                              color:
-                                  dark ? AppColors.lineDark : AppColors.line,
-                            ),
-                          ),
                           child: Row(
                             children: [
                               AccentIconTile(
                                 icon: item.icon,
                                 accent: item.accent,
+                                size: 56,
                               ),
                               const SizedBox(width: 12),
                               Expanded(
@@ -117,8 +114,8 @@ class FavoritesScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       item.shortTitle,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w800,
+                                      style: GoogleFonts.fredoka(
+                                        fontWeight: FontWeight.w600,
                                         fontSize: 16,
                                       ),
                                     ),
@@ -127,12 +124,7 @@ class FavoritesScreen extends StatelessWidget {
                                       item.description,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: dark
-                                            ? AppColors.mutedDark
-                                            : AppColors.muted,
-                                      ),
+                                      style: AppFonts.body2(),
                                     ),
                                   ],
                                 ),

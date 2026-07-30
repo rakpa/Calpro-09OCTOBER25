@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
@@ -13,16 +14,14 @@ class PercentageScreen extends StatefulWidget {
 }
 
 class _PercentageScreenState extends State<PercentageScreen> {
-  int mode = 0; // 0 basic, 1 advanced
+  int mode = 0;
   int advancedTab = 0;
 
-  // Basic: "X% of Y"
-  String percent = '';
-  String ofValue = '';
+  String percent = '25';
+  String ofValue = '200';
   bool editingPercent = true;
-  String? basicResult;
+  String? basicResult = '50';
 
-  // Advanced controllers
   final p2a = TextEditingController();
   final p2b = TextEditingController();
   final p3a = TextEditingController();
@@ -114,8 +113,8 @@ class _PercentageScreenState extends State<PercentageScreen> {
   }
 
   String get _displayLine {
-    final p = percent.isEmpty ? '—' : percent;
-    final o = ofValue.isEmpty ? '—' : ofValue;
+    final p = percent.isEmpty ? '0' : percent;
+    final o = ofValue.isEmpty ? '0' : ofValue;
     if (basicResult != null) return '$p% of $o = $basicResult';
     return '$p% of $o';
   }
@@ -127,7 +126,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
     return Scaffold(
       backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
       appBar: AppBar(
-        title: const Text('Percentage'),
+        title: const Text('Percentage Calculator'),
         actions: [
           ListenableBuilder(
             listenable: AppState.instance,
@@ -143,6 +142,10 @@ class _PercentageScreenState extends State<PercentageScreen> {
               );
             },
           ),
+          IconButton(
+            onPressed: _clear,
+            icon: const Icon(Icons.more_vert_rounded),
+          ),
         ],
       ),
       body: SafeArea(
@@ -156,11 +159,10 @@ class _PercentageScreenState extends State<PercentageScreen> {
                 onChanged: (i) => setState(() => mode = i),
               ),
               const SizedBox(height: 16),
-              if (mode == 0) ...[
-                Expanded(child: _buildBasic(dark)),
-              ] else ...[
+              if (mode == 0)
+                Expanded(child: _buildBasic(dark))
+              else
                 Expanded(child: _buildAdvanced(dark)),
-              ],
             ],
           ),
         ),
@@ -171,60 +173,44 @@ class _PercentageScreenState extends State<PercentageScreen> {
   Widget _buildBasic(bool dark) {
     return Column(
       children: [
-        Expanded(
-          child: Align(
-            alignment: Alignment.bottomRight,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 28),
+          decoration: BoxDecoration(
+            color: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(AppRadii.xl),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      _fieldChip('Percent', percent, editingPercent, () {
-                        setState(() => editingPercent = true);
-                      }),
-                      const SizedBox(width: 8),
-                      _fieldChip('Of', ofValue, !editingPercent, () {
-                        setState(() => editingPercent = false);
-                      }),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      _displayLine,
-                      maxLines: 1,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.8,
-                        color: dark ? AppColors.inkDark : AppColors.ink,
-                      ),
-                    ),
-                  ),
-                  if (basicResult != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      basicResult!,
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
-                        letterSpacing: -1,
-                      ),
-                    ),
-                  ],
+                  _fieldChip('Percent', percent, editingPercent, () {
+                    setState(() => editingPercent = true);
+                  }),
+                  const SizedBox(width: 8),
+                  _fieldChip('Of', ofValue, !editingPercent, () {
+                    setState(() => editingPercent = false);
+                  }),
                 ],
               ),
-            ),
+              const SizedBox(height: 18),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  _displayLine,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.fredoka(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                    color: dark ? AppColors.inkDark : AppColors.ink,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         QuickActionRow(
           onCopy: basicResult == null
               ? null
@@ -239,11 +225,9 @@ class _PercentageScreenState extends State<PercentageScreen> {
               : () {
                   Clipboard.setData(ClipboardData(text: _displayLine));
                 },
-          onSave: basicResult == null
-              ? null
-              : () => AppState.instance.toggleFavorite('/percentage'),
+          onSave: () => AppState.instance.toggleFavorite('/percentage'),
         ),
-        const SizedBox(height: 14),
+        const Spacer(),
         _keypad(),
       ],
     );
@@ -264,15 +248,15 @@ class _PercentageScreenState extends State<PercentageScreen> {
           color: selected
               ? AppColors.primary.withValues(alpha: 0.12)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
           border: Border.all(
             color: selected ? AppColors.primary : AppColors.line,
           ),
         ),
         child: Text(
           '$label: ${value.isEmpty ? '0' : value}',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
+          style: GoogleFonts.fredoka(
+            fontWeight: FontWeight.w600,
             fontSize: 13,
             color: selected ? AppColors.primary : AppColors.muted,
           ),
@@ -308,22 +292,39 @@ class _PercentageScreenState extends State<PercentageScreen> {
         ],
         Row(
           children: [
-            KeypadButton(
-              label: '0',
-              flex: 2,
-              onTap: () => _onKey('0'),
-            ),
+            KeypadButton(label: '0', flex: 1, onTap: () => _onKey('0')),
             const SizedBox(width: 10),
             KeypadButton(label: '.', onTap: () => _onKey('.')),
             const SizedBox(width: 10),
             Expanded(
               flex: 2,
-              child: PrimaryButton(
-                label: '=',
-                expand: true,
-                onPressed: percent.isEmpty || ofValue.isEmpty
-                    ? null
-                    : _calculateBasic,
+              child: Material(
+                color: percent.isEmpty || ofValue.isEmpty
+                    ? AppColors.primary.withValues(alpha: 0.35)
+                    : AppColors.primary,
+                borderRadius: BorderRadius.circular(AppRadii.lg),
+                child: InkWell(
+                  onTap: percent.isEmpty || ofValue.isEmpty
+                      ? null
+                      : () {
+                          HapticFeedback.lightImpact();
+                          _calculateBasic();
+                        },
+                  borderRadius: BorderRadius.circular(AppRadii.lg),
+                  child: SizedBox(
+                    height: 64,
+                    child: Center(
+                      child: Text(
+                        '=',
+                        style: GoogleFonts.fredoka(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ],
@@ -375,7 +376,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                     const SizedBox(height: 8),
                     Text(
                       'is what percent of',
-                      style: TextStyle(
+                      style: AppFonts.body2(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                       ),
                     ),

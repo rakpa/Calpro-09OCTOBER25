@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
@@ -14,12 +15,13 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _controller = TextEditingController();
   String _query = '';
+  final List<String> _recent = ['Percentage', 'Tip'];
 
   static const _popular = [
     'Percentage',
     'Mortgage',
     'BMI',
-    'Tip',
+    'EMI',
     'Discount',
   ];
 
@@ -41,15 +43,19 @@ class _SearchScreenState extends State<SearchScreen> {
     return kCalculators.where((c) {
       return c.title.toLowerCase().contains(q) ||
           c.shortTitle.toLowerCase().contains(q) ||
-          c.description.toLowerCase().contains(q) ||
-          c.tags.any((t) => t.toLowerCase().contains(q));
+          c.description.toLowerCase().contains(q);
     }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final trending = kCalculators.take(4).toList();
+    final trending = [
+      calculatorByRoute('/percentage')!,
+      calculatorByRoute('/mortgage')!,
+      calculatorByRoute('/health')!,
+      calculatorByRoute('/financial')!,
+    ];
 
     return Scaffold(
       backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
@@ -64,15 +70,19 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: SearchField(
                       controller: _controller,
                       autofocus: true,
-                      hint: 'Search calculators',
-                      onClear: () {
-                        _controller.clear();
-                      },
+                      hint: 'Search calculators...',
+                      onClear: () => _controller.clear(),
                     ),
                   ),
                   TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text(
+                      'Cancel',
+                      style: GoogleFonts.fredoka(
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -84,10 +94,9 @@ class _SearchScreenState extends State<SearchScreen> {
                   if (_query.isEmpty) ...[
                     Text(
                       'Popular Searches',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                      style: AppFonts.h3(
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Wrap(
@@ -100,60 +109,89 @@ class _SearchScreenState extends State<SearchScreen> {
                             onPressed: () {
                               HapticFeedback.selectionClick();
                               _controller.text = term;
-                              _controller.selection = TextSelection.fromPosition(
+                              _controller.selection =
+                                  TextSelection.fromPosition(
                                 TextPosition(offset: term.length),
                               );
                             },
-                            backgroundColor:
-                                dark ? AppColors.surfaceDark : Colors.white,
-                            side: BorderSide(
-                              color:
-                                  dark ? AppColors.lineDark : AppColors.line,
-                            ),
-                            labelStyle: TextStyle(
-                              fontWeight: FontWeight.w600,
+                            backgroundColor: dark
+                                ? AppColors.surfaceDark
+                                : AppColors.surfaceAlt,
+                            labelStyle: GoogleFonts.fredoka(
+                              fontWeight: FontWeight.w500,
                               color: dark ? AppColors.inkDark : AppColors.ink,
                             ),
                           ),
                       ],
                     ),
-                    const SizedBox(height: 28),
+                    if (_recent.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      Text(
+                        'Recent Searches',
+                        style: AppFonts.h3(
+                          color: dark ? AppColors.inkDark : AppColors.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      for (final term in List<String>.from(_recent))
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            Icons.history_rounded,
+                            color:
+                                dark ? AppColors.mutedDark : AppColors.muted,
+                          ),
+                          title: Text(
+                            term,
+                            style: GoogleFonts.fredoka(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.close_rounded, size: 18),
+                            onPressed: () =>
+                                setState(() => _recent.remove(term)),
+                          ),
+                          onTap: () => _controller.text = term,
+                        ),
+                    ],
+                    const SizedBox(height: 20),
                     Text(
                       'Trending Now',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                      style: AppFonts.h3(
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     for (final item in trending) ...[
-                      _SearchResultTile(item: item),
+                      _TrendCard(item: item),
                       const SizedBox(height: 10),
                     ],
                   ] else if (_results.isEmpty) ...[
                     const SizedBox(height: 48),
                     Icon(
                       Icons.search_off_rounded,
-                      size: 48,
+                      size: 56,
                       color: dark ? AppColors.mutedDark : AppColors.muted,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
+                    Text(
                       'No calculators found',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.w700),
+                      style: AppFonts.h3(
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
                     ),
                   ] else ...[
                     Text(
                       'Results',
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleMedium
-                          ?.copyWith(fontWeight: FontWeight.w800),
+                      style: AppFonts.h3(
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     for (final item in _results) ...[
-                      _SearchResultTile(item: item),
+                      _TrendCard(item: item),
                       const SizedBox(height: 10),
                     ],
                   ],
@@ -167,9 +205,9 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 }
 
-class _SearchResultTile extends StatelessWidget {
+class _TrendCard extends StatelessWidget {
   final CalculatorItem item;
-  const _SearchResultTile({required this.item});
+  const _TrendCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -183,36 +221,28 @@ class _SearchResultTile extends StatelessWidget {
           Navigator.of(context).pushNamed(item.route);
         },
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        child: Container(
+        child: Padding(
           padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadii.lg),
-            border: Border.all(
-              color: dark ? AppColors.lineDark : AppColors.line,
-            ),
-          ),
           child: Row(
             children: [
-              AccentIconTile(icon: item.icon, accent: item.accent, size: 44),
+              AccentIconTile(icon: item.icon, accent: item.accent, size: 48),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      item.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                      item.shortTitle,
+                      style: GoogleFonts.fredoka(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
                         color: dark ? AppColors.inkDark : AppColors.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      item.description,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
+                      'Calculate ${item.shortTitle.toLowerCase()} easily',
+                      style: AppFonts.body2(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                       ),
                     ),

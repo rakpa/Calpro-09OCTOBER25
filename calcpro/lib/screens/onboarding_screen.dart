@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
@@ -20,7 +21,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.initState();
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 700),
+      duration: const Duration(milliseconds: 650),
     )..forward();
   }
 
@@ -41,7 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
           child: Column(
             children: [
-              const Spacer(flex: 1),
+              const Spacer(),
               FadeTransition(
                 opacity: _intro,
                 child: SlideTransition(
@@ -55,59 +56,50 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Column(
                     children: [
                       Container(
-                        width: 180,
-                        height: 180,
+                        width: 168,
+                        height: 168,
                         decoration: BoxDecoration(
-                          gradient: AppColors.primaryGradient,
-                          borderRadius: BorderRadius.circular(48),
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(44),
                           boxShadow: [
                             BoxShadow(
                               color: AppColors.primary.withValues(alpha: 0.4),
-                              blurRadius: 40,
-                              offset: const Offset(0, 18),
+                              blurRadius: 36,
+                              offset: const Offset(0, 16),
                             ),
                           ],
                         ),
                         child: const Icon(
                           Icons.calculate_rounded,
-                          size: 88,
+                          size: 84,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 36),
                       Text(
                         'Calculate Anything,\nBeautifully.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.8,
-                              height: 1.15,
-                            ),
+                        style: AppFonts.h1(
+                          color: dark ? AppColors.inkDark : AppColors.ink,
+                        ),
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'A suite of smart calculators for everyday math, '
-                        'finance, health, and more — designed to feel native.',
+                        'A playful suite of smart calculators for math, '
+                        'money, health, and everyday life.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: GoogleFonts.fredoka(
                           color: dark ? AppColors.mutedDark : AppColors.muted,
                           fontSize: 15,
                           height: 1.5,
-                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
                   ),
                 ),
               ),
-              const Spacer(flex: 2),
-              PrimaryButton(
-                label: 'Get Started',
-                onPressed: widget.onDone,
-              ),
+              const Spacer(),
+              PrimaryButton(label: 'Get Started', onPressed: widget.onDone),
               const SizedBox(height: 8),
             ],
           ),

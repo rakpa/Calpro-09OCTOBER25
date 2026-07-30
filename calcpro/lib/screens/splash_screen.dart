@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
@@ -22,14 +23,14 @@ class _SplashScreenState extends State<SplashScreen>
     super.initState();
     _ctrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1100),
+      duration: const Duration(milliseconds: 1000),
     );
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-    _scale = Tween<double>(begin: 0.86, end: 1).animate(
+    _scale = Tween<double>(begin: 0.88, end: 1).animate(
       CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
     );
     _ctrl.forward();
-    Future.delayed(const Duration(milliseconds: 1600), () {
+    Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) widget.onFinished();
     });
   }
@@ -54,23 +55,23 @@ class _SplashScreenState extends State<SplashScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const BrandMark(size: 88),
+                const BrandMark(size: 92),
                 const SizedBox(height: 28),
                 Text(
                   'CalcPro',
-                  style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.8,
-                      ),
+                  style: GoogleFonts.fredoka(
+                    color: Colors.white,
+                    fontSize: 36,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Smart Calculators, Beautifully Designed',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.82),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                  'Smart calculators for everyday life',
+                  style: GoogleFonts.fredoka(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
                   ),
                 ),
               ],

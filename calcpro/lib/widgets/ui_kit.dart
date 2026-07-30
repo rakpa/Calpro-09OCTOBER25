@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 
 class PrimaryButton extends StatelessWidget {
@@ -16,43 +17,28 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final child = DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: onPressed == null ? null : AppColors.primaryGradient,
-        color: onPressed == null
-            ? AppColors.primary.withValues(alpha: 0.35)
-            : null,
-        borderRadius: BorderRadius.circular(AppRadii.lg),
-        boxShadow: onPressed == null
+    final child = Material(
+      color: onPressed == null
+          ? AppColors.primary.withValues(alpha: 0.35)
+          : AppColors.primary,
+      borderRadius: BorderRadius.circular(AppRadii.pill),
+      child: InkWell(
+        onTap: onPressed == null
             ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.35),
-                  blurRadius: 18,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onPressed == null
-              ? null
-              : () {
-                  HapticFeedback.lightImpact();
-                  onPressed!();
-                },
-          borderRadius: BorderRadius.circular(AppRadii.lg),
-          child: SizedBox(
-            height: 56,
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                ),
+            : () {
+                HapticFeedback.lightImpact();
+                onPressed!();
+              },
+        borderRadius: BorderRadius.circular(AppRadii.pill),
+        child: SizedBox(
+          height: 54,
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.fredoka(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 16,
               ),
             ),
           ),
@@ -82,16 +68,13 @@ class AppCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: color ?? (dark ? AppColors.surfaceDark : AppColors.surface),
         borderRadius: BorderRadius.circular(AppRadii.xl),
-        border: Border.all(
-          color: dark ? AppColors.lineDark : AppColors.line,
-        ),
         boxShadow: dark
             ? null
             : [
                 BoxShadow(
-                  color: const Color(0xFF12121A).withValues(alpha: 0.05),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
+                  color: const Color(0xFF1C1C28).withValues(alpha: 0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
                 ),
               ],
       ),
@@ -119,7 +102,7 @@ class SegmentControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: dark ? AppColors.keyBgDark : const Color(0xFFEEF0F6),
+        color: dark ? AppColors.keyBgDark : AppColors.surfaceAlt,
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
@@ -132,9 +115,9 @@ class SegmentControl extends StatelessWidget {
                   onChanged(i);
                 },
                 child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 220),
+                  duration: const Duration(milliseconds: 200),
                   curve: Curves.easeOutCubic,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 11),
                   decoration: BoxDecoration(
                     color: index == i
                         ? (dark ? AppColors.surfaceDark : Colors.white)
@@ -153,9 +136,9 @@ class SegmentControl extends StatelessWidget {
                   child: Text(
                     labels[i],
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
+                    style: GoogleFonts.fredoka(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
                       color: index == i
                           ? AppColors.primary
                           : (dark ? AppColors.mutedDark : AppColors.muted),
@@ -179,17 +162,19 @@ class SearchField extends StatelessWidget {
   final VoidCallback? onClear;
   final FocusNode? focusNode;
   final bool autofocus;
+  final bool showMic;
 
   const SearchField({
     super.key,
     this.controller,
-    this.hint = 'Search calculators',
+    this.hint = 'Search calculators...',
     this.readOnly = false,
     this.onTap,
     this.onChanged,
     this.onClear,
     this.focusNode,
     this.autofocus = false,
+    this.showMic = false,
   });
 
   @override
@@ -202,8 +187,9 @@ class SearchField extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       onChanged: onChanged,
-      style: TextStyle(
-        fontWeight: FontWeight.w600,
+      style: GoogleFonts.fredoka(
+        fontWeight: FontWeight.w500,
+        fontSize: 15,
         color: dark ? AppColors.inkDark : AppColors.ink,
       ),
       decoration: InputDecoration(
@@ -217,21 +203,23 @@ class SearchField extends StatelessWidget {
                 onPressed: onClear,
                 icon: const Icon(Icons.close_rounded, size: 20),
               )
-            : null,
+            : (showMic
+                ? Icon(
+                    Icons.mic_none_rounded,
+                    color: dark ? AppColors.mutedDark : AppColors.muted,
+                  )
+                : null),
         filled: true,
-        fillColor: dark ? AppColors.surfaceDark : Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+        fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
-          borderSide: BorderSide(
-            color: dark ? AppColors.lineDark : AppColors.line,
-          ),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
-          borderSide: BorderSide(
-            color: dark ? AppColors.lineDark : AppColors.line,
-          ),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
@@ -251,7 +239,7 @@ class AccentIconTile extends StatelessWidget {
     super.key,
     required this.icon,
     required this.accent,
-    this.size = 48,
+    this.size = 52,
   });
 
   @override
@@ -260,10 +248,10 @@ class AccentIconTile extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(size * 0.32),
+        color: accent.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(size * 0.36),
       ),
-      child: Icon(icon, color: accent, size: size * 0.48),
+      child: Icon(icon, color: accent, size: size * 0.46),
     );
   }
 }
@@ -280,22 +268,67 @@ class BrandMark extends StatelessWidget {
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: light ? Colors.white.withValues(alpha: 0.18) : AppColors.primary,
+        color: light ? Colors.white.withValues(alpha: 0.2) : AppColors.primary,
         borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: light
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.4),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
-              ],
       ),
       child: Icon(
-        Icons.drag_indicator_rounded,
+        Icons.calculate_rounded,
         color: Colors.white,
-        size: size * 0.42,
+        size: size * 0.48,
+      ),
+    );
+  }
+}
+
+class QuickActionButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final VoidCallback onTap;
+  final bool selected;
+
+  const QuickActionButton({
+    super.key,
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.onTap,
+    this.selected = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            width: 58,
+            height: 58,
+            decoration: BoxDecoration(
+              color: selected ? color : color.withValues(alpha: 0.14),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: selected ? Colors.white : color,
+              size: 26,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.fredoka(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: selected ? color : AppColors.muted,
+            ),
+          ),
+        ],
       ),
     );
   }

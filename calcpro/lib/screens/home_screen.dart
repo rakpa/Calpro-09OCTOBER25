@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
@@ -18,14 +19,12 @@ class _HomeScreenState extends State<HomeScreen>
   late final AnimationController _intro;
   String _filter = 'Popular';
 
-  static const _filters = ['Favorites', 'Recent', 'History', 'Popular'];
-
   @override
   void initState() {
     super.initState();
     _intro = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 650),
+      duration: const Duration(milliseconds: 600),
     )..forward();
   }
 
@@ -37,30 +36,40 @@ class _HomeScreenState extends State<HomeScreen>
 
   String get _greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good Morning';
-    if (h < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (h < 12) return 'Good morning,';
+    if (h < 17) return 'Good afternoon,';
+    return 'Good evening,';
   }
 
   List<CalculatorItem> get _filtered {
     final state = AppState.instance;
     switch (_filter) {
       case 'Favorites':
-        return kCalculators
-            .where((c) => state.isFavorite(c.route))
-            .toList();
+        return kCalculators.where((c) => state.isFavorite(c.route)).toList();
       case 'Recent':
       case 'History':
         final routes = state.history.map((e) => e.route).toSet();
-        final recent = kCalculators.where((c) => routes.contains(c.route)).toList();
+        final recent =
+            kCalculators.where((c) => routes.contains(c.route)).toList();
         if (recent.isEmpty) {
           return kCalculators.where((c) => c.tags.contains('Recent')).toList();
         }
         return recent;
       default:
-        return kCalculators.where((c) => c.tags.contains('Popular')).toList();
+        // Featured popular grid (snip shows 4 colorful cards)
+        return kCalculators
+            .where((c) =>
+                c.route == '/percentage' ||
+                c.route == '/mortgage' ||
+                c.route == '/health' ||
+                c.route == '/financial')
+            .toList();
     }
   }
+
+  List<CalculatorItem> get _more => kCalculators
+      .where((c) => !_filtered.map((e) => e.route).contains(c.route))
+      .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen>
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
                   child: FadeTransition(
                     opacity: CurvedAnimation(
                       parent: _intro,
@@ -86,29 +95,55 @@ class _HomeScreenState extends State<HomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$_greeting 👋',
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.6,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _greeting,
+                                style: AppFonts.h1(
+                                  color: dark
+                                      ? AppColors.inkDark
+                                      : AppColors.ink,
+                                ),
                               ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'What would you like to calculate?',
-                          style: TextStyle(
-                            color: dark ? AppColors.mutedDark : AppColors.muted,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 14,
-                          ),
+                            ),
+                            Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 22,
+                                  backgroundColor: AppColors.primaryMuted,
+                                  child: Icon(
+                                    Icons.person_rounded,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 2,
+                                  top: 2,
+                                  child: Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentPink,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: dark
+                                            ? AppColors.bgDark
+                                            : AppColors.bg,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 18),
                         SearchField(
                           readOnly: true,
-                          hint: 'Search calculators',
+                          showMic: true,
+                          hint: 'Search calculators...',
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(
@@ -117,86 +152,53 @@ class _HomeScreenState extends State<HomeScreen>
                             );
                           },
                         ),
-                        const SizedBox(height: 18),
-                        SizedBox(
-                          height: 40,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _filters.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, i) {
-                              final label = _filters[i];
-                              final selected = _filter == label;
-                              return GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setState(() => _filter = label);
-                                },
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: selected
-                                        ? AppColors.primary
-                                        : (dark
-                                            ? AppColors.surfaceDark
-                                            : Colors.white),
-                                    borderRadius:
-                                        BorderRadius.circular(AppRadii.pill),
-                                    border: Border.all(
-                                      color: selected
-                                          ? AppColors.primary
-                                          : (dark
-                                              ? AppColors.lineDark
-                                              : AppColors.line),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w700,
-                                      fontSize: 13,
-                                      color: selected
-                                          ? Colors.white
-                                          : (dark
-                                              ? AppColors.inkDark
-                                              : AppColors.ink),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
                         const SizedBox(height: 22),
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              _filter == 'Popular'
-                                  ? 'Popular Calculators'
-                                  : '$_filter Calculators',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            QuickActionButton(
+                              icon: Icons.favorite_rounded,
+                              label: 'Favorites',
+                              color: AppColors.accentPink,
+                              selected: _filter == 'Favorites',
+                              onTap: () =>
+                                  setState(() => _filter = 'Favorites'),
                             ),
-                            const Spacer(),
-                            Text(
-                              '${items.length}',
-                              style: TextStyle(
-                                color: dark
-                                    ? AppColors.mutedDark
-                                    : AppColors.muted,
-                                fontWeight: FontWeight.w600,
-                              ),
+                            QuickActionButton(
+                              icon: Icons.schedule_rounded,
+                              label: 'Recent',
+                              color: AppColors.accentOrange,
+                              selected: _filter == 'Recent',
+                              onTap: () => setState(() => _filter = 'Recent'),
+                            ),
+                            QuickActionButton(
+                              icon: Icons.local_fire_department_rounded,
+                              label: 'Popular',
+                              color: AppColors.accentPurple,
+                              selected: _filter == 'Popular',
+                              onTap: () =>
+                                  setState(() => _filter = 'Popular'),
+                            ),
+                            QuickActionButton(
+                              icon: Icons.account_balance_wallet_rounded,
+                              label: 'History',
+                              color: AppColors.accentBlue,
+                              selected: _filter == 'History',
+                              onTap: () =>
+                                  setState(() => _filter = 'History'),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 26),
+                        Text(
+                          _filter == 'Popular'
+                              ? 'Popular Calculators'
+                              : '$_filter Calculators',
+                          style: AppFonts.h3(
+                            color: dark ? AppColors.inkDark : AppColors.ink,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
                       ],
                     ),
                   ),
@@ -204,75 +206,94 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
             if (items.isEmpty)
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.inbox_outlined,
-                          size: 48,
-                          color: dark ? AppColors.mutedDark : AppColors.muted,
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.search_off_rounded,
+                        size: 56,
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No calculators found',
+                        style: AppFonts.h3(
+                          color: dark ? AppColors.inkDark : AppColors.ink,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Nothing here yet',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Try another category or star a calculator.',
+                        textAlign: TextAlign.center,
+                        style: AppFonts.body2(),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (_filter == 'Popular')
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.05,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = items[index];
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: _intro,
+                          curve: Interval(
+                            (0.1 * index).clamp(0.0, 0.6),
+                            1,
+                            curve: Curves.easeOut,
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Star calculators or run a few to fill this list.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color:
-                                dark ? AppColors.mutedDark : AppColors.muted,
-                          ),
-                        ),
-                      ],
-                    ),
+                        child: _ColorCalcCard(item: item),
+                      );
+                    },
+                    childCount: items.length,
                   ),
                 ),
               )
             else
               SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
                 sliver: SliverList.separated(
                   itemCount: items.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    final start = (0.06 * index).clamp(0.0, 0.5);
-                    return FadeTransition(
-                      opacity: CurvedAnimation(
-                        parent: _intro,
-                        curve: Interval(start, 1, curve: Curves.easeOut),
-                      ),
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.06),
-                          end: Offset.zero,
-                        ).animate(
-                          CurvedAnimation(
-                            parent: _intro,
-                            curve: Interval(
-                              start,
-                              1,
-                              curve: Curves.easeOutCubic,
-                            ),
-                          ),
-                        ),
-                        child: _PopularCard(item: item),
-                      ),
-                    );
-                  },
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) =>
+                      _ListCalcCard(item: items[index]),
                 ),
               ),
+            if (_filter == 'Popular') ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: Text(
+                    'All Calculators',
+                    style: AppFonts.h3(
+                      color: dark ? AppColors.inkDark : AppColors.ink,
+                    ),
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+                sliver: SliverList.separated(
+                  itemCount: _more.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) =>
+                      _ListCalcCard(item: _more[index]),
+                ),
+              ),
+            ],
           ],
         );
       },
@@ -280,25 +301,22 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
-class _PopularCard extends StatefulWidget {
+class _ColorCalcCard extends StatefulWidget {
   final CalculatorItem item;
-  const _PopularCard({required this.item});
+  const _ColorCalcCard({required this.item});
 
   @override
-  State<_PopularCard> createState() => _PopularCardState();
+  State<_ColorCalcCard> createState() => _ColorCalcCardState();
 }
 
-class _PopularCardState extends State<_PopularCard> {
+class _ColorCalcCardState extends State<_ColorCalcCard> {
   bool _pressed = false;
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    final fav = AppState.instance.isFavorite(item.route);
-
     return AnimatedScale(
-      scale: _pressed ? 0.98 : 1,
+      scale: _pressed ? 0.96 : 1,
       duration: const Duration(milliseconds: 120),
       child: Material(
         color: Colors.transparent,
@@ -311,91 +329,134 @@ class _PopularCardState extends State<_PopularCard> {
           borderRadius: BorderRadius.circular(AppRadii.xl),
           child: Ink(
             decoration: BoxDecoration(
-              color: dark ? AppColors.surfaceDark : Colors.white,
+              color: item.accent,
               borderRadius: BorderRadius.circular(AppRadii.xl),
-              border: Border.all(
-                color: dark ? AppColors.lineDark : AppColors.line,
-              ),
-              boxShadow: dark
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 18,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
+              boxShadow: [
+                BoxShadow(
+                  color: item.accent.withValues(alpha: 0.35),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: Padding(
               padding: const EdgeInsets.all(16),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  AccentIconTile(icon: item.icon, accent: item.accent),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.shortTitle,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16,
-                            letterSpacing: -0.2,
-                            color: dark ? AppColors.inkDark : AppColors.ink,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          item.description,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.3,
-                            color:
-                                dark ? AppColors.mutedDark : AppColors.muted,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            const Icon(Icons.star_rounded,
-                                size: 16, color: Color(0xFFFFB020)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${item.rating} · ${item.ratingCount}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: dark
-                                    ? AppColors.mutedDark
-                                    : AppColors.muted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.28),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(item.icon, color: Colors.white, size: 24),
+                  ),
+                  const Spacer(),
+                  Text(
+                    item.shortTitle,
+                    style: GoogleFonts.fredoka(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 18,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {
-                      HapticFeedback.selectionClick();
-                      AppState.instance.toggleFavorite(item.route);
-                    },
-                    icon: Icon(
-                      fav
-                          ? Icons.favorite_rounded
-                          : Icons.favorite_border_rounded,
-                      color: fav
-                          ? AppColors.accentPink
-                          : (dark ? AppColors.mutedDark : AppColors.muted),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.description,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.fredoka(
+                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      height: 1.3,
                     ),
                   ),
                 ],
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ListCalcCard extends StatelessWidget {
+  final CalculatorItem item;
+  const _ListCalcCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final fav = AppState.instance.isFavorite(item.route);
+
+    return Material(
+      color: dark ? AppColors.surfaceDark : Colors.white,
+      borderRadius: BorderRadius.circular(AppRadii.xl),
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.of(context).pushNamed(item.route);
+        },
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.xl),
+            boxShadow: dark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+          ),
+          child: Row(
+            children: [
+              AccentIconTile(icon: item.icon, accent: item.accent),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.shortTitle,
+                      style: GoogleFonts.fredoka(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      item.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppFonts.body2(
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  HapticFeedback.selectionClick();
+                  AppState.instance.toggleFavorite(item.route);
+                },
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav
+                      ? AppColors.accentPink
+                      : (dark ? AppColors.mutedDark : AppColors.muted),
+                ),
+              ),
+            ],
           ),
         ),
       ),

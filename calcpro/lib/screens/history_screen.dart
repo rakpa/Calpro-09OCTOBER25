@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
@@ -44,19 +45,21 @@ class HistoryScreen extends StatelessWidget {
                     children: [
                       Text(
                         'History',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                            ),
+                        style: AppFonts.h1(
+                          color: dark ? AppColors.inkDark : AppColors.ink,
+                        ),
                       ),
                       const Spacer(),
                       if (entries.isNotEmpty)
                         TextButton(
                           onPressed: () => AppState.instance.clearHistory(),
-                          child: const Text('Clear'),
+                          child: Text(
+                            'Clear',
+                            style: GoogleFonts.fredoka(
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ),
                     ],
                   ),
@@ -74,22 +77,21 @@ class HistoryScreen extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.history_rounded,
-                          size: 52,
+                          size: 56,
                           color: dark ? AppColors.mutedDark : AppColors.muted,
                         ),
                         const SizedBox(height: 14),
-                        const Text(
+                        Text(
                           'No history yet',
-                          style: TextStyle(fontWeight: FontWeight.w800),
+                          style: AppFonts.h3(
+                            color: dark ? AppColors.inkDark : AppColors.ink,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Your recent calculations will show up here.',
                           textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color:
-                                dark ? AppColors.mutedDark : AppColors.muted,
-                          ),
+                          style: AppFonts.body2(),
                         ),
                       ],
                     ),
@@ -103,8 +105,9 @@ class HistoryScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: Text(
                       entry.key,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
+                      style: GoogleFonts.fredoka(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                       ),
                     ),
@@ -127,29 +130,21 @@ class HistoryScreen extends StatelessWidget {
                             Navigator.of(context).pushNamed(h.route);
                           },
                           borderRadius: BorderRadius.circular(AppRadii.lg),
-                          child: Container(
+                          child: Padding(
                             padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              borderRadius:
-                                  BorderRadius.circular(AppRadii.lg),
-                              border: Border.all(
-                                color: dark
-                                    ? AppColors.lineDark
-                                    : AppColors.line,
-                              ),
-                            ),
                             child: Row(
                               children: [
                                 if (calc != null)
                                   Container(
-                                    width: 40,
-                                    height: 40,
+                                    width: 42,
+                                    height: 42,
                                     decoration: BoxDecoration(
-                                      color: calc.accent.withValues(alpha: 0.14),
-                                      borderRadius: BorderRadius.circular(12),
+                                      color:
+                                          calc.accent.withValues(alpha: 0.16),
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
                                     child: Icon(calc.icon,
-                                        color: calc.accent, size: 20),
+                                        color: calc.accent, size: 22),
                                   )
                                 else
                                   const Icon(Icons.calculate_rounded),
@@ -161,15 +156,15 @@ class HistoryScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         h.title,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w700,
+                                        style: GoogleFonts.fredoka(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
                                       Text(
                                         DateFormat.jm().format(h.at),
-                                        style: TextStyle(
-                                          fontSize: 12,
+                                        style: AppFonts.caption(
                                           color: dark
                                               ? AppColors.mutedDark
                                               : AppColors.muted,
@@ -178,11 +173,16 @@ class HistoryScreen extends StatelessWidget {
                                     ],
                                   ),
                                 ),
-                                Text(
-                                  h.result,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    color: AppColors.primary,
+                                Flexible(
+                                  child: Text(
+                                    h.result,
+                                    textAlign: TextAlign.right,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.fredoka(
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                      fontSize: 14,
+                                    ),
                                   ),
                                 ),
                               ],

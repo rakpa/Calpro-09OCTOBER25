@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
@@ -58,12 +59,12 @@ class CalcScaffold extends StatelessWidget {
             ),
           if (onClear != null)
             IconButton(
-              tooltip: 'Clear',
+              tooltip: 'More',
               onPressed: () {
                 HapticFeedback.selectionClick();
                 onClear!();
               },
-              icon: const Icon(Icons.refresh_rounded),
+              icon: const Icon(Icons.more_vert_rounded),
             ),
           ...?actions,
         ],
@@ -75,11 +76,8 @@ class CalcScaffold extends StatelessWidget {
                 if (description != null) ...[
                   Text(
                     description!,
-                    style: TextStyle(
+                    style: AppFonts.body2(
                       color: dark ? AppColors.mutedDark : AppColors.muted,
-                      height: 1.45,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -130,16 +128,16 @@ class ResultPanel extends StatelessWidget {
           border: Border.all(
             color: border ??
                 (dark
-                    ? AppColors.primary.withValues(alpha: 0.35)
+                    ? AppColors.primary.withValues(alpha: 0.3)
                     : AppColors.resultBorder),
           ),
         ),
         child: DefaultTextStyle(
-          style: TextStyle(
+          style: GoogleFonts.fredoka(
             color: foreground ??
                 (dark ? AppColors.inkDark : AppColors.resultText),
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             height: 1.45,
           ),
           child: child,
@@ -176,8 +174,8 @@ class LabeledField extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
+              style: GoogleFonts.fredoka(
+                fontWeight: FontWeight.w500,
                 fontSize: 15,
                 color: dark ? AppColors.inkDark : AppColors.ink,
               ),
@@ -190,8 +188,8 @@ class LabeledField extends StatelessWidget {
               keyboardType: keyboardType,
               onChanged: onChanged,
               textAlign: TextAlign.right,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
+              style: GoogleFonts.fredoka(
+                fontWeight: FontWeight.w600,
                 fontSize: 17,
                 color: dark ? AppColors.inkDark : AppColors.ink,
               ),
@@ -199,7 +197,20 @@ class LabeledField extends StatelessWidget {
                 hintText: hint ?? '0',
                 isDense: true,
                 contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.sm),
+                  borderSide:
+                      const BorderSide(color: AppColors.primary, width: 1.5),
+                ),
               ),
             ),
           ),
@@ -212,11 +223,10 @@ class LabeledField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
+          style: GoogleFonts.fredoka(
+            fontWeight: FontWeight.w500,
             fontSize: 13,
             color: dark ? AppColors.mutedDark : AppColors.muted,
-            letterSpacing: 0.2,
           ),
         ),
         const SizedBox(height: 8),
@@ -224,12 +234,27 @@ class LabeledField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           onChanged: onChanged,
-          style: TextStyle(
+          style: GoogleFonts.fredoka(
             fontWeight: FontWeight.w600,
             fontSize: 17,
             color: dark ? AppColors.inkDark : AppColors.ink,
           ),
-          decoration: InputDecoration(hintText: hint),
+          decoration: InputDecoration(
+            hintText: hint,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadii.md),
+              borderSide:
+                  const BorderSide(color: AppColors.primary, width: 1.5),
+            ),
+          ),
         ),
       ],
     );
@@ -272,36 +297,35 @@ class KeypadButton extends StatelessWidget {
         fg = Colors.white;
       case KeyStyle.function:
         bg = dark ? AppColors.keyFnDark : AppColors.keyFn;
-        fg = dark ? AppColors.inkDark : AppColors.primaryDeep;
+        fg = AppColors.primary;
       case KeyStyle.danger:
         bg = AppColors.accentPink.withValues(alpha: 0.14);
         fg = AppColors.accentPink;
       case KeyStyle.number:
-        bg = dark ? AppColors.keyBgDark : AppColors.keyBg;
+        bg = dark ? AppColors.keyBgDark : Colors.white;
         fg = dark ? AppColors.inkDark : AppColors.keyText;
     }
 
     final child = Material(
       color: bg,
-      borderRadius: BorderRadius.circular(AppRadii.lg),
-      elevation: resolved == KeyStyle.number && !dark ? 0.5 : 0,
+      shape: const CircleBorder(),
+      elevation: resolved == KeyStyle.number && !dark ? 0.4 : 0,
       shadowColor: Colors.black12,
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(AppRadii.lg),
+        customBorder: const CircleBorder(),
         child: SizedBox(
-          height: 58,
+          height: 64,
           child: Center(
             child: Text(
               label,
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: label.length > 2 ? 15 : 22,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: fg,
-                letterSpacing: label.length > 2 ? 0 : -0.3,
               ),
             ),
           ),
@@ -329,21 +353,22 @@ class CalcDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final useLight = light && !dark;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 18),
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      decoration: BoxDecoration(
+        color: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (subtitle != null && subtitle!.isNotEmpty) ...[
             Text(
               subtitle!,
-              style: TextStyle(
-                color: useLight
-                    ? AppColors.muted
-                    : Colors.white.withValues(alpha: 0.55),
+              style: GoogleFonts.fredoka(
+                color: dark ? AppColors.mutedDark : AppColors.muted,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
               ),
@@ -356,13 +381,10 @@ class CalcDisplay extends StatelessWidget {
             child: Text(
               value,
               maxLines: 1,
-              style: TextStyle(
-                color: useLight
-                    ? (dark ? AppColors.inkDark : AppColors.ink)
-                    : Colors.white,
-                fontSize: 44,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -1,
+              style: GoogleFonts.fredoka(
+                color: dark ? AppColors.inkDark : AppColors.ink,
+                fontSize: 40,
+                fontWeight: FontWeight.w700,
                 height: 1.1,
               ),
             ),
@@ -407,7 +429,10 @@ class QuickActionRow extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(42),
           padding: EdgeInsets.zero,
-          textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+          textStyle: GoogleFonts.fredoka(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

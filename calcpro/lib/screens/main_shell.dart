@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/screens/home_screen.dart';
 import 'package:calcpro/screens/favorites_screen.dart';
@@ -46,7 +47,6 @@ class _MainShellState extends State<MainShell> {
         onChanged: (i) {
           HapticFeedback.selectionClick();
           if (i == 2) {
-            // Center Calculate opens search / calculator picker
             Navigator.of(context).push(
               MaterialPageRoute(builder: (_) => const SearchScreen()),
             );
@@ -84,11 +84,6 @@ class _BottomNav extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: dark ? AppColors.surfaceDark : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: dark ? AppColors.lineDark : AppColors.line,
-          ),
-        ),
         boxShadow: dark
             ? null
             : [
@@ -102,7 +97,7 @@ class _BottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 8, 8, 6),
+          padding: const EdgeInsets.fromLTRB(6, 8, 6, 6),
           child: Row(
             children: [
               for (var i = 0; i < tabs.length; i++)
@@ -147,11 +142,11 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 54,
+              height: 54,
               decoration: BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.circular(16),
+                color: AppColors.primary,
+                borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withValues(alpha: 0.35),
@@ -165,9 +160,9 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               spec.label,
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
                 color: AppColors.primary,
               ),
             ),
@@ -192,9 +187,9 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               spec.label,
-              style: TextStyle(
+              style: GoogleFonts.fredoka(
                 fontSize: 11,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 color: selected ? AppColors.primary : inactive,
               ),
             ),

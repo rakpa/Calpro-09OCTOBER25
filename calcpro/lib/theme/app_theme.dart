@@ -1,54 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Calcura-inspired design tokens for CalcPro.
+/// Calcara design system — Fredoka typography + playful purple accents.
 class AppColors {
-  static const Color primary = Color(0xFF705CF6);
-  static const Color primaryDeep = Color(0xFF5B47E0);
-  static const Color primarySoft = Color(0xFF8B7CFF);
-  static const Color primaryMuted = Color(0xFFEDE9FE);
+  static const Color primary = Color(0xFF5A31F4);
+  static const Color primaryDeep = Color(0xFF4520D4);
+  static const Color primarySoft = Color(0xFF7B5CFF);
+  static const Color primaryMuted = Color(0xFFEDE8FF);
+  static const Color lavender = Color(0xFFF3F0FF);
 
-  // Light
-  static const Color bg = Color(0xFFF6F7FB);
+  static const Color bg = Color(0xFFFAFAFC);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color ink = Color(0xFF12121A);
-  static const Color muted = Color(0xFF8B8B9A);
-  static const Color line = Color(0xFFEBECF2);
+  static const Color surfaceAlt = Color(0xFFF5F5F7);
+  static const Color ink = Color(0xFF1C1C28);
+  static const Color muted = Color(0xFF8E8E9A);
+  static const Color line = Color(0xFFE8E8EE);
+
   static const Color keyBg = Color(0xFFFFFFFF);
-  static const Color keyFn = Color(0xFFE8F0FE);
-  static const Color keyText = Color(0xFF12121A);
+  static const Color keyFn = Color(0xFFF0ECFF);
+  static const Color keyText = Color(0xFF1C1C28);
 
-  // Dark
-  static const Color bgDark = Color(0xFF0D0D15);
-  static const Color surfaceDark = Color(0xFF1A1A24);
-  static const Color inkDark = Color(0xFFF5F5F7);
-  static const Color mutedDark = Color(0xFF8E8E9A);
-  static const Color lineDark = Color(0xFF2A2A36);
-  static const Color keyBgDark = Color(0xFF242430);
-  static const Color keyFnDark = Color(0xFF2C2C3A);
+  static const Color bgDark = Color(0xFF12121A);
+  static const Color surfaceDark = Color(0xFF1E1E28);
+  static const Color inkDark = Color(0xFFF7F7FA);
+  static const Color mutedDark = Color(0xFF9A9AA8);
+  static const Color lineDark = Color(0xFF2C2C38);
+  static const Color keyBgDark = Color(0xFF2A2A36);
+  static const Color keyFnDark = Color(0xFF322E48);
 
-  // Accents by category
-  static const Color accentPink = Color(0xFFFF5A7A);
-  static const Color accentOrange = Color(0xFFFF8A3D);
-  static const Color accentBlue = Color(0xFF4C8DFF);
-  static const Color accentGreen = Color(0xFF34C759);
-  static const Color accentTeal = Color(0xFF2DD4BF);
-  static const Color accentPurple = Color(0xFF705CF6);
+  static const Color accentPink = Color(0xFFFF6B8A);
+  static const Color accentOrange = Color(0xFFFF8F3D);
+  static const Color accentBlue = Color(0xFF5BA8FF);
+  static const Color accentGreen = Color(0xFF3DDC84);
+  static const Color accentLime = Color(0xFFB8E63A);
+  static const Color accentTeal = Color(0xFF3FD0C9);
+  static const Color accentPurple = Color(0xFF5A31F4);
 
-  static const Color resultBg = Color(0xFFECFDF5);
+  static const Color resultBg = Color(0xFFE8FFF3);
   static const Color resultBorder = Color(0xFFA7F3D0);
-  static const Color resultText = Color(0xFF065F46);
+  static const Color resultText = Color(0xFF0B6B3A);
 
   static const LinearGradient primaryGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF8B7CFF), Color(0xFF705CF6), Color(0xFF5B47E0)],
+    colors: [Color(0xFF7B5CFF), Color(0xFF5A31F4)],
   );
 
   static const LinearGradient splashGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF8B7CFF), Color(0xFF705CF6), Color(0xFF4F3AD6)],
+    colors: [Color(0xFF7B5CFF), Color(0xFF5A31F4), Color(0xFF3D1FCC)],
   );
 }
 
@@ -63,18 +64,77 @@ class AppSpacing {
 }
 
 class AppRadii {
-  static const double sm = 12;
-  static const double md = 16;
-  static const double lg = 20;
+  static const double sm = 14;
+  static const double md = 18;
+  static const double lg = 22;
   static const double xl = 24;
   static const double pill = 999;
 }
 
+class AppFonts {
+  static TextStyle h1({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 28,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColors.ink,
+        height: 1.2,
+      );
+
+  static TextStyle h2({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.ink,
+        height: 1.25,
+      );
+
+  static TextStyle h3({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.ink,
+        height: 1.3,
+      );
+
+  static TextStyle body1({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: color ?? AppColors.ink,
+        height: 1.4,
+      );
+
+  static TextStyle body2({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: color ?? AppColors.muted,
+        height: 1.4,
+      );
+
+  static TextStyle caption({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: color ?? AppColors.muted,
+        height: 1.3,
+      );
+}
+
 class AppTheme {
   static TextTheme _textTheme(Color ink) {
-    return GoogleFonts.plusJakartaSansTextTheme().apply(
+    final base = GoogleFonts.fredokaTextTheme().apply(
       bodyColor: ink,
       displayColor: ink,
+    );
+    return base.copyWith(
+      displayLarge: AppFonts.h1(color: ink),
+      headlineMedium: AppFonts.h1(color: ink),
+      headlineSmall: AppFonts.h2(color: ink),
+      titleLarge: AppFonts.h2(color: ink),
+      titleMedium: AppFonts.h3(color: ink),
+      bodyLarge: AppFonts.body1(color: ink),
+      bodyMedium: AppFonts.body2(color: ink),
+      labelLarge: GoogleFonts.fredoka(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: ink,
+      ),
+      labelSmall: AppFonts.caption(color: ink),
     );
   }
 
@@ -91,8 +151,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.bg,
     );
-
-    return _applyCommon(base, _textTheme(AppColors.ink), dark: false);
+    return _apply(base, _textTheme(AppColors.ink), dark: false);
   }
 
   static ThemeData get dark {
@@ -108,15 +167,13 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.bgDark,
     );
-
-    return _applyCommon(base, _textTheme(AppColors.inkDark), dark: true);
+    return _apply(base, _textTheme(AppColors.inkDark), dark: true);
   }
 
-  static ThemeData _applyCommon(ThemeData base, TextTheme textTheme,
+  static ThemeData _apply(ThemeData base, TextTheme textTheme,
       {required bool dark}) {
     final muted = dark ? AppColors.mutedDark : AppColors.muted;
     final line = dark ? AppColors.lineDark : AppColors.line;
-    final fill = dark ? AppColors.surfaceDark : AppColors.primaryMuted;
 
     return base.copyWith(
       textTheme: textTheme,
@@ -126,11 +183,10 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        titleTextStyle: GoogleFonts.fredoka(
           color: dark ? AppColors.inkDark : AppColors.ink,
           fontSize: 18,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -0.3,
+          fontWeight: FontWeight.w600,
         ),
         iconTheme: IconThemeData(
           color: dark ? AppColors.inkDark : AppColors.ink,
@@ -141,52 +197,59 @@ class AppTheme {
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.35),
-          disabledForegroundColor: Colors.white.withValues(alpha: 0.8),
+          disabledForegroundColor: Colors.white.withValues(alpha: 0.85),
           elevation: 0,
-          minimumSize: const Size.fromHeight(56),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.lg),
-          ),
-          textStyle: GoogleFonts.plusJakartaSans(
+          minimumSize: const Size.fromHeight(54),
+          shape: const StadiumBorder(),
+          textStyle: GoogleFonts.fredoka(
             fontSize: 16,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: BorderSide(color: line, width: 1.5),
-          minimumSize: const Size.fromHeight(52),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadii.md),
-          ),
-          textStyle: GoogleFonts.plusJakartaSans(
-            fontSize: 15,
+          backgroundColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+          side: BorderSide.none,
+          minimumSize: const Size.fromHeight(48),
+          shape: const StadiumBorder(),
+          textStyle: GoogleFonts.fredoka(
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: fill.withValues(alpha: dark ? 1 : 0.55),
+        fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        hintStyle: GoogleFonts.plusJakartaSans(color: muted, fontSize: 15),
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        hintStyle: GoogleFonts.fredoka(color: muted, fontSize: 15),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.md),
+          borderRadius: BorderRadius.circular(AppRadii.pill),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
       dividerColor: line,
+      chipTheme: ChipThemeData(
+        backgroundColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+        selectedColor: AppColors.primaryMuted,
+        labelStyle: GoogleFonts.fredoka(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+        ),
+        shape: const StadiumBorder(),
+        side: BorderSide.none,
+      ),
       cardTheme: CardThemeData(
         color: dark ? AppColors.surfaceDark : AppColors.surface,
         elevation: 0,

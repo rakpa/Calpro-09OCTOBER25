@@ -22,15 +22,15 @@ void main() {
     expect(find.text('Percentage'), findsWidgets);
   });
 
-  testWidgets('navigates to basic calculator', (tester) async {
+  testWidgets('navigates to percentage calculator', (tester) async {
     await tester.pumpWidget(const CalcProApp());
     await tester.pump(const Duration(milliseconds: 1700));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Basic').first);
+    await tester.tap(find.text('Percentage').first);
     await tester.pumpAndSettle();
 
-    expect(find.text('Basic'), findsWidgets);
+    expect(find.text('Percentage Calculator'), findsOneWidget);
     expect(find.text('AC'), findsOneWidget);
   });
 }
