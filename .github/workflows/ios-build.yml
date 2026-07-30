@@ -243,9 +243,9 @@ jobs:
             exit 1
           end
           apps = JSON.parse(body).fetch('data')
-          if apps.any?
+          app_exists = apps.any?
+          if app_exists
             puts "App already exists: #{apps.first.dig('id')} (#{bundle_id})"
-            exit 0
           end
 
           # Ensure bundle ID exists on the developer portal
@@ -278,6 +278,42 @@ jobs:
             puts "Bundle ID already registered: #{bundle_id}"
             bundle_id_resource = bundle_ids.first
           end
+
+          # Enable App Groups so Runner.entitlements (group.www.calpro.app) can be profiled.
+          bid = bundle_id_resource.fetch('id')
+          code, body = request(:get, "/v1/bundleIds/#{bid}/bundleIdCapabilities", token)
+          if code == 200
+            caps = JSON.parse(body).fetch('data')
+            has_groups = caps.any? { |c| c.dig('attributes', 'capabilityType') == 'APP_GROUPS' }
+            unless has_groups
+              payload = {
+                data: {
+                  type: 'bundleIdCapabilities',
+                  attributes: {
+                    capabilityType: 'APP_GROUPS',
+                    settings: []
+                  },
+                  relationships: {
+                    bundleId: {
+                      data: { type: 'bundleIds', id: bid }
+                    }
+                  }
+                }
+              }
+              code, body = request(:post, '/v1/bundleIdCapabilities', token, body: payload)
+              if code.between?(200, 299)
+                puts "Enabled APP_GROUPS on #{bundle_id}"
+              else
+                warn "Could not enable APP_GROUPS (#{code}): #{body}"
+              end
+            else
+              puts "APP_GROUPS already enabled on #{bundle_id}"
+            end
+          else
+            warn "List capabilities failed (#{code}): #{body}"
+          end
+
+          exit 0 if app_exists
 
           payload = {
             data: {
