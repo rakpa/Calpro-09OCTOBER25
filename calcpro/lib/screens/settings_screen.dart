@@ -177,7 +177,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.info_outline_rounded,
                     label: 'About Calcara',
                     trailing: Text(
-                      '1.3.0',
+                      '1.3.2',
                       style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
