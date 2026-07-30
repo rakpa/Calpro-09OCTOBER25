@@ -313,7 +313,7 @@ class KeypadButton extends StatelessWidget {
       shadowColor: Colors.black12,
       child: InkWell(
         onTap: () {
-          HapticFeedback.lightImpact();
+          AppState.instance.lightFeedback();
           onTap();
         },
         customBorder: const CircleBorder(),

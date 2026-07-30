@@ -163,6 +163,7 @@ class SearchField extends StatelessWidget {
   final FocusNode? focusNode;
   final bool autofocus;
   final bool showMic;
+  final VoidCallback? onMicTap;
 
   const SearchField({
     super.key,
@@ -175,6 +176,7 @@ class SearchField extends StatelessWidget {
     this.focusNode,
     this.autofocus = false,
     this.showMic = false,
+    this.onMicTap,
   });
 
   @override
@@ -204,9 +206,12 @@ class SearchField extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded, size: 20),
               )
             : (showMic
-                ? Icon(
-                    Icons.mic_none_rounded,
-                    color: dark ? AppColors.mutedDark : AppColors.muted,
+                ? IconButton(
+                    onPressed: onMicTap,
+                    icon: Icon(
+                      Icons.mic_none_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
                   )
                 : null),
         filled: true,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
 import 'package:calcpro/screens/splash_screen.dart';
 import 'package:calcpro/screens/onboarding_screen.dart';
 import 'package:calcpro/screens/main_shell.dart';
@@ -20,6 +21,8 @@ import 'package:calcpro/screens/health_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppState.instance.load();
+  await WidgetSync.init();
+  await WidgetSync.publish();
   runApp(const CalcProApp());
 }
 

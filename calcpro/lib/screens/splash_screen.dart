@@ -30,7 +30,6 @@ class _SplashScreenState extends State<SplashScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutCubic));
     _ctrl.forward();
-    // Keep Calcara intro on screen long enough to read.
     Future.delayed(const Duration(milliseconds: 3200), () {
       if (mounted) widget.onFinished();
     });
@@ -65,7 +64,13 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 28),
                     const FeaturePitchCard(),
                     const Spacer(),
-                    CalculatorMascot(width: (h * 0.38).clamp(220.0, 300.0)),
+                    Image.asset(
+                      'assets/images/calcara_mascot.png',
+                      width: (h * 0.4).clamp(220.0, 320.0),
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) =>
+                          CalculatorMascot(width: (h * 0.38).clamp(220.0, 300.0)),
+                    ),
                     const SizedBox(height: 8),
                   ],
                 ),

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 import 'package:calcpro/models/calculator_item.dart';
+import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
+import 'package:calcpro/widgets/app_status.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -14,8 +16,10 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final _controller = TextEditingController();
+  final _speech = SpeechToText();
   String _query = '';
-  final List<String> _recent = ['Percentage', 'Tip'];
+  bool _listening = false;
+  bool _speechReady = false;
 
   static const _popular = [
     'Percentage',
@@ -29,10 +33,57 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _controller.addListener(() => setState(() => _query = _controller.text));
+    _initSpeech();
+  }
+
+  Future<void> _initSpeech() async {
+    _speechReady = await _speech.initialize(
+      onStatus: (s) {
+        if (s == 'done' || s == 'notListening') {
+          setState(() => _listening = false);
+        }
+      },
+    );
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _toggleMic() async {
+    AppState.instance.selectionFeedback();
+    if (!_speechReady) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Microphone permission needed for voice search')),
+      );
+      _speechReady = await _speech.initialize();
+      if (!_speechReady) return;
+    }
+    if (_listening) {
+      await _speech.stop();
+      setState(() => _listening = false);
+      return;
+    }
+    setState(() => _listening = true);
+    await _speech.listen(
+      onResult: (r) {
+        setState(() {
+          _controller.text = r.recognizedWords;
+          _controller.selection = TextSelection.fromPosition(
+            TextPosition(offset: _controller.text.length),
+          );
+        });
+        if (r.finalResult) {
+          AppState.instance.addRecentSearch(r.recognizedWords);
+        }
+      },
+      listenOptions: SpeechListenOptions(
+        listenMode: ListenMode.confirmation,
+        cancelOnError: true,
+      ),
+    );
   }
 
   @override
   void dispose() {
+    _speech.stop();
     _controller.dispose();
     super.dispose();
   }
@@ -50,6 +101,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
+    final recent = AppState.instance.recentSearches;
     final trending = [
       calculatorByRoute('/percentage')!,
       calculatorByRoute('/mortgage')!,
@@ -70,7 +122,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: SearchField(
                       controller: _controller,
                       autofocus: true,
-                      hint: 'Search calculators...',
+                      showMic: true,
+                      onMicTap: _toggleMic,
+                      hint: _listening
+                          ? 'Listening...'
+                          : 'Search calculators...',
                       onClear: () => _controller.clear(),
                     ),
                   ),
@@ -87,115 +143,81 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
+            if (_listening)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Speak a calculator name…',
+                  style: AppFonts.caption(color: AppColors.primary),
+                ),
+              ),
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
-                children: [
-                  if (_query.isEmpty) ...[
-                    Text(
-                      'Popular Searches',
-                      style: AppFonts.h3(
-                        color: dark ? AppColors.inkDark : AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final term in _popular)
-                          ActionChip(
-                            label: Text(term),
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              _controller.text = term;
-                              _controller.selection =
-                                  TextSelection.fromPosition(
-                                TextPosition(offset: term.length),
-                              );
-                            },
-                            backgroundColor: dark
-                                ? AppColors.surfaceDark
-                                : AppColors.surfaceAlt,
-                            labelStyle: GoogleFonts.inter(
-                              fontWeight: FontWeight.w500,
-                              color: dark ? AppColors.inkDark : AppColors.ink,
+              child: ListenableBuilder(
+                listenable: AppState.instance,
+                builder: (context, _) {
+                  return ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
+                    children: [
+                      if (_query.isEmpty) ...[
+                        Text('Popular Searches', style: AppFonts.h3()),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            for (final term in _popular)
+                              ActionChip(
+                                label: Text(term),
+                                onPressed: () {
+                                  AppState.instance.selectionFeedback();
+                                  _controller.text = term;
+                                  AppState.instance.addRecentSearch(term);
+                                },
+                              ),
+                          ],
+                        ),
+                        if (recent.isNotEmpty) ...[
+                          const SizedBox(height: 28),
+                          Text('Recent Searches', style: AppFonts.h3()),
+                          const SizedBox(height: 8),
+                          for (final term in recent)
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const Icon(Icons.history_rounded),
+                              title: Text(term, style: AppFonts.body1()),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.close_rounded, size: 18),
+                                onPressed: () =>
+                                    AppState.instance.removeRecentSearch(term),
+                              ),
+                              onTap: () => _controller.text = term,
                             ),
-                          ),
+                        ],
+                        const SizedBox(height: 20),
+                        Text('Trending Now', style: AppFonts.h3()),
+                        const SizedBox(height: 12),
+                        for (final item in trending) ...[
+                          _TrendCard(item: item),
+                          const SizedBox(height: 10),
+                        ],
+                      ] else if (_results.isEmpty)
+                        AppStatusView.empty(
+                          title: 'No calculators found',
+                          message: 'Try Percentage, Mortgage, BMI, or EMI.',
+                          actionLabel: 'Clear search',
+                          onAction: () => _controller.clear(),
+                        )
+                      else ...[
+                        Text('Results', style: AppFonts.h3()),
+                        const SizedBox(height: 12),
+                        for (final item in _results) ...[
+                          _TrendCard(item: item),
+                          const SizedBox(height: 10),
+                        ],
                       ],
-                    ),
-                    if (_recent.isNotEmpty) ...[
-                      const SizedBox(height: 28),
-                      Text(
-                        'Recent Searches',
-                        style: AppFonts.h3(
-                          color: dark ? AppColors.inkDark : AppColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      for (final term in List<String>.from(_recent))
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            Icons.history_rounded,
-                            color:
-                                dark ? AppColors.mutedDark : AppColors.muted,
-                          ),
-                          title: Text(
-                            term,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.close_rounded, size: 18),
-                            onPressed: () =>
-                                setState(() => _recent.remove(term)),
-                          ),
-                          onTap: () => _controller.text = term,
-                        ),
                     ],
-                    const SizedBox(height: 20),
-                    Text(
-                      'Trending Now',
-                      style: AppFonts.h3(
-                        color: dark ? AppColors.inkDark : AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    for (final item in trending) ...[
-                      _TrendCard(item: item),
-                      const SizedBox(height: 10),
-                    ],
-                  ] else if (_results.isEmpty) ...[
-                    const SizedBox(height: 48),
-                    Icon(
-                      Icons.search_off_rounded,
-                      size: 56,
-                      color: dark ? AppColors.mutedDark : AppColors.muted,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'No calculators found',
-                      textAlign: TextAlign.center,
-                      style: AppFonts.h3(
-                        color: dark ? AppColors.inkDark : AppColors.ink,
-                      ),
-                    ),
-                  ] else ...[
-                    Text(
-                      'Results',
-                      style: AppFonts.h3(
-                        color: dark ? AppColors.inkDark : AppColors.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    for (final item in _results) ...[
-                      _TrendCard(item: item),
-                      const SizedBox(height: 10),
-                    ],
-                  ],
-                ],
+                  );
+                },
               ),
             ),
           ],
@@ -217,7 +239,8 @@ class _TrendCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppRadii.lg),
       child: InkWell(
         onTap: () {
-          HapticFeedback.selectionClick();
+          AppState.instance.selectionFeedback();
+          AppState.instance.addRecentSearch(item.shortTitle);
           Navigator.of(context).pushNamed(item.route);
         },
         borderRadius: BorderRadius.circular(AppRadii.lg),
@@ -239,20 +262,14 @@ class _TrendCard extends StatelessWidget {
                         color: dark ? AppColors.inkDark : AppColors.ink,
                       ),
                     ),
-                    const SizedBox(height: 2),
                     Text(
                       'Calculate ${item.shortTitle.toLowerCase()} easily',
-                      style: AppFonts.body2(
-                        color: dark ? AppColors.mutedDark : AppColors.muted,
-                      ),
+                      style: AppFonts.body2(),
                     ),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: dark ? AppColors.mutedDark : AppColors.muted,
-              ),
+              const Icon(Icons.chevron_right_rounded),
             ],
           ),
         ),

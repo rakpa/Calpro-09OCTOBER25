@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/services/app_state.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -112,10 +113,16 @@ class PremiumScreen extends StatelessWidget {
                     child: InkWell(
                       onTap: () {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Premium coming soon'),
+                          SnackBar(
+                            content: Text(
+                              AppState.instance.isPremium
+                                  ? 'Premium is already active'
+                                  : 'Starting your 3-day free trial',
+                            ),
                           ),
                         );
+                        AppState.instance.startPremiumTrial();
+                        if (Navigator.canPop(context)) Navigator.pop(context);
                       },
                       borderRadius: BorderRadius.circular(AppRadii.pill),
                       child: Padding(

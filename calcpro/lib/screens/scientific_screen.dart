@@ -1,8 +1,12 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:math_expressions/math_expressions.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
+import 'package:math_expressions/math_expressions.dart';
 
 class ScientificScreen extends StatefulWidget {
   const ScientificScreen({super.key});
@@ -24,7 +28,7 @@ class _ScientificScreenState extends State<ScientificScreen> {
 
   void _append(String value) {
     setState(() {
-      if (value == 'C') {
+      if (value == 'C' || value == 'AC') {
         _clear();
         return;
       }
@@ -43,17 +47,29 @@ class _ScientificScreenState extends State<ScientificScreen> {
 
   void _evaluate() {
     try {
-      final expr = display.replaceAll('π', '(${math.pi})');
-      // math_expressions uses sin/cos/tan in radians; ^ is power
+      final expr = display.replaceAll('π', '(${math.pi})').replaceAll('×', '*').replaceAll('÷', '/').replaceAll('−', '-');
       final parser = GrammarParser();
       final parsed = parser.parse(expr);
       final evaluator = RealEvaluator(ContextModel());
       final result = evaluator.evaluate(parsed);
-      display = _format(result);
-      justEvaluated = true;
+      final formatted = _format(result);
+      setState(() {
+        display = formatted;
+        justEvaluated = true;
+      });
+      if (formatted != 'Error') {
+        AppState.instance.addHistory(
+          route: '/scientific',
+          title: 'Scientific',
+          result: formatted,
+        );
+        WidgetSync.publish();
+      }
     } catch (_) {
-      display = 'Error';
-      justEvaluated = true;
+      setState(() {
+        display = 'Error';
+        justEvaluated = true;
+      });
     }
   }
 
@@ -66,46 +82,87 @@ class _ScientificScreenState extends State<ScientificScreen> {
     return value.toString();
   }
 
+  bool _isDigit(String v) => RegExp(r'^[0-9.]$').hasMatch(v);
+
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     const rows = [
-      ['sin(', 'cos(', 'tan(', '^'],
-      ['7', '8', '9', '/'],
-      ['4', '5', '6', '*'],
-      ['1', '2', '3', '-'],
-      ['0', '.', '=', '+'],
-      ['(', ')', 'π', 'C'],
+      [('sin', 'sin('), ('cos', 'cos('), ('tan', 'tan('), ('^', '^')],
+      [('7', '7'), ('8', '8'), ('9', '9'), ('÷', '/')],
+      [('4', '4'), ('5', '5'), ('6', '6'), ('×', '*')],
+      [('1', '1'), ('2', '2'), ('3', '3'), ('−', '-')],
+      [('(', '('), (')', ')'), ('π', 'π'), ('+', '+')],
     ];
 
-    return CalcScaffold(
-      title: 'Scientific',
-      route: '/scientific',
-      icon: Icons.science,
-      description: 'Trigonometry, exponents, parentheses, and constants (radians).',
-      onClear: _clear,
-      body: Column(
-        children: [
-          CalcDisplay(value: display),
-          const SizedBox(height: 16),
-          for (final row in rows) ...[
-            Row(
-              children: [
-                for (var i = 0; i < row.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 8),
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Scientific'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/scientific');
+              return IconButton(
+                onPressed: () =>
+                    AppState.instance.toggleFavorite('/scientific'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Column(
+            children: [
+              Expanded(child: CalcDisplay(value: display)),
+              for (final row in rows) ...[
+                Row(
+                  children: [
+                    for (var i = 0; i < row.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 8),
+                      KeypadButton(
+                        label: row[i].$1,
+                        style: _isDigit(row[i].$2)
+                            ? KeyStyle.number
+                            : KeyStyle.function,
+                        onTap: () => _append(row[i].$2),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 8),
+              ],
+              Row(
+                children: [
                   KeypadButton(
-                    label: row[i].replaceAll('(', ''),
-                    isOperator: !_isDigit(row[i]),
-                    onTap: () => _append(row[i]),
+                    label: 'AC',
+                    style: KeyStyle.danger,
+                    onTap: _clear,
+                  ),
+                  const SizedBox(width: 8),
+                  KeypadButton(label: '0', onTap: () => _append('0')),
+                  const SizedBox(width: 8),
+                  KeypadButton(label: '.', onTap: () => _append('.')),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: PrimaryButton(
+                      label: '=',
+                      onPressed: () => _append('='),
+                    ),
                   ),
                 ],
-              ],
-            ),
-            const SizedBox(height: 8),
-          ],
-        ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
-
-  bool _isDigit(String v) => RegExp(r'^[0-9.]$').hasMatch(v);
 }

@@ -14,7 +14,8 @@ class SettingsScreen extends StatelessWidget {
     return ListenableBuilder(
       listenable: AppState.instance,
       builder: (context, _) {
-        final mode = AppState.instance.themeMode;
+        final state = AppState.instance;
+        final mode = state.themeMode;
 
         return ListView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -61,7 +62,7 @@ class SettingsScreen extends StatelessWidget {
                           ),
                         ],
                         onChanged: (v) {
-                          if (v != null) AppState.instance.setThemeMode(v);
+                          if (v != null) state.setThemeMode(v);
                         },
                       ),
                     ),
@@ -80,19 +81,6 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 1),
-                  _tile(
-                    context,
-                    icon: Icons.apps_rounded,
-                    label: 'App Icon',
-                    trailing: Text(
-                      'Default',
-                      style: GoogleFonts.inter(
-                        color: dark ? AppColors.mutedDark : AppColors.muted,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -105,24 +93,24 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     icon: Icons.vibration_rounded,
                     label: 'Haptic Feedback',
-                    value: true,
-                    onChanged: (_) {},
+                    value: state.hapticsEnabled,
+                    onChanged: state.setHaptics,
                   ),
                   const Divider(height: 1),
                   _switchTile(
                     context,
                     icon: Icons.volume_up_outlined,
                     label: 'Sound Effects',
-                    value: false,
-                    onChanged: (_) {},
+                    value: state.soundEnabled,
+                    onChanged: state.setSound,
                   ),
                   const Divider(height: 1),
                   _switchTile(
                     context,
                     icon: Icons.tips_and_updates_outlined,
                     label: 'Show Tips',
-                    value: true,
-                    onChanged: (_) {},
+                    value: state.showTips,
+                    onChanged: state.setShowTips,
                   ),
                 ],
               ),
@@ -134,31 +122,10 @@ class SettingsScreen extends StatelessWidget {
                 children: [
                   _tile(
                     context,
-                    icon: Icons.language_rounded,
-                    label: 'Language',
-                    trailing: Text(
-                      'English',
-                      style: GoogleFonts.inter(
-                        color: dark ? AppColors.mutedDark : AppColors.muted,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  _tile(
-                    context,
-                    icon: Icons.privacy_tip_outlined,
-                    label: 'Privacy Policy',
-                    trailing: Icon(
-                      Icons.chevron_right_rounded,
-                      color: dark ? AppColors.mutedDark : AppColors.muted,
-                    ),
-                  ),
-                  const Divider(height: 1),
-                  _tile(
-                    context,
                     icon: Icons.workspace_premium_rounded,
-                    label: 'Calcara Premium',
+                    label: state.isPremium
+                        ? 'Calcara Premium · Active'
+                        : 'Calcara Premium',
                     trailing: Icon(
                       Icons.chevron_right_rounded,
                       color: dark ? AppColors.mutedDark : AppColors.muted,
@@ -177,7 +144,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.info_outline_rounded,
                     label: 'About Calcara',
                     trailing: Text(
-                      '1.3.2',
+                      '1.4.0',
                       style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
@@ -230,12 +197,15 @@ class SettingsScreen extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(
         label,
-        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 17),
       ),
       trailing: Switch.adaptive(
         value: value,
         activeColor: AppColors.primary,
-        onChanged: onChanged,
+        onChanged: (v) {
+          AppState.instance.selectionFeedback();
+          onChanged(v);
+        },
       ),
     );
   }

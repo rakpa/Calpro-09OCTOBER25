@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class TimeScreen extends StatefulWidget {
   const TimeScreen({super.key});
@@ -8,33 +11,19 @@ class TimeScreen extends StatefulWidget {
   State<TimeScreen> createState() => _TimeScreenState();
 }
 
-class _TimeScreenState extends State<TimeScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController tabs;
+class _TimeScreenState extends State<TimeScreen> {
+  int mode = 0;
   TimeOfDay? startTime;
   TimeOfDay? endTime;
   DateTime? startDate;
   DateTime? endDate;
-  String? timeResult;
-  String? daysResult;
-
-  @override
-  void initState() {
-    super.initState();
-    tabs = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    tabs.dispose();
-    super.dispose();
-  }
+  String? result;
 
   void _clear() {
     setState(() {
       startTime = endTime = null;
       startDate = endDate = null;
-      timeResult = daysResult = null;
+      result = null;
     });
   }
 
@@ -44,13 +33,7 @@ class _TimeScreenState extends State<TimeScreen>
       initialTime: (isStart ? startTime : endTime) ?? TimeOfDay.now(),
     );
     if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startTime = picked;
-        } else {
-          endTime = picked;
-        }
-      });
+      setState(() => isStart ? startTime = picked : endTime = picked);
     }
   }
 
@@ -62,117 +45,133 @@ class _TimeScreenState extends State<TimeScreen>
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startDate = picked;
-        } else {
-          endDate = picked;
-        }
-      });
+      setState(() => isStart ? startDate = picked : endDate = picked);
     }
   }
 
-  void _calcTimeDiff() {
-    if (startTime == null || endTime == null) return;
-    final start = Duration(hours: startTime!.hour, minutes: startTime!.minute);
-    var end = Duration(hours: endTime!.hour, minutes: endTime!.minute);
-    var diff = end - start;
-    if (diff.isNegative) {
-      diff += const Duration(hours: 24);
+  void _calc() {
+    if (mode == 0) {
+      if (startTime == null || endTime == null) return;
+      final start = Duration(hours: startTime!.hour, minutes: startTime!.minute);
+      var end = Duration(hours: endTime!.hour, minutes: endTime!.minute);
+      var diff = end - start;
+      if (diff.isNegative) diff += const Duration(hours: 24);
+      setState(() =>
+          result = '${diff.inHours}h ${diff.inMinutes % 60}m');
+    } else {
+      if (startDate == null || endDate == null) return;
+      final days = endDate!.difference(startDate!).inDays.abs();
+      setState(() => result = '$days days');
     }
-    setState(() {
-      timeResult = '${diff.inHours} hours and ${diff.inMinutes % 60} minutes';
-    });
-  }
-
-  void _calcDays() {
-    if (startDate == null || endDate == null) return;
-    final days = endDate!.difference(startDate!).inDays.abs();
-    setState(() => daysResult = '$days days');
-  }
-
-  String _fmtTime(TimeOfDay? t) =>
-      t == null ? 'Select time' : t.format(context);
-
-  String _fmtDate(DateTime? d) {
-    if (d == null) return 'Select date';
-    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    AppState.instance.addHistory(route: '/time', title: 'Time', result: result!);
+    WidgetSync.publish();
   }
 
   @override
   Widget build(BuildContext context) {
-    return CalcScaffold(
-      title: 'Time',
-      route: '/time',
-      icon: Icons.access_time,
-      description: 'Calculate time-of-day differences and days between dates.',
-      onClear: _clear,
-      body: Column(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final ready = mode == 0
+        ? startTime != null && endTime != null
+        : startDate != null && endDate != null;
+
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Time'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/time');
+              return IconButton(
+                onPressed: () => AppState.instance.toggleFavorite('/time'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
+          ),
+          IconButton(onPressed: _clear, icon: const Icon(Icons.refresh_rounded)),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          TabBar(
-            controller: tabs,
-            labelColor: Colors.black,
-            tabs: const [
-              Tab(text: 'Time Difference'),
-              Tab(text: 'Days Between'),
-            ],
+          SegmentControl(
+            labels: const ['Time Diff', 'Days Between'],
+            index: mode,
+            onChanged: (i) => setState(() {
+              mode = i;
+              result = null;
+            }),
           ),
-          SizedBox(
-            height: 320,
-            child: TabBarView(
-              controller: tabs,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Column(
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => _pickTime(true),
-                        child: Text('Start: ${_fmtTime(startTime)}'),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () => _pickTime(false),
-                        child: Text('End: ${_fmtTime(endTime)}'),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed:
-                            startTime == null || endTime == null ? null : _calcTimeDiff,
-                        child: const Text('Calculate'),
-                      ),
-                      if (timeResult != null)
-                        ResultPanel(child: Text(timeResult!)),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Column(
-                    children: [
-                      OutlinedButton(
-                        onPressed: () => _pickDate(true),
-                        child: Text('Start: ${_fmtDate(startDate)}'),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton(
-                        onPressed: () => _pickDate(false),
-                        child: Text('End: ${_fmtDate(endDate)}'),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed:
-                            startDate == null || endDate == null ? null : _calcDays,
-                        child: const Text('Calculate'),
-                      ),
-                      if (daysResult != null)
-                        ResultPanel(child: Text(daysResult!)),
-                    ],
-                  ),
-                ),
-              ],
+          const SizedBox(height: 16),
+          if (result != null)
+            AppCard(
+              child: Column(
+                children: [
+                  Text('Result', style: AppFonts.body2()),
+                  Text(result!, style: AppFonts.result()),
+                ],
+              ),
             ),
+          const SizedBox(height: 16),
+          AppCard(
+            child: mode == 0
+                ? Column(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Start time'),
+                        trailing: Text(
+                          startTime?.format(context) ?? 'Select',
+                          style: AppFonts.body1(),
+                        ),
+                        onTap: () => _pickTime(true),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('End time'),
+                        trailing: Text(
+                          endTime?.format(context) ?? 'Select',
+                          style: AppFonts.body1(),
+                        ),
+                        onTap: () => _pickTime(false),
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Start date'),
+                        trailing: Text(
+                          startDate == null
+                              ? 'Select'
+                              : '${startDate!.year}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')}',
+                          style: AppFonts.body1(),
+                        ),
+                        onTap: () => _pickDate(true),
+                      ),
+                      const Divider(),
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('End date'),
+                        trailing: Text(
+                          endDate == null
+                              ? 'Select'
+                              : '${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}',
+                          style: AppFonts.body1(),
+                        ),
+                        onTap: () => _pickDate(false),
+                      ),
+                    ],
+                  ),
           ),
+          const SizedBox(height: 20),
+          PrimaryButton(label: 'Calculate', onPressed: ready ? _calc : null),
         ],
       ),
     );

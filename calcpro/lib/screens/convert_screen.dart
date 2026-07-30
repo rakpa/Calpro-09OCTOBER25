@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:calcpro/models/unit_data.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class ConvertScreen extends StatefulWidget {
   const ConvertScreen({super.key});
@@ -22,6 +26,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
     final units = unitsFor(category);
     fromUnit = units.firstWhere((u) => u.name == 'Meters');
     toUnit = units.firstWhere((u) => u.name == 'Feet');
+    valueController.addListener(() => setState(() {}));
   }
 
   @override
@@ -30,7 +35,8 @@ class _ConvertScreenState extends State<ConvertScreen> {
     super.dispose();
   }
 
-  void _onCategory(UnitCategory c) {
+  void _onCategory(int index) {
+    final c = UnitCategory.values[index];
     setState(() {
       category = c;
       final units = unitsFor(c);
@@ -44,64 +50,113 @@ class _ConvertScreenState extends State<ConvertScreen> {
     final value = double.tryParse(valueController.text);
     if (value == null) return null;
     final converted = convertUnits(value: value, from: fromUnit, to: toUnit);
-    final formatted = NumberFormat('#,##0.########').format(converted);
-    return '${valueController.text} ${fromUnit.name} = $formatted ${toUnit.name}';
+    return NumberFormat('#,##0.########').format(converted);
   }
+
+  void _swap() => setState(() {
+        final tmp = fromUnit;
+        fromUnit = toUnit;
+        toUnit = tmp;
+      });
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     final units = unitsFor(category);
-    return CalcScaffold(
-      title: 'Converter',
-      route: '/convert',
-      icon: Icons.swap_vert,
-      description: 'Convert between length, weight, and area units.',
-      onClear: () => setState(() => valueController.clear()),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+    final labels = UnitCategory.values.map(categoryLabel).toList();
+
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Converter'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/convert');
+              return IconButton(
+                onPressed: () => AppState.instance.toggleFavorite('/convert'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          const Text('Category', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<UnitCategory>(
-            value: category,
-            items: UnitCategory.values
-                .map((c) => DropdownMenuItem(value: c, child: Text(categoryLabel(c))))
-                .toList(),
-            onChanged: (v) {
-              if (v != null) _onCategory(v);
-            },
+          SegmentControl(
+            labels: labels,
+            index: UnitCategory.values.indexOf(category),
+            onChanged: _onCategory,
           ),
           const SizedBox(height: 16),
-          const Text('From', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<UnitDef>(
-            value: fromUnit,
-            items: units
-                .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
-                .toList(),
-            onChanged: (v) {
-              if (v != null) setState(() => fromUnit = v);
-            },
-          ),
+          if (result != null)
+            AppCard(
+              child: Column(
+                children: [
+                  Text(
+                    '${valueController.text} ${fromUnit.name}',
+                    style: AppFonts.body2(),
+                  ),
+                  Text(result!, style: AppFonts.result()),
+                  Text(toUnit.name, style: AppFonts.body1()),
+                ],
+              ),
+            ),
           const SizedBox(height: 16),
-          const Text('To', style: TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<UnitDef>(
-            value: toUnit,
-            items: units
-                .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
-                .toList(),
-            onChanged: (v) {
-              if (v != null) setState(() => toUnit = v);
-            },
+          AppCard(
+            child: Column(
+              children: [
+                DropdownButtonFormField<UnitDef>(
+                  value: fromUnit,
+                  decoration: const InputDecoration(labelText: 'From'),
+                  items: units
+                      .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v != null) setState(() => fromUnit = v);
+                  },
+                ),
+                IconButton(
+                  onPressed: _swap,
+                  icon: const Icon(Icons.swap_vert_rounded, color: AppColors.primary),
+                ),
+                DropdownButtonFormField<UnitDef>(
+                  value: toUnit,
+                  decoration: const InputDecoration(labelText: 'To'),
+                  items: units
+                      .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
+                      .toList(),
+                  onChanged: (v) {
+                    if (v != null) setState(() => toUnit = v);
+                  },
+                ),
+                const SizedBox(height: 12),
+                LabeledField(label: 'Value', controller: valueController),
+              ],
+            ),
           ),
-          const SizedBox(height: 16),
-          LabeledField(
-            label: 'Value',
-            controller: valueController,
-            onChanged: (_) => setState(() {}),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Convert',
+            onPressed: valueController.text.isEmpty
+                ? null
+                : () {
+                    setState(() {});
+                    if (result != null) {
+                      AppState.instance.addHistory(
+                        route: '/convert',
+                        title: 'Converter',
+                        result: '$result ${toUnit.name}',
+                      );
+                      WidgetSync.publish();
+                    }
+                  },
           ),
-          if (result != null) ResultPanel(child: Text(result!)),
         ],
       ),
     );

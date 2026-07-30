@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class DateDiffScreen extends StatefulWidget {
   const DateDiffScreen({super.key});
@@ -30,13 +33,7 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
       lastDate: DateTime(2100),
     );
     if (picked != null) {
-      setState(() {
-        if (isStart) {
-          startDate = picked;
-        } else {
-          endDate = picked;
-        }
-      });
+      setState(() => isStart ? startDate = picked : endDate = picked);
     }
   }
 
@@ -49,7 +46,6 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
       start = end;
       end = tmp;
     }
-
     var y = end.year - start.year;
     var m = end.month - start.month;
     var d = end.day - start.day;
@@ -61,45 +57,54 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
       y -= 1;
       m += 12;
     }
-
     setState(() {
       years = y;
       months = m;
       days = d;
     });
+    AppState.instance.addHistory(
+      route: '/date-diff',
+      title: 'Date Diff',
+      result: '$y y $m m $d d',
+    );
+    WidgetSync.publish();
   }
 
   String _fmt(DateTime? d) {
-    if (d == null) return 'Select date';
+    if (d == null) return 'Select';
     return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    return CalcScaffold(
-      title: 'Date Difference',
-      route: '/date-diff',
-      icon: Icons.date_range,
-      description: 'Calculate years, months, and days between two dates.',
-      onClear: _clear,
-      body: Column(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Date Difference'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/date-diff');
+              return IconButton(
+                onPressed: () =>
+                    AppState.instance.toggleFavorite('/date-diff'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
+          ),
+          IconButton(onPressed: _clear, icon: const Icon(Icons.refresh_rounded)),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          OutlinedButton(
-            onPressed: () => _pick(true),
-            child: Text('Start Date: ${_fmt(startDate)}'),
-          ),
-          const SizedBox(height: 8),
-          OutlinedButton(
-            onPressed: () => _pick(false),
-            child: Text('End Date: ${_fmt(endDate)}'),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: startDate == null || endDate == null ? null : _calculate,
-            child: const Text('Calculate Difference'),
-          ),
           if (years != null)
-            ResultPanel(
+            AppCard(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
@@ -109,17 +114,41 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
                 ],
               ),
             ),
+          const SizedBox(height: 16),
+          AppCard(
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Start date'),
+                  trailing: Text(_fmt(startDate), style: AppFonts.body1()),
+                  onTap: () => _pick(true),
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('End date'),
+                  trailing: Text(_fmt(endDate), style: AppFonts.body1()),
+                  onTap: () => _pick(false),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Calculate',
+            onPressed:
+                startDate == null || endDate == null ? null : _calculate,
+          ),
         ],
       ),
     );
   }
 
-  Widget _stat(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-        Text(label),
-      ],
-    );
-  }
+  Widget _stat(String v, String label) => Column(
+        children: [
+          Text(v, style: AppFonts.h1()),
+          Text(label, style: AppFonts.caption()),
+        ],
+      );
 }

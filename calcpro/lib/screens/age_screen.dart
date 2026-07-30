@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class AgeScreen extends StatefulWidget {
   const AgeScreen({super.key});
@@ -53,27 +56,29 @@ class _AgeScreenState extends State<AgeScreen> {
       start = end;
       end = tmp;
     }
-
-    // Calendar-accurate age (years / months / days)
     var y = end.year - start.year;
     var m = end.month - start.month;
     var d = end.day - start.day;
     if (d < 0) {
       m -= 1;
-      final prevMonth = DateTime(end.year, end.month, 0);
-      d += prevMonth.day;
+      d += DateTime(end.year, end.month, 0).day;
     }
     if (m < 0) {
       y -= 1;
       m += 12;
     }
-
     setState(() {
       years = y;
       months = m;
       days = d;
       totalDays = end.difference(start).inDays;
     });
+    AppState.instance.addHistory(
+      route: '/age',
+      title: 'Age',
+      result: '$y y $m m $d d',
+    );
+    WidgetSync.publish();
   }
 
   String _fmt(DateTime? d) {
@@ -83,58 +88,82 @@ class _AgeScreenState extends State<AgeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CalcScaffold(
-      title: 'Age',
-      route: '/age',
-      icon: Icons.calendar_today,
-      description: 'Calculate exact age between two dates.',
-      onClear: _clear,
-      body: Column(
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Age'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/age');
+              return IconButton(
+                onPressed: () => AppState.instance.toggleFavorite('/age'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
+          ),
+          IconButton(onPressed: _clear, icon: const Icon(Icons.refresh_rounded)),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          OutlinedButton.icon(
-            onPressed: _pickBirth,
-            icon: const Icon(Icons.cake),
-            label: Text('Birth Date: ${_fmt(birthDate)}'),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: _pickTo,
-            icon: const Icon(Icons.event),
-            label: Text('Calculate To: ${_fmt(toDate)}'),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: birthDate == null ? null : _calculate,
-            child: const Text('Calculate Age'),
-          ),
           if (years != null)
-            ResultPanel(
-              child: Column(
+            AppCard(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _stat('$years', 'Years'),
-                      _stat('$months', 'Months'),
-                      _stat('$days', 'Days'),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text('Total Days: $totalDays'),
+                  _stat('$years', 'Years'),
+                  _stat('$months', 'Months'),
+                  _stat('$days', 'Days'),
                 ],
               ),
             ),
+          if (totalDays != null) ...[
+            const SizedBox(height: 8),
+            Text('$totalDays total days', textAlign: TextAlign.center, style: AppFonts.body2()),
+          ],
+          const SizedBox(height: 16),
+          AppCard(
+            child: Column(
+              children: [
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.cake_rounded, color: AppColors.primary),
+                  title: const Text('Birth date'),
+                  trailing: Text(_fmt(birthDate), style: AppFonts.body1()),
+                  onTap: _pickBirth,
+                ),
+                const Divider(),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.event_rounded, color: AppColors.primary),
+                  title: const Text('As of'),
+                  trailing: Text(_fmt(toDate), style: AppFonts.body1()),
+                  onTap: _pickTo,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          PrimaryButton(
+            label: 'Calculate Age',
+            onPressed: birthDate == null ? null : _calculate,
+          ),
         ],
       ),
     );
   }
 
-  Widget _stat(String value, String label) {
-    return Column(
-      children: [
-        Text(value, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-        Text(label),
-      ],
-    );
-  }
+  Widget _stat(String v, String label) => Column(
+        children: [
+          Text(v, style: AppFonts.h1()),
+          Text(label, style: AppFonts.caption()),
+        ],
+      );
 }

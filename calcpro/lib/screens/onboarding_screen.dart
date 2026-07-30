@@ -68,6 +68,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const FeaturePitchCard(),
                             const Spacer(),
                             const CalculatorMascot(width: 260),
+                            Image.asset(
+                              'assets/images/calcara_mascot.png',
+                              height: 1,
+                              opacity: const AlwaysStoppedAnimation(0),
+                              errorBuilder: (_, __, ___) =>
+                                  const SizedBox.shrink(),
+                            ),
                             const SizedBox(height: 8),
                           ],
                         ),
@@ -94,7 +101,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                           const Spacer(),
-                          if (i == 1) const _PopularPreview() else const CalculatorMascot(width: 240),
+                          if (i == 1)
+                            const _PopularPreview()
+                          else
+                            Image.asset(
+                              'assets/images/calcara_mascot.png',
+                              width: 240,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) =>
+                                  const CalculatorMascot(width: 240),
+                            ),
                           const Spacer(),
                         ],
                       ),

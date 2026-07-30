@@ -47,5 +47,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Calcara uses speech recognition so you can search calculators by voice.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Calcara needs the microphone for voice search.</string>
 </dict>
 </plist>

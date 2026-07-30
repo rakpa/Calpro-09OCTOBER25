@@ -5,7 +5,9 @@ import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
+import 'package:calcpro/widgets/app_status.dart';
 import 'package:calcpro/screens/search_screen.dart';
+import 'package:calcpro/screens/category_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -151,6 +153,13 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             );
                           },
+                          onMicTap: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const SearchScreen(),
+                              ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 22),
                         Row(
@@ -161,35 +170,88 @@ class _HomeScreenState extends State<HomeScreen>
                               label: 'Favorites',
                               color: AppColors.accentPink,
                               selected: _filter == 'Favorites',
-                              onTap: () =>
-                                  setState(() => _filter = 'Favorites'),
+                              onTap: () {
+                                setState(() => _filter = 'Favorites');
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CategoryScreen(category: 'Favorites'),
+                                  ),
+                                );
+                              },
                             ),
                             QuickActionButton(
                               icon: Icons.schedule_rounded,
                               label: 'Recent',
                               color: AppColors.accentOrange,
                               selected: _filter == 'Recent',
-                              onTap: () => setState(() => _filter = 'Recent'),
+                              onTap: () {
+                                setState(() => _filter = 'Recent');
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CategoryScreen(category: 'Recent'),
+                                  ),
+                                );
+                              },
                             ),
                             QuickActionButton(
                               icon: Icons.local_fire_department_rounded,
                               label: 'Popular',
                               color: AppColors.accentPurple,
                               selected: _filter == 'Popular',
-                              onTap: () =>
-                                  setState(() => _filter = 'Popular'),
+                              onTap: () {
+                                setState(() => _filter = 'Popular');
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CategoryScreen(category: 'Popular'),
+                                  ),
+                                );
+                              },
                             ),
                             QuickActionButton(
                               icon: Icons.account_balance_wallet_rounded,
                               label: 'History',
                               color: AppColors.accentBlue,
                               selected: _filter == 'History',
-                              onTap: () =>
-                                  setState(() => _filter = 'History'),
+                              onTap: () {
+                                setState(() => _filter = 'History');
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        const CategoryScreen(category: 'History'),
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),
-                        const SizedBox(height: 26),
+                        const SizedBox(height: 18),
+                        SizedBox(
+                          height: 40,
+                          child: ListView(
+                            scrollDirection: Axis.horizontal,
+                            children: [
+                              for (final cat in ['Finance', 'Health', 'Everyday'])
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 8),
+                                  child: ActionChip(
+                                    label: Text(cat),
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              CategoryScreen(category: cat),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 18),
                         Text(
                           _filter == 'Popular'
                               ? 'Popular Calculators'
@@ -207,29 +269,13 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             if (items.isEmpty)
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(40),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.search_off_rounded,
-                        size: 56,
-                        color: dark ? AppColors.mutedDark : AppColors.muted,
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'No calculators found',
-                        style: AppFonts.h3(
-                          color: dark ? AppColors.inkDark : AppColors.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Try another category or star a calculator.',
-                        textAlign: TextAlign.center,
-                        style: AppFonts.body2(),
-                      ),
-                    ],
+                child: SizedBox(
+                  height: 280,
+                  child: AppStatusView.empty(
+                    title: 'Nothing here yet',
+                    message: 'Star calculators or run a few to fill this list.',
+                    actionLabel: 'Browse Popular',
+                    onAction: () => setState(() => _filter = 'Popular'),
                   ),
                 ),
               )
