@@ -64,22 +64,15 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      decoration: BoxDecoration(
-        color: color ?? (dark ? AppColors.surfaceDark : AppColors.surface),
-        borderRadius: BorderRadius.circular(AppRadii.xl),
-        boxShadow: dark
-            ? null
-            : [
-                BoxShadow(
-                  color: const Color(0xFF1C1C28).withValues(alpha: 0.06),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
+    return Material(
+      color: color ?? (dark ? AppColors.surfaceDark : AppColors.surface),
+      borderRadius: BorderRadius.circular(AppRadii.xl),
+      elevation: dark ? 0 : 2,
+      shadowColor: const Color(0xFF1C1C28).withValues(alpha: 0.18),
+      child: Padding(
+        padding: padding,
+        child: child,
       ),
-      padding: padding,
-      child: child,
     );
   }
 }

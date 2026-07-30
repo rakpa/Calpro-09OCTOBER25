@@ -234,20 +234,11 @@ class _Section extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: dark ? AppColors.surfaceDark : Colors.white,
-            borderRadius: BorderRadius.circular(AppRadii.xl),
-            boxShadow: dark
-                ? null
-                : [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 14,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-          ),
+        Material(
+          color: dark ? AppColors.surfaceDark : Colors.white,
+          borderRadius: BorderRadius.circular(AppRadii.xl),
+          elevation: dark ? 0 : 1.5,
+          shadowColor: Colors.black.withValues(alpha: 0.12),
           child: child,
         ),
       ],
