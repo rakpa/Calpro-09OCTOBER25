@@ -48,8 +48,8 @@ jobs:
   testflight:
     name: Sign, build IPA & upload TestFlight
     needs: test
-    # Skip on pull_request from forks (no secrets). Same-repo PRs and pushes run.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    # Manual only — do not auto-upload on every push. Run via Actions → workflow_dispatch.
+    if: github.event_name == 'workflow_dispatch'
     # Apple requires iOS 26 SDK (Xcode 26+) for App Store / TestFlight uploads.
     runs-on: macos-26
     defaults:

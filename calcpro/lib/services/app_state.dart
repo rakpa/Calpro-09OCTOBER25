@@ -36,7 +36,7 @@ class AppState extends ChangeNotifier {
   AppState._();
   static final AppState instance = AppState._();
 
-  static const _kOnboarded = 'onboarded';
+  static const _kOnboarded = 'onboarded_v2';
   static const _kFavorites = 'favorites';
   static const _kHistory = 'history';
   static const _kThemeMode = 'theme_mode';

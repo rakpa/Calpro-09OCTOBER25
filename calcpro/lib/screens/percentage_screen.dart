@@ -202,7 +202,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                     _displayLine,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.fredoka(
-                      fontSize: 28,
+                      fontSize: 34,
                       fontWeight: FontWeight.w700,
                       color: dark ? AppColors.inkDark : AppColors.ink,
                     ),
@@ -320,7 +320,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                         '=',
                         style: GoogleFonts.fredoka(
                           color: Colors.white,
-                          fontSize: 28,
+                          fontSize: 32,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

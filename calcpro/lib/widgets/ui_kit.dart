@@ -31,14 +31,14 @@ class PrimaryButton extends StatelessWidget {
               },
         borderRadius: BorderRadius.circular(AppRadii.pill),
         child: SizedBox(
-          height: 54,
+          height: 58,
           child: Center(
             child: Text(
               label,
               style: GoogleFonts.fredoka(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
-                fontSize: 16,
+                fontSize: 18,
               ),
             ),
           ),

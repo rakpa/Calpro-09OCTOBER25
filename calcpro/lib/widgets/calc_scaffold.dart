@@ -318,12 +318,12 @@ class KeypadButton extends StatelessWidget {
         },
         customBorder: const CircleBorder(),
         child: SizedBox(
-          height: 58,
+          height: 64,
           child: Center(
             child: Text(
               label,
               style: GoogleFonts.fredoka(
-                fontSize: label.length > 2 ? 15 : 22,
+                fontSize: label.length > 2 ? 18 : 28,
                 fontWeight: FontWeight.w600,
                 color: fg,
               ),
@@ -383,7 +383,7 @@ class CalcDisplay extends StatelessWidget {
               maxLines: 1,
               style: GoogleFonts.fredoka(
                 color: dark ? AppColors.inkDark : AppColors.ink,
-                fontSize: 40,
+                fontSize: 52,
                 fontWeight: FontWeight.w700,
                 height: 1.1,
               ),

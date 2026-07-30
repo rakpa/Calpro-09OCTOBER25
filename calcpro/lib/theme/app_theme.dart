@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Calcara design system — Fredoka typography + playful purple accents.
+/// Calcara design system — Fredoka typography + playful accents.
 class AppColors {
   static const Color primary = Color(0xFF5A31F4);
   static const Color primaryDeep = Color(0xFF4520D4);
@@ -9,16 +9,23 @@ class AppColors {
   static const Color primaryMuted = Color(0xFFEDE8FF);
   static const Color lavender = Color(0xFFF3F0FF);
 
-  static const Color bg = Color(0xFFFAFAFC);
+  /// Splash / onboarding light wash from Calcara snip.
+  static const Color splashBgTop = Color(0xFFF7F8FC);
+  static const Color splashBgBottom = Color(0xFFEEF2FA);
+  static const Color brandNavy = Color(0xFF1A1A40);
+  static const Color brandMuted = Color(0xFF6B7394);
+  static const Color sparkle = Color(0xFFFFB020);
+
+  static const Color bg = Color(0xFFF7F8FC);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceAlt = Color(0xFFF5F5F7);
-  static const Color ink = Color(0xFF1C1C28);
-  static const Color muted = Color(0xFF8E8E9A);
-  static const Color line = Color(0xFFE8E8EE);
+  static const Color surfaceAlt = Color(0xFFF0F2F7);
+  static const Color ink = Color(0xFF1A1A40);
+  static const Color muted = Color(0xFF6B7394);
+  static const Color line = Color(0xFFE4E7F0);
 
   static const Color keyBg = Color(0xFFFFFFFF);
   static const Color keyFn = Color(0xFFF0ECFF);
-  static const Color keyText = Color(0xFF1C1C28);
+  static const Color keyText = Color(0xFF1A1A40);
 
   static const Color bgDark = Color(0xFF12121A);
   static const Color surfaceDark = Color(0xFF1E1E28);
@@ -49,7 +56,7 @@ class AppColors {
   static const LinearGradient splashGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF7B5CFF), Color(0xFF5A31F4), Color(0xFF3D1FCC)],
+    colors: [splashBgTop, Color(0xFFF3F5FB), splashBgBottom],
   );
 }
 
@@ -72,46 +79,66 @@ class AppRadii {
 }
 
 class AppFonts {
+  static TextStyle display({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 44,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColors.brandNavy,
+        height: 1.1,
+      );
+
   static TextStyle h1({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 28,
+        fontSize: 34,
         fontWeight: FontWeight.w700,
         color: color ?? AppColors.ink,
         height: 1.2,
       );
 
   static TextStyle h2({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 22,
+        fontSize: 26,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.ink,
         height: 1.25,
       );
 
   static TextStyle h3({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 18,
+        fontSize: 22,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.ink,
         height: 1.3,
       );
 
   static TextStyle body1({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w400,
         color: color ?? AppColors.ink,
         height: 1.4,
       );
 
   static TextStyle body2({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w400,
         color: color ?? AppColors.muted,
         height: 1.4,
       );
 
   static TextStyle caption({Color? color}) => GoogleFonts.fredoka(
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: FontWeight.w500,
         color: color ?? AppColors.muted,
         height: 1.3,
+      );
+
+  static TextStyle keypad({Color? color, double size = 28}) => GoogleFonts.fredoka(
+        fontSize: size,
+        fontWeight: FontWeight.w600,
+        color: color ?? AppColors.keyText,
+      );
+
+  static TextStyle result({Color? color}) => GoogleFonts.fredoka(
+        fontSize: 48,
+        fontWeight: FontWeight.w700,
+        color: color ?? AppColors.ink,
+        height: 1.05,
       );
 }
 
@@ -122,7 +149,7 @@ class AppTheme {
       displayColor: ink,
     );
     return base.copyWith(
-      displayLarge: AppFonts.h1(color: ink),
+      displayLarge: AppFonts.display(color: ink),
       headlineMedium: AppFonts.h1(color: ink),
       headlineSmall: AppFonts.h2(color: ink),
       titleLarge: AppFonts.h2(color: ink),
@@ -130,7 +157,7 @@ class AppTheme {
       bodyLarge: AppFonts.body1(color: ink),
       bodyMedium: AppFonts.body2(color: ink),
       labelLarge: GoogleFonts.fredoka(
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: FontWeight.w600,
         color: ink,
       ),
@@ -185,11 +212,12 @@ class AppTheme {
         centerTitle: true,
         titleTextStyle: GoogleFonts.fredoka(
           color: dark ? AppColors.inkDark : AppColors.ink,
-          fontSize: 18,
+          fontSize: 22,
           fontWeight: FontWeight.w600,
         ),
         iconTheme: IconThemeData(
           color: dark ? AppColors.inkDark : AppColors.ink,
+          size: 26,
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -199,10 +227,10 @@ class AppTheme {
           disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.35),
           disabledForegroundColor: Colors.white.withValues(alpha: 0.85),
           elevation: 0,
-          minimumSize: const Size.fromHeight(54),
+          minimumSize: const Size.fromHeight(58),
           shape: const StadiumBorder(),
           textStyle: GoogleFonts.fredoka(
-            fontSize: 16,
+            fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -212,10 +240,10 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           backgroundColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
           side: BorderSide.none,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size.fromHeight(52),
           shape: const StadiumBorder(),
           textStyle: GoogleFonts.fredoka(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -224,8 +252,8 @@ class AppTheme {
         filled: true,
         fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-        hintStyle: GoogleFonts.fredoka(color: muted, fontSize: 15),
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        hintStyle: GoogleFonts.fredoka(color: muted, fontSize: 17),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
           borderSide: BorderSide.none,
@@ -244,7 +272,7 @@ class AppTheme {
         backgroundColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
         selectedColor: AppColors.primaryMuted,
         labelStyle: GoogleFonts.fredoka(
-          fontSize: 13,
+          fontSize: 15,
           fontWeight: FontWeight.w500,
         ),
         shape: const StadiumBorder(),

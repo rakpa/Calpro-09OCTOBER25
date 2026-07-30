@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/screens/premium_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -156,13 +157,31 @@ class SettingsScreen extends StatelessWidget {
                   const Divider(height: 1),
                   _tile(
                     context,
+                    icon: Icons.workspace_premium_rounded,
+                    label: 'Calcara Premium',
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => const PremiumScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
                     icon: Icons.info_outline_rounded,
                     label: 'About Calcara',
                     trailing: Text(
-                      '1.2.1',
+                      '1.3.0',
                       style: GoogleFonts.fredoka(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
+                        fontSize: 16,
                       ),
                     ),
                   ),
@@ -180,15 +199,18 @@ class SettingsScreen extends StatelessWidget {
     required IconData icon,
     required String label,
     required Widget trailing,
+    VoidCallback? onTap,
   }) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      leading: Icon(icon, color: AppColors.primary),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      onTap: onTap,
+      leading: Icon(icon, color: AppColors.primary, size: 26),
       title: Text(
         label,
         style: GoogleFonts.fredoka(
           fontWeight: FontWeight.w500,
+          fontSize: 17,
           color: dark ? AppColors.inkDark : AppColors.ink,
         ),
       ),
@@ -237,7 +259,7 @@ class _Section extends StatelessWidget {
             title,
             style: GoogleFonts.fredoka(
               fontWeight: FontWeight.w600,
-              fontSize: 13,
+              fontSize: 15,
               color: dark ? AppColors.mutedDark : AppColors.muted,
             ),
           ),
