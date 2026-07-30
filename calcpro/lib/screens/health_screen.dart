@@ -89,7 +89,8 @@ class _HealthScreenState extends State<HealthScreen>
   @override
   Widget build(BuildContext context) {
     return CalcScaffold(
-      title: 'Health Calculator',
+      title: 'Health',
+      route: '/health',
       icon: Icons.favorite,
       description: 'BMI and Hamwi ideal weight estimates.',
       onClear: _clear,

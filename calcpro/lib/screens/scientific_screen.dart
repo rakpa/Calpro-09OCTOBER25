@@ -78,7 +78,8 @@ class _ScientificScreenState extends State<ScientificScreen> {
     ];
 
     return CalcScaffold(
-      title: 'Scientific Calculator',
+      title: 'Scientific',
+      route: '/scientific',
       icon: Icons.science,
       description: 'Trigonometry, exponents, parentheses, and constants (radians).',
       onClear: _clear,

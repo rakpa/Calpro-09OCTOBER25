@@ -78,6 +78,7 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
   Widget build(BuildContext context) {
     return CalcScaffold(
       title: 'Date Difference',
+      route: '/date-diff',
       icon: Icons.date_range,
       description: 'Calculate years, months, and days between two dates.',
       onClear: _clear,

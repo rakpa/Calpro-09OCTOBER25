@@ -102,7 +102,8 @@ class _TimeScreenState extends State<TimeScreen>
   @override
   Widget build(BuildContext context) {
     return CalcScaffold(
-      title: 'Time Calculator',
+      title: 'Time',
+      route: '/time',
       icon: Icons.access_time,
       description: 'Calculate time-of-day differences and days between dates.',
       onClear: _clear,

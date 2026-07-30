@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:calcpro/theme/app_theme.dart';
-import 'package:calcpro/screens/home_screen.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/screens/splash_screen.dart';
+import 'package:calcpro/screens/onboarding_screen.dart';
+import 'package:calcpro/screens/main_shell.dart';
 import 'package:calcpro/screens/basic_screen.dart';
 import 'package:calcpro/screens/scientific_screen.dart';
 import 'package:calcpro/screens/percentage_screen.dart';
@@ -14,8 +17,9 @@ import 'package:calcpro/screens/discount_screen.dart';
 import 'package:calcpro/screens/tip_screen.dart';
 import 'package:calcpro/screens/health_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppState.instance.load();
   runApp(const CalcProApp());
 }
 
@@ -24,26 +28,61 @@ class CalcProApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CalcPro',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: '/',
-      routes: {
-        '/': (_) => const HomeScreen(),
-        '/basic': (_) => const BasicScreen(),
-        '/scientific': (_) => const ScientificScreen(),
-        '/percentage': (_) => const PercentageScreen(),
-        '/convert': (_) => const ConvertScreen(),
-        '/financial': (_) => const FinancialScreen(),
-        '/mortgage': (_) => const MortgageScreen(),
-        '/age': (_) => const AgeScreen(),
-        '/time': (_) => const TimeScreen(),
-        '/date-diff': (_) => const DateDiffScreen(),
-        '/discount': (_) => const DiscountScreen(),
-        '/tip': (_) => const TipScreen(),
-        '/health': (_) => const HealthScreen(),
+    return ListenableBuilder(
+      listenable: AppState.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'CalcPro',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: AppState.instance.themeMode,
+          home: const _RootGate(),
+          routes: {
+            '/basic': (_) => const BasicScreen(),
+            '/scientific': (_) => const ScientificScreen(),
+            '/percentage': (_) => const PercentageScreen(),
+            '/convert': (_) => const ConvertScreen(),
+            '/financial': (_) => const FinancialScreen(),
+            '/mortgage': (_) => const MortgageScreen(),
+            '/age': (_) => const AgeScreen(),
+            '/time': (_) => const TimeScreen(),
+            '/date-diff': (_) => const DateDiffScreen(),
+            '/discount': (_) => const DiscountScreen(),
+            '/tip': (_) => const TipScreen(),
+            '/health': (_) => const HealthScreen(),
+          },
+        );
       },
     );
+  }
+}
+
+class _RootGate extends StatefulWidget {
+  const _RootGate();
+
+  @override
+  State<_RootGate> createState() => _RootGateState();
+}
+
+class _RootGateState extends State<_RootGate> {
+  bool _showSplash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return SplashScreen(
+        onFinished: () => setState(() => _showSplash = false),
+      );
+    }
+    if (!AppState.instance.onboarded) {
+      return OnboardingScreen(
+        onDone: () async {
+          await AppState.instance.completeOnboarding();
+          setState(() {});
+        },
+      );
+    }
+    return const MainShell();
   }
 }

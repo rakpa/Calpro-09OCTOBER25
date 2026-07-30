@@ -96,7 +96,8 @@ class _DiscountScreenState extends State<DiscountScreen>
   @override
   Widget build(BuildContext context) {
     return CalcScaffold(
-      title: 'Discount Calculator',
+      title: 'Discount',
+      route: '/discount',
       icon: Icons.local_offer,
       description: 'Calculate sale prices with single or stacked discounts.',
       onClear: _clear,

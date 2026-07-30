@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class PercentageScreen extends StatefulWidget {
   const PercentageScreen({super.key});
@@ -10,14 +13,20 @@ class PercentageScreen extends StatefulWidget {
 }
 
 class _PercentageScreenState extends State<PercentageScreen> {
-  final p1a = TextEditingController();
-  final p1b = TextEditingController();
+  int mode = 0; // 0 basic, 1 advanced
+  int advancedTab = 0;
+
+  // Basic: "X% of Y"
+  String percent = '';
+  String ofValue = '';
+  bool editingPercent = true;
+  String? basicResult;
+
+  // Advanced controllers
   final p2a = TextEditingController();
   final p2b = TextEditingController();
   final p3a = TextEditingController();
   final p3b = TextEditingController();
-
-  String? result1;
   String? result2;
   String? result3;
   Color changeColor = AppColors.resultText;
@@ -25,19 +34,14 @@ class _PercentageScreenState extends State<PercentageScreen> {
   @override
   void initState() {
     super.initState();
-    for (final c in [p1a, p1b, p2a, p2b, p3a, p3b]) {
-      c.addListener(_onFieldChanged);
+    for (final c in [p2a, p2b, p3a, p3b]) {
+      c.addListener(() => setState(() {}));
     }
-  }
-
-  void _onFieldChanged() {
-    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    for (final c in [p1a, p1b, p2a, p2b, p3a, p3b]) {
-      c.removeListener(_onFieldChanged);
+    for (final c in [p2a, p2b, p3a, p3b]) {
       c.dispose();
     }
     super.dispose();
@@ -45,173 +49,411 @@ class _PercentageScreenState extends State<PercentageScreen> {
 
   void _clear() {
     setState(() {
-      for (final c in [p1a, p1b, p2a, p2b, p3a, p3b]) {
-        c.clear();
-      }
-      result1 = result2 = result3 = null;
+      percent = '';
+      ofValue = '';
+      editingPercent = true;
+      basicResult = null;
+      p2a.clear();
+      p2b.clear();
+      p3a.clear();
+      p3b.clear();
+      result2 = result3 = null;
     });
+  }
+
+  void _append(String digit) {
+    setState(() {
+      basicResult = null;
+      if (editingPercent) {
+        if (digit == '.' && percent.contains('.')) return;
+        if (percent == '0' && digit != '.') {
+          percent = digit;
+        } else {
+          percent += digit;
+        }
+      } else {
+        if (digit == '.' && ofValue.contains('.')) return;
+        if (ofValue == '0' && digit != '.') {
+          ofValue = digit;
+        } else {
+          ofValue += digit;
+        }
+      }
+    });
+  }
+
+  void _backspace() {
+    setState(() {
+      basicResult = null;
+      if (editingPercent) {
+        if (percent.isNotEmpty) {
+          percent = percent.substring(0, percent.length - 1);
+        }
+      } else if (ofValue.isNotEmpty) {
+        ofValue = ofValue.substring(0, ofValue.length - 1);
+      } else {
+        editingPercent = true;
+      }
+    });
+  }
+
+  void _calculateBasic() {
+    final a = double.tryParse(percent);
+    final b = double.tryParse(ofValue);
+    if (a == null || b == null) return;
+    final result = (a * b) / 100;
+    final formatted = result == result.roundToDouble()
+        ? result.toInt().toString()
+        : result.toStringAsFixed(2);
+    setState(() => basicResult = formatted);
+    AppState.instance.addHistory(
+      route: '/percentage',
+      title: 'Percentage',
+      result: '$percent% of $ofValue = $formatted',
+    );
+  }
+
+  String get _displayLine {
+    final p = percent.isEmpty ? '—' : percent;
+    final o = ofValue.isEmpty ? '—' : ofValue;
+    if (basicResult != null) return '$p% of $o = $basicResult';
+    return '$p% of $o';
   }
 
   @override
   Widget build(BuildContext context) {
-    return CalcScaffold(
-      title: 'Percentage Calculator',
-      icon: Icons.percent,
-      description: 'Calculate percentages, proportions, and percent change.',
-      onClear: _clear,
-      body: Column(
-        children: [
-          _section(
-            title: 'What is X% of Y?',
-            accent: const Color(0xFF10B981),
-            child: Column(
-              children: [
-                LabeledField(label: 'What is', controller: p1a, hint: 'Percent'),
-                const SizedBox(height: 8),
-                const Text('% of'),
-                const SizedBox(height: 8),
-                LabeledField(label: 'Number', controller: p1b),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: p1a.text.isEmpty || p1b.text.isEmpty
-                      ? null
-                      : () {
-                          final a = double.tryParse(p1a.text) ?? 0;
-                          final b = double.tryParse(p1b.text) ?? 0;
-                          setState(() => result1 = ((a * b) / 100).toStringAsFixed(2));
-                        },
-                  child: const Text('Calculate'),
+    final dark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Percentage'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/percentage');
+              return IconButton(
+                onPressed: () =>
+                    AppState.instance.toggleFavorite('/percentage'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
                 ),
-                if (result1 != null) ResultPanel(child: Text('Result: $result1')),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _section(
-            title: 'X is what percent of Y?',
-            accent: const Color(0xFF3B82F6),
-            child: Column(
-              children: [
-                LabeledField(label: 'Number', controller: p2a),
-                const SizedBox(height: 8),
-                const Text('is what percent of'),
-                const SizedBox(height: 8),
-                LabeledField(label: 'Total', controller: p2b),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: p2a.text.isEmpty || p2b.text.isEmpty
-                      ? null
-                      : () {
-                          final num = double.tryParse(p2a.text) ?? 0;
-                          final total = double.tryParse(p2b.text) ?? 0;
-                          if (total == 0) {
-                            setState(() => result2 = 'Error');
-                            return;
-                          }
-                          setState(() =>
-                              result2 = '${((num / total) * 100).toStringAsFixed(2)}%');
-                        },
-                  child: const Text('Calculate'),
-                ),
-                if (result2 != null)
-                  ResultPanel(
-                    background: const Color(0xFFEFF6FF),
-                    border: const Color(0xFFBFDBFE),
-                    foreground: const Color(0xFF1E40AF),
-                    child: Text('Result: $result2'),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          _section(
-            title: 'Percentage Change',
-            accent: const Color(0xFFF97316),
-            child: Column(
-              children: [
-                LabeledField(label: 'From', controller: p3a),
-                const SizedBox(height: 8),
-                const Text('to'),
-                const SizedBox(height: 8),
-                LabeledField(label: 'To', controller: p3b),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: p3a.text.isEmpty || p3b.text.isEmpty
-                      ? null
-                      : () {
-                          final from = double.tryParse(p3a.text) ?? 0;
-                          final to = double.tryParse(p3b.text) ?? 0;
-                          if (from == 0) {
-                            setState(() {
-                              result3 = 'Error';
-                              changeColor = Colors.grey;
-                            });
-                            return;
-                          }
-                          final change = ((to - from) / from) * 100;
-                          setState(() {
-                            result3 =
-                                '${change > 0 ? '+' : ''}${change.toStringAsFixed(2)}%';
-                            changeColor = change > 0
-                                ? AppColors.resultText
-                                : change < 0
-                                    ? const Color(0xFFB91C1C)
-                                    : Colors.grey.shade700;
-                          });
-                        },
-                  child: const Text('Calculate'),
-                ),
-                if (result3 != null)
-                  ResultPanel(
-                    background: changeColor == AppColors.resultText
-                        ? AppColors.resultBg
-                        : changeColor == const Color(0xFFB91C1C)
-                            ? const Color(0xFFFEF2F2)
-                            : const Color(0xFFF3F4F6),
-                    border: changeColor == const Color(0xFFB91C1C)
-                        ? const Color(0xFFFECACA)
-                        : AppColors.resultBorder,
-                    foreground: changeColor,
-                    child: Text('Change: $result3'),
-                  ),
-              ],
-            ),
+              );
+            },
           ),
         ],
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Column(
+            children: [
+              SegmentControl(
+                labels: const ['Basic', 'Advanced'],
+                index: mode,
+                onChanged: (i) => setState(() => mode = i),
+              ),
+              const SizedBox(height: 16),
+              if (mode == 0) ...[
+                Expanded(child: _buildBasic(dark)),
+              ] else ...[
+                Expanded(child: _buildAdvanced(dark)),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _section({
-    required String title,
-    required Color accent,
-    required Widget child,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE5E7EB)),
-        borderRadius: BorderRadius.circular(12),
+  Widget _buildBasic(bool dark) {
+    return Column(
+      children: [
+        Expanded(
+          child: Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      _fieldChip('Percent', percent, editingPercent, () {
+                        setState(() => editingPercent = true);
+                      }),
+                      const SizedBox(width: 8),
+                      _fieldChip('Of', ofValue, !editingPercent, () {
+                        setState(() => editingPercent = false);
+                      }),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      _displayLine,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.8,
+                        color: dark ? AppColors.inkDark : AppColors.ink,
+                      ),
+                    ),
+                  ),
+                  if (basicResult != null) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      basicResult!,
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: -1,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        QuickActionRow(
+          onCopy: basicResult == null
+              ? null
+              : () {
+                  Clipboard.setData(ClipboardData(text: _displayLine));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Copied')),
+                  );
+                },
+          onShare: basicResult == null
+              ? null
+              : () {
+                  Clipboard.setData(ClipboardData(text: _displayLine));
+                },
+          onSave: basicResult == null
+              ? null
+              : () => AppState.instance.toggleFavorite('/percentage'),
+        ),
+        const SizedBox(height: 14),
+        _keypad(),
+      ],
+    );
+  }
+
+  Widget _fieldChip(
+    String label,
+    String value,
+    bool selected,
+    VoidCallback onTap,
+  ) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected
+              ? AppColors.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: selected ? AppColors.primary : AppColors.line,
+          ),
+        ),
+        child: Text(
+          '$label: ${value.isEmpty ? '0' : value}',
+          style: TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+            color: selected ? AppColors.primary : AppColors.muted,
+          ),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
+    );
+  }
+
+  Widget _keypad() {
+    final rows = [
+      ['AC', '%', '⌫', '÷'],
+      ['7', '8', '9', '×'],
+      ['4', '5', '6', '−'],
+      ['1', '2', '3', '+'],
+    ];
+
+    return Column(
+      children: [
+        for (final row in rows) ...[
           Row(
             children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-              ),
-              const SizedBox(width: 8),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
+              for (var i = 0; i < row.length; i++) ...[
+                if (i > 0) const SizedBox(width: 10),
+                KeypadButton(
+                  label: row[i],
+                  style: _styleFor(row[i]),
+                  onTap: () => _onKey(row[i]),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 12),
-          child,
+          const SizedBox(height: 10),
         ],
-      ),
+        Row(
+          children: [
+            KeypadButton(
+              label: '0',
+              flex: 2,
+              onTap: () => _onKey('0'),
+            ),
+            const SizedBox(width: 10),
+            KeypadButton(label: '.', onTap: () => _onKey('.')),
+            const SizedBox(width: 10),
+            Expanded(
+              flex: 2,
+              child: PrimaryButton(
+                label: '=',
+                expand: true,
+                onPressed: percent.isEmpty || ofValue.isEmpty
+                    ? null
+                    : _calculateBasic,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  KeyStyle _styleFor(String label) {
+    if (label == 'AC') return KeyStyle.danger;
+    if ('%⌫÷×−+'.contains(label)) return KeyStyle.function;
+    return KeyStyle.number;
+  }
+
+  void _onKey(String key) {
+    if (key == 'AC') {
+      _clear();
+      return;
+    }
+    if (key == '⌫') {
+      _backspace();
+      return;
+    }
+    if (key == '%') {
+      setState(() => editingPercent = true);
+      return;
+    }
+    if ('÷×−+'.contains(key)) {
+      setState(() => editingPercent = false);
+      return;
+    }
+    _append(key);
+  }
+
+  Widget _buildAdvanced(bool dark) {
+    return ListView(
+      children: [
+        SegmentControl(
+          labels: const ['X of Y', 'Change'],
+          index: advancedTab,
+          onChanged: (i) => setState(() => advancedTab = i),
+        ),
+        const SizedBox(height: 16),
+        AppCard(
+          child: advancedTab == 0
+              ? Column(
+                  children: [
+                    LabeledField(label: 'Number', controller: p2a),
+                    const SizedBox(height: 8),
+                    Text(
+                      'is what percent of',
+                      style: TextStyle(
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    LabeledField(label: 'Total', controller: p2b),
+                    const SizedBox(height: 14),
+                    PrimaryButton(
+                      label: 'Calculate',
+                      onPressed: p2a.text.isEmpty || p2b.text.isEmpty
+                          ? null
+                          : () {
+                              final num = double.tryParse(p2a.text) ?? 0;
+                              final total = double.tryParse(p2b.text) ?? 0;
+                              if (total == 0) {
+                                setState(() => result2 = 'Error');
+                                return;
+                              }
+                              final r =
+                                  '${((num / total) * 100).toStringAsFixed(2)}%';
+                              setState(() => result2 = r);
+                              AppState.instance.addHistory(
+                                route: '/percentage',
+                                title: 'Percentage',
+                                result: r,
+                              );
+                            },
+                    ),
+                    if (result2 != null)
+                      ResultPanel(child: Text('Result: $result2')),
+                  ],
+                )
+              : Column(
+                  children: [
+                    LabeledField(label: 'From', controller: p3a),
+                    const SizedBox(height: 8),
+                    LabeledField(label: 'To', controller: p3b),
+                    const SizedBox(height: 14),
+                    PrimaryButton(
+                      label: 'Calculate',
+                      onPressed: p3a.text.isEmpty || p3b.text.isEmpty
+                          ? null
+                          : () {
+                              final from = double.tryParse(p3a.text) ?? 0;
+                              final to = double.tryParse(p3b.text) ?? 0;
+                              if (from == 0) {
+                                setState(() {
+                                  result3 = 'Error';
+                                  changeColor = Colors.grey;
+                                });
+                                return;
+                              }
+                              final change = ((to - from) / from) * 100;
+                              final r =
+                                  '${change > 0 ? '+' : ''}${change.toStringAsFixed(2)}%';
+                              setState(() {
+                                result3 = r;
+                                changeColor = change > 0
+                                    ? AppColors.resultText
+                                    : change < 0
+                                        ? const Color(0xFFB91C1C)
+                                        : Colors.grey.shade700;
+                              });
+                              AppState.instance.addHistory(
+                                route: '/percentage',
+                                title: 'Percent Change',
+                                result: r,
+                              );
+                            },
+                    ),
+                    if (result3 != null)
+                      ResultPanel(
+                        foreground: changeColor,
+                        child: Text('Change: $result3'),
+                      ),
+                  ],
+                ),
+        ),
+      ],
     );
   }
 }

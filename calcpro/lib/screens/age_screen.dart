@@ -84,10 +84,10 @@ class _AgeScreenState extends State<AgeScreen> {
   @override
   Widget build(BuildContext context) {
     return CalcScaffold(
-      title: 'Age Calculator',
+      title: 'Age',
+      route: '/age',
       icon: Icons.calendar_today,
       description: 'Calculate exact age between two dates.',
-      purpleHeader: true,
       onClear: _clear,
       body: Column(
         children: [

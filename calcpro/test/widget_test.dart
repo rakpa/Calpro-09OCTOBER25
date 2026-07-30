@@ -1,25 +1,36 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:calcpro/main.dart';
+import 'package:calcpro/services/app_state.dart';
 
 void main() {
-  testWidgets('CalcPro home shows title and calculator cards', (tester) async {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({'onboarded': true});
+    await AppState.instance.load();
+  });
+
+  testWidgets('splash then home greeting', (tester) async {
     await tester.pumpWidget(const CalcProApp());
+    expect(find.text('CalcPro'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 1700));
     await tester.pumpAndSettle();
 
-    expect(find.text('CalcPro'), findsOneWidget);
-    expect(find.textContaining('Every calculation'), findsOneWidget);
-    expect(find.text('Basic'), findsOneWidget);
-    expect(find.text('Percentage'), findsOneWidget);
+    expect(find.textContaining('Good'), findsOneWidget);
+    expect(find.text('Popular Calculators'), findsOneWidget);
+    expect(find.text('Percentage'), findsWidgets);
   });
 
   testWidgets('navigates to basic calculator', (tester) async {
     await tester.pumpWidget(const CalcProApp());
+    await tester.pump(const Duration(milliseconds: 1700));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Basic'));
+    await tester.tap(find.text('Basic').first);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Basic'), findsWidgets);
-    expect(find.text('C'), findsWidgets);
+    expect(find.text('Basic'), findsWidgets);
+    expect(find.text('AC'), findsOneWidget);
   });
 }

@@ -59,7 +59,8 @@ class _TipScreenState extends State<TipScreen> {
         people.text.isNotEmpty;
 
     return CalcScaffold(
-      title: 'Tip Calculator',
+      title: 'Tip',
+      route: '/tip',
       icon: Icons.restaurant,
       description: 'Calculate tip amounts and split the bill.',
       onClear: _clear,

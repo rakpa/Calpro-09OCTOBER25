@@ -52,7 +52,8 @@ class _ConvertScreenState extends State<ConvertScreen> {
   Widget build(BuildContext context) {
     final units = unitsFor(category);
     return CalcScaffold(
-      title: 'Unit Converter',
+      title: 'Converter',
+      route: '/convert',
       icon: Icons.swap_vert,
       description: 'Convert between length, weight, and area units.',
       onClear: () => setState(() => valueController.clear()),

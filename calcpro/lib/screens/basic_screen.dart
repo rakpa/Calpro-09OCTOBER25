@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class BasicScreen extends StatefulWidget {
   const BasicScreen({super.key});
@@ -10,6 +13,7 @@ class BasicScreen extends StatefulWidget {
 
 class _BasicScreenState extends State<BasicScreen> {
   String display = '0';
+  String expression = '';
   String operation = '';
   double? prevValue;
   bool newNumber = true;
@@ -17,6 +21,7 @@ class _BasicScreenState extends State<BasicScreen> {
   void _clear() {
     setState(() {
       display = '0';
+      expression = '';
       operation = '';
       prevValue = null;
       newNumber = true;
@@ -52,33 +57,46 @@ class _BasicScreenState extends State<BasicScreen> {
           switch (operation) {
             case '+':
               result = prevValue! + current;
-              break;
             case '-':
               result = prevValue! - current;
-              break;
             case '*':
               result = prevValue! * current;
-              break;
             case '/':
               result = current == 0 ? double.nan : prevValue! / current;
-              break;
             default:
               result = current;
           }
-          display = _format(result);
+          final formatted = _format(result);
+          expression = '${_format(prevValue!)} ${_opLabel(operation)} $display';
+          display = formatted;
           prevValue = null;
           operation = '';
           newNumber = true;
+          if (formatted != 'Error') {
+            AppState.instance.addHistory(
+              route: '/basic',
+              title: 'Basic',
+              result: '$expression = $formatted',
+            );
+          }
         }
       } else if (op == 'C') {
         _clear();
       } else {
         prevValue = current;
         operation = op;
+        expression = '${_format(current)} ${_opLabel(op)}';
         newNumber = true;
       }
     });
   }
+
+  String _opLabel(String op) => switch (op) {
+        '*' => '×',
+        '/' => '÷',
+        '-' => '−',
+        _ => op,
+      };
 
   String _format(double value) {
     if (value.isNaN || value.isInfinite) return 'Error';
@@ -88,57 +106,128 @@ class _BasicScreenState extends State<BasicScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
     const rows = [
-      ['7', '8', '9', '/'],
-      ['4', '5', '6', '*'],
-      ['1', '2', '3', '-'],
-      ['0', '.', '=', '+'],
+      [
+        ('AC', KeyStyle.danger),
+        ('%', KeyStyle.function),
+        ('÷', KeyStyle.function),
+        ('×', KeyStyle.function),
+      ],
+      [
+        ('7', KeyStyle.number),
+        ('8', KeyStyle.number),
+        ('9', KeyStyle.number),
+        ('−', KeyStyle.function),
+      ],
+      [
+        ('4', KeyStyle.number),
+        ('5', KeyStyle.number),
+        ('6', KeyStyle.number),
+        ('+', KeyStyle.function),
+      ],
+      [
+        ('1', KeyStyle.number),
+        ('2', KeyStyle.number),
+        ('3', KeyStyle.number),
+        ('.', KeyStyle.number),
+      ],
     ];
 
-    return CalcScaffold(
-      title: 'Basic Calculator',
-      icon: Icons.calculate,
-      description: 'Simple arithmetic calculations',
-      onClear: _clear,
-      body: Column(
-        children: [
-          CalcDisplay(
-            value: display,
-            subtitle: operation.isEmpty ? null : operation,
-          ),
-          const SizedBox(height: 16),
-          for (final row in rows) ...[
-            Row(
-              children: [
-                for (var i = 0; i < row.length; i++) ...[
-                  if (i > 0) const SizedBox(width: 10),
-                  KeypadButton(
-                    label: row[i],
-                    isOperator: '+-*/=C'.contains(row[i]),
-                    onTap: () {
-                      final v = row[i];
-                      if (v == '.') {
-                        _onDecimal();
-                      } else if ('+-*/=C'.contains(v)) {
-                        _onOperator(v);
-                      } else {
-                        _onNumber(v);
-                      }
-                    },
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 10),
-          ],
-          KeypadButton(
-            label: 'C',
-            isOperator: true,
-            expand: true,
-            onTap: () => _onOperator('C'),
+    return Scaffold(
+      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      appBar: AppBar(
+        title: const Text('Basic'),
+        actions: [
+          ListenableBuilder(
+            listenable: AppState.instance,
+            builder: (context, _) {
+              final fav = AppState.instance.isFavorite('/basic');
+              return IconButton(
+                onPressed: () => AppState.instance.toggleFavorite('/basic'),
+                icon: Icon(
+                  fav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: fav ? AppColors.accentPink : null,
+                ),
+              );
+            },
           ),
         ],
       ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          child: Column(
+            children: [
+              Expanded(
+                child: CalcDisplay(
+                  value: display,
+                  subtitle: expression.isEmpty ? null : expression,
+                ),
+              ),
+              for (final row in rows) ...[
+                Row(
+                  children: [
+                    for (var i = 0; i < row.length; i++) ...[
+                      if (i > 0) const SizedBox(width: 10),
+                      KeypadButton(
+                        label: row[i].$1,
+                        style: row[i].$2,
+                        onTap: () => _handle(row[i].$1),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 10),
+              ],
+              Row(
+                children: [
+                  KeypadButton(
+                    label: '0',
+                    flex: 2,
+                    onTap: () => _handle('0'),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    flex: 2,
+                    child: PrimaryButton(
+                      label: '=',
+                      onPressed: () => _handle('='),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
     );
+  }
+
+  void _handle(String v) {
+    switch (v) {
+      case 'AC':
+        _onOperator('C');
+      case '.':
+        _onDecimal();
+      case '=':
+        _onOperator('=');
+      case '+':
+        _onOperator('+');
+      case '−':
+        _onOperator('-');
+      case '×':
+        _onOperator('*');
+      case '÷':
+        _onOperator('/');
+      case '%':
+        final n = double.tryParse(display) ?? 0;
+        setState(() {
+          display = _format(n / 100);
+          newNumber = true;
+        });
+      default:
+        _onNumber(v);
+    }
   }
 }

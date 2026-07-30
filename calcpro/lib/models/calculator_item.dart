@@ -1,104 +1,168 @@
 import 'package:flutter/material.dart';
+import 'package:calcpro/theme/app_theme.dart';
 
 class CalculatorItem {
   final String title;
+  final String shortTitle;
   final String description;
   final String route;
   final IconData icon;
-  final List<Color> gradient;
+  final Color accent;
+  final List<String> tags;
+  final double rating;
+  final int ratingCount;
 
   const CalculatorItem({
     required this.title,
+    required this.shortTitle,
     required this.description,
     required this.route,
     required this.icon,
-    required this.gradient,
+    required this.accent,
+    this.tags = const ['Popular'],
+    this.rating = 4.8,
+    this.ratingCount = 120,
   });
 }
 
 const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Percentage Calculator',
-    description: 'Calculate percentages and proportions',
+    shortTitle: 'Percentage',
+    description: 'Find percentages, proportions & change',
     route: '/percentage',
-    icon: Icons.percent,
-    gradient: [Color(0xFF34D399), Color(0xFF14B8A6)],
+    icon: Icons.percent_rounded,
+    accent: AppColors.accentPink,
+    tags: ['Popular', 'Favorites'],
+    rating: 4.9,
+    ratingCount: 248,
   ),
   CalculatorItem(
     title: 'Basic Calculator',
-    description: 'Simple arithmetic calculations',
+    shortTitle: 'Basic',
+    description: 'Everyday arithmetic, beautifully simple',
     route: '/basic',
-    icon: Icons.calculate,
-    gradient: [Color(0xFF60A5FA), Color(0xFF4F46E5)],
-  ),
-  CalculatorItem(
-    title: 'Unit Converter',
-    description: 'Convert between different units',
-    route: '/convert',
-    icon: Icons.swap_vert,
-    gradient: [Color(0xFFC084FC), Color(0xFF7C3AED)],
-  ),
-  CalculatorItem(
-    title: 'Financial Calculator',
-    description: 'Calculate loans, interest and more',
-    route: '/financial',
-    icon: Icons.attach_money,
-    gradient: [Color(0xFFFBBF24), Color(0xFFF97316)],
-  ),
-  CalculatorItem(
-    title: 'Mortgage Calculator',
-    description: 'Calculate monthly mortgage payments',
-    route: '/mortgage',
-    icon: Icons.home,
-    gradient: [Color(0xFFFB7185), Color(0xFFDB2777)],
-  ),
-  CalculatorItem(
-    title: 'Age Calculator',
-    description: 'Calculate exact age and date differences',
-    route: '/age',
-    icon: Icons.calendar_today,
-    gradient: [Color(0xFF22D3EE), Color(0xFF3B82F6)],
+    icon: Icons.calculate_rounded,
+    accent: AppColors.accentBlue,
+    tags: ['Popular', 'Recent'],
+    rating: 4.8,
+    ratingCount: 412,
   ),
   CalculatorItem(
     title: 'Scientific Calculator',
-    description: 'Advanced mathematical calculations',
+    shortTitle: 'Scientific',
+    description: 'Trig, powers, and advanced math',
     route: '/scientific',
-    icon: Icons.science,
-    gradient: [Color(0xFFE879F9), Color(0xFF9333EA)],
+    icon: Icons.science_rounded,
+    accent: AppColors.accentPurple,
+    tags: ['Popular'],
+    rating: 4.7,
+    ratingCount: 186,
+  ),
+  CalculatorItem(
+    title: 'Unit Converter',
+    shortTitle: 'Converter',
+    description: 'Length, weight, temperature & more',
+    route: '/convert',
+    icon: Icons.swap_vert_rounded,
+    accent: AppColors.accentTeal,
+    tags: ['Popular'],
+    rating: 4.8,
+    ratingCount: 301,
+  ),
+  CalculatorItem(
+    title: 'Financial Calculator',
+    shortTitle: 'Loan',
+    description: 'Loans, interest, and amortization',
+    route: '/financial',
+    icon: Icons.attach_money_rounded,
+    accent: AppColors.accentBlue,
+    tags: ['Popular'],
+    rating: 4.6,
+    ratingCount: 154,
+  ),
+  CalculatorItem(
+    title: 'Mortgage Calculator',
+    shortTitle: 'Mortgage',
+    description: 'Monthly payments with tax & insurance',
+    route: '/mortgage',
+    icon: Icons.home_rounded,
+    accent: AppColors.accentOrange,
+    tags: ['Popular', 'Favorites'],
+    rating: 4.9,
+    ratingCount: 219,
+  ),
+  CalculatorItem(
+    title: 'Age Calculator',
+    shortTitle: 'Age',
+    description: 'Exact age and date milestones',
+    route: '/age',
+    icon: Icons.cake_rounded,
+    accent: AppColors.accentTeal,
+    tags: ['Recent'],
+    rating: 4.5,
+    ratingCount: 98,
   ),
   CalculatorItem(
     title: 'Time Calculator',
-    description: 'Calculate time differences and durations',
+    shortTitle: 'Time',
+    description: 'Durations and time differences',
     route: '/time',
-    icon: Icons.access_time,
-    gradient: [Color(0xFFA3E635), Color(0xFF22C55E)],
+    icon: Icons.access_time_rounded,
+    accent: AppColors.accentGreen,
+    tags: ['History'],
+    rating: 4.6,
+    ratingCount: 112,
   ),
   CalculatorItem(
-    title: 'Date Difference Calculator',
-    description: 'Calculate the exact difference between dates',
+    title: 'Date Difference',
+    shortTitle: 'Date Diff',
+    description: 'Days, weeks, and months between dates',
     route: '/date-diff',
-    icon: Icons.date_range,
-    gradient: [Color(0xFFFB923C), Color(0xFFEF4444)],
+    icon: Icons.date_range_rounded,
+    accent: AppColors.accentOrange,
+    tags: ['Recent'],
+    rating: 4.7,
+    ratingCount: 133,
   ),
   CalculatorItem(
     title: 'Discount Calculator',
-    description: 'Calculate sale prices and savings',
+    shortTitle: 'Discount',
+    description: 'Sale prices and savings',
     route: '/discount',
-    icon: Icons.local_offer,
-    gradient: [Color(0xFF38BDF8), Color(0xFF2563EB)],
+    icon: Icons.local_offer_rounded,
+    accent: AppColors.accentPink,
+    tags: ['Popular'],
+    rating: 4.8,
+    ratingCount: 177,
   ),
   CalculatorItem(
     title: 'Tip Calculator',
-    description: 'Split bills and calculate tips',
+    shortTitle: 'Tip',
+    description: 'Tips and bill splitting',
     route: '/tip',
-    icon: Icons.restaurant,
-    gradient: [Color(0xFFA78BFA), Color(0xFF7C3AED)],
+    icon: Icons.restaurant_rounded,
+    accent: AppColors.accentPurple,
+    tags: ['Favorites'],
+    rating: 4.9,
+    ratingCount: 265,
   ),
   CalculatorItem(
     title: 'Health Calculator',
+    shortTitle: 'BMI',
     description: 'BMI and ideal weight estimates',
     route: '/health',
-    icon: Icons.favorite,
-    gradient: [Color(0xFFF472B6), Color(0xFFE11D48)],
+    icon: Icons.favorite_rounded,
+    accent: AppColors.accentGreen,
+    tags: ['Popular'],
+    rating: 4.7,
+    ratingCount: 201,
   ),
 ];
+
+CalculatorItem? calculatorByRoute(String route) {
+  for (final c in kCalculators) {
+    if (c.route == route) return c;
+  }
+  return null;
+}

@@ -56,7 +56,8 @@ class _FinancialScreenState extends State<FinancialScreen> {
         time.text.isNotEmpty;
 
     return CalcScaffold(
-      title: 'Financial Calculator',
+      title: 'Financial',
+      route: '/financial',
       icon: Icons.attach_money,
       description: 'Annual compound interest future value: A = P(1+r)^t',
       onClear: _clear,
