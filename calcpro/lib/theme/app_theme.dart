@@ -43,6 +43,14 @@ class AppColors {
   static const Color accentTeal = Color(0xFF3FD0C9);
   static const Color accentPurple = Color(0xFF5A31F4);
 
+  /// Soft pastel card washes from Calcara home snip.
+  static const Color pastelPink = Color(0xFFFFF0F3);
+  static const Color pastelBlue = Color(0xFFE8F4FF);
+  static const Color pastelGreen = Color(0xFFE8F9F1);
+  static const Color pastelLime = Color(0xFFF4F9E8);
+  static const Color pastelLavender = Color(0xFFEDE8FF);
+  static const Color pastelOrange = Color(0xFFFFF1E6);
+
   static const Color resultBg = Color(0xFFE8FFF3);
   static const Color resultBorder = Color(0xFFA7F3D0);
   static const Color resultText = Color(0xFF0B6B3A);

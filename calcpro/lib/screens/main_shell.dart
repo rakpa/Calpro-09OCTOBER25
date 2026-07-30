@@ -142,11 +142,11 @@ class _NavItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 54,
-              height: 54,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 color: AppColors.primary,
-                borderRadius: BorderRadius.circular(18),
+                shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.primary.withValues(alpha: 0.35),
@@ -155,7 +155,7 @@ class _NavItem extends StatelessWidget {
                   ),
                 ],
               ),
-              child: const Icon(Icons.calculate_rounded, color: Colors.white),
+              child: const Icon(Icons.apps_rounded, color: Colors.white, size: 28),
             ),
             const SizedBox(height: 4),
             Text(

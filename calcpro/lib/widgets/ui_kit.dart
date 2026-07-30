@@ -208,16 +208,20 @@ class SearchField extends StatelessWidget {
                   )
                 : null),
         filled: true,
-        fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+        fillColor: dark ? AppColors.surfaceDark : Colors.white,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: dark ? AppColors.lineDark : AppColors.line,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
-          borderSide: BorderSide.none,
+          borderSide: BorderSide(
+            color: dark ? AppColors.lineDark : AppColors.line,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),

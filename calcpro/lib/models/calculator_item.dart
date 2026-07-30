@@ -8,6 +8,7 @@ class CalculatorItem {
   final String route;
   final IconData icon;
   final Color accent;
+  final Color pastel;
   final List<String> tags;
   final double rating;
   final int ratingCount;
@@ -19,6 +20,7 @@ class CalculatorItem {
     required this.route,
     required this.icon,
     required this.accent,
+    this.pastel = AppColors.pastelLavender,
     this.tags = const ['Popular'],
     this.rating = 4.8,
     this.ratingCount = 120,
@@ -29,10 +31,11 @@ const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Percentage Calculator',
     shortTitle: 'Percentage',
-    description: 'Find % of any number fast',
+    description: 'Calculate percentages with ease',
     route: '/percentage',
     icon: Icons.percent_rounded,
     accent: AppColors.accentPink,
+    pastel: AppColors.pastelPink,
     tags: ['Popular', 'Favorites'],
     rating: 4.9,
     ratingCount: 248,
@@ -40,10 +43,11 @@ const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Mortgage Calculator',
     shortTitle: 'Mortgage',
-    description: 'Monthly payments made simple',
+    description: 'Calculate your loan payment',
     route: '/mortgage',
     icon: Icons.home_rounded,
     accent: AppColors.accentBlue,
+    pastel: AppColors.pastelBlue,
     tags: ['Popular', 'Favorites'],
     rating: 4.9,
     ratingCount: 219,
@@ -51,10 +55,11 @@ const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Health Calculator',
     shortTitle: 'BMI',
-    description: 'BMI & ideal weight check',
+    description: 'Check your Body Mass Index',
     route: '/health',
-    icon: Icons.favorite_rounded,
+    icon: Icons.accessibility_new_rounded,
     accent: AppColors.accentGreen,
+    pastel: AppColors.pastelGreen,
     tags: ['Popular'],
     rating: 4.7,
     ratingCount: 201,
@@ -62,10 +67,11 @@ const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Financial Calculator',
     shortTitle: 'EMI',
-    description: 'Loans, interest & EMI',
+    description: 'Calculate your EMI instantly',
     route: '/financial',
     icon: Icons.calculate_rounded,
-    accent: AppColors.accentLime,
+    accent: const Color(0xFF7CB518),
+    pastel: AppColors.pastelLime,
     tags: ['Popular'],
     rating: 4.6,
     ratingCount: 154,
