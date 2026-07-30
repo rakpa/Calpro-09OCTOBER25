@@ -32,7 +32,7 @@ class CalcProApp extends StatelessWidget {
       listenable: AppState.instance,
       builder: (context, _) {
         return MaterialApp(
-          title: 'CalcPro',
+          title: 'Calcara',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,

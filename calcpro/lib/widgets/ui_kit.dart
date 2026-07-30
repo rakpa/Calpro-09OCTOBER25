@@ -264,17 +264,81 @@ class BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return CalcaraMark(size: size, light: light);
+  }
+}
+
+/// Calcara app mark: rounded purple tile with 4 dots + equals bar.
+class CalcaraMark extends StatelessWidget {
+  final double size;
+  final bool light;
+
+  const CalcaraMark({super.key, this.size = 72, this.light = true});
+
+  @override
+  Widget build(BuildContext context) {
+    final pad = size * 0.22;
+    final dot = size * 0.12;
+    final gap = size * 0.08;
+
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         color: light ? Colors.white.withValues(alpha: 0.2) : AppColors.primary,
         borderRadius: BorderRadius.circular(size * 0.28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: size * 0.22,
+            offset: Offset(0, size * 0.08),
+          ),
+        ],
       ),
-      child: Icon(
-        Icons.calculate_rounded,
+      child: Padding(
+        padding: EdgeInsets.all(pad),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _dot(dot),
+                SizedBox(width: gap),
+                _dot(dot),
+              ],
+            ),
+            SizedBox(height: gap),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _dot(dot),
+                SizedBox(width: gap),
+                _dot(dot),
+              ],
+            ),
+            SizedBox(height: gap * 1.2),
+            Container(
+              width: size * 0.42,
+              height: size * 0.07,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(99),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dot(double size) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
         color: Colors.white,
-        size: size * 0.48,
+        shape: BoxShape.circle,
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
+
 class OnboardingScreen extends StatefulWidget {
   final VoidCallback onDone;
 
@@ -69,24 +70,31 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             ),
                           ],
                         ),
-                        child: const Icon(
-                          Icons.calculate_rounded,
-                          size: 84,
-                          color: Colors.white,
-                        ),
+                        child: const CalcaraMark(size: 96, light: false),
                       ),
                       const SizedBox(height: 36),
                       Text(
-                        'Calculate Anything,\nBeautifully.',
+                        'Calcara',
                         textAlign: TextAlign.center,
                         style: AppFonts.h1(
                           color: dark ? AppColors.inkDark : AppColors.ink,
                         ),
                       ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Calculate Anything,\nBeautifully.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.fredoka(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: dark ? AppColors.inkDark : AppColors.ink,
+                          height: 1.25,
+                        ),
+                      ),
                       const SizedBox(height: 14),
                       Text(
-                        'A playful suite of smart calculators for math, '
-                        'money, health, and everyday life.',
+                        'Smart calculators for everyday life — math, '
+                        'money, health, and more.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.fredoka(
                           color: dark ? AppColors.mutedDark : AppColors.muted,

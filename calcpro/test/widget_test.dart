@@ -15,8 +15,8 @@ void main() {
 
   testWidgets('splash then home greeting', (tester) async {
     await tester.pumpWidget(const CalcProApp());
-    expect(find.text('CalcPro'), findsOneWidget);
-    await tester.pump(const Duration(milliseconds: 1700));
+    expect(find.text('Calcara'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 2600));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Good'), findsOneWidget);

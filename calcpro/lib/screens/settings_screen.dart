@@ -157,9 +157,9 @@ class SettingsScreen extends StatelessWidget {
                   _tile(
                     context,
                     icon: Icons.info_outline_rounded,
-                    label: 'About CalcPro',
+                    label: 'About Calcara',
                     trailing: Text(
-                      '1.2.0',
+                      '1.2.1',
                       style: GoogleFonts.fredoka(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
