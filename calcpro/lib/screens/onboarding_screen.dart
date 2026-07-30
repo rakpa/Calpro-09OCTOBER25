@@ -57,10 +57,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   child: Column(
                     children: [
                       Container(
-                        width: 168,
-                        height: 168,
                         decoration: BoxDecoration(
-                          color: AppColors.primary,
                           borderRadius: BorderRadius.circular(44),
                           boxShadow: [
                             BoxShadow(
@@ -70,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             ),
                           ],
                         ),
-                        child: const CalcaraMark(size: 96, light: false),
+                        child: const CalcaraMark(size: 120, light: false),
                       ),
                       const SizedBox(height: 36),
                       Text(
