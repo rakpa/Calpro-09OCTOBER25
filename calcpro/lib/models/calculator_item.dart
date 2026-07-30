@@ -70,7 +70,7 @@ const List<CalculatorItem> kCalculators = [
     description: 'Calculate your EMI instantly',
     route: '/financial',
     icon: Icons.calculate_rounded,
-    accent: const Color(0xFF7CB518),
+    accent: Color(0xFF7CB518),
     pastel: AppColors.pastelLime,
     tags: ['Popular'],
     rating: 4.6,
