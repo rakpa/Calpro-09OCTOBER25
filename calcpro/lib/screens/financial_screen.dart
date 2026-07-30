@@ -145,51 +145,29 @@ class _FinancialScreenState extends State<FinancialScreen> {
             },
           ),
           const SizedBox(height: 16),
-          if (mode == 0 && emi != null)
-            AppCard(
-              color: AppColors.resultBg,
-              child: Column(
-                children: [
-                  Text('Monthly EMI', style: AppFonts.body2()),
-                  const SizedBox(height: 4),
-                  Text(currency.format(emi), style: AppFonts.result()),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _Stat(
-                          label: 'Total interest',
-                          value: currency.format(totalInterest),
-                        ),
-                      ),
-                      Expanded(
-                        child: _Stat(
-                          label: 'Total payment',
-                          value: currency.format(totalPayment),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
+          if (mode == 0 && emi != null) ...[
+            PremiumResultCard(
+              eyebrow: 'Monthly EMI',
+              value: currency.format(emi),
+              detail:
+                  'Interest ${currency.format(totalInterest)} · Total ${currency.format(totalPayment)}',
             ),
-          if (mode == 1 && futureValue != null)
-            AppCard(
-              color: AppColors.resultBg,
-              child: Column(
-                children: [
-                  Text('Future value', style: AppFonts.body2()),
-                  const SizedBox(height: 4),
-                  Text(currency.format(futureValue), style: AppFonts.result()),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Interest earned ${currency.format(interestEarned)}',
-                    style: AppFonts.body1(),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 12),
+          ],
+          if (mode == 1 && futureValue != null) ...[
+            PremiumResultCard(
+              eyebrow: 'Future value',
+              value: currency.format(futureValue),
+              detail: 'Interest earned ${currency.format(interestEarned)}',
+              colors: const [
+                Color(0xFFE8F4FF),
+                Color(0xFFE8FFF3),
+                Color(0xFFEDE8FF),
+              ],
             ),
-          const SizedBox(height: 16),
+            const SizedBox(height: 12),
+          ],
+          const SizedBox(height: 4),
           AppCard(
             child: Column(
               children: [
@@ -253,27 +231,6 @@ class _FinancialScreenState extends State<FinancialScreen> {
           ],
         ],
       ),
-    );
-  }
-}
-
-class _Stat extends StatelessWidget {
-  final String label;
-  final String value;
-  const _Stat({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: AppFonts.body2()),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: AppFonts.body1().copyWith(fontWeight: FontWeight.w700),
-          textAlign: TextAlign.center,
-        ),
-      ],
     );
   }
 }

@@ -50,9 +50,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Percentage Calculator'), findsOneWidget);
-    expect(find.text('Basic'), findsOneWidget);
-    expect(find.text('Advanced'), findsOneWidget);
+    expect(find.text('Percentage'), findsOneWidget);
+    expect(find.text('X% of Y'), findsOneWidget);
+    expect(find.text('What %'), findsOneWidget);
+    expect(find.text('Change'), findsOneWidget);
     expect(find.text('AC'), findsOneWidget);
+    expect(find.text('Next'), findsOneWidget);
   });
 }

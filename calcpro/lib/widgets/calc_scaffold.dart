@@ -296,27 +296,28 @@ class KeypadButton extends StatelessWidget {
         bg = AppColors.primary;
         fg = Colors.white;
       case KeyStyle.function:
-        bg = dark ? AppColors.keyFnDark : AppColors.keyFn;
+        bg = dark ? AppColors.keyFnDark : AppColors.pastelLavender;
         fg = AppColors.primary;
       case KeyStyle.danger:
-        bg = AppColors.accentPink.withValues(alpha: 0.14);
+        bg = dark
+            ? AppColors.accentPink.withValues(alpha: 0.22)
+            : AppColors.pastelPink;
         fg = AppColors.accentPink;
       case KeyStyle.number:
-        bg = dark ? AppColors.keyBgDark : Colors.white;
+        bg = dark ? AppColors.keyBgDark : const Color(0xFFF3F5FA);
         fg = dark ? AppColors.inkDark : AppColors.keyText;
     }
 
     final child = Material(
       color: bg,
-      shape: const CircleBorder(),
-      elevation: resolved == KeyStyle.number && !dark ? 0.4 : 0,
-      shadowColor: Colors.black12,
+      borderRadius: BorderRadius.circular(18),
+      elevation: 0,
       child: InkWell(
         onTap: () {
           AppState.instance.lightFeedback();
           onTap();
         },
-        customBorder: const CircleBorder(),
+        borderRadius: BorderRadius.circular(18),
         child: SizedBox(
           height: 64,
           child: Center(
@@ -324,7 +325,7 @@ class KeypadButton extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: label.length > 2 ? 18 : 28,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 color: fg,
               ),
             ),
@@ -356,10 +357,30 @@ class CalcDisplay extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      padding: const EdgeInsets.fromLTRB(22, 26, 22, 26),
       decoration: BoxDecoration(
-        color: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
-        borderRadius: BorderRadius.circular(AppRadii.xl),
+        borderRadius: BorderRadius.circular(28),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: dark
+              ? const [Color(0xFF262636), Color(0xFF1A1F2A)]
+              : const [Color(0xFFEDE8FF), Color(0xFFE8F4FF), Color(0xFFF4F9E8)],
+        ),
+        border: Border.all(
+          color: dark
+              ? AppColors.lineDark
+              : Colors.white.withValues(alpha: 0.75),
+        ),
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -384,8 +405,9 @@ class CalcDisplay extends StatelessWidget {
               style: GoogleFonts.inter(
                 color: dark ? AppColors.inkDark : AppColors.ink,
                 fontSize: 52,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
                 height: 1.1,
+                letterSpacing: -0.8,
               ),
             ),
           ),

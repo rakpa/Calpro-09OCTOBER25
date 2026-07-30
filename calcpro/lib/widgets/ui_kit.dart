@@ -50,7 +50,6 @@ class AtmosphereBackground extends StatelessWidget {
                   ? AppColors.accentOrange.withValues(alpha: 0.10)
                   : AppColors.pastelOrange.withValues(alpha: 0.8),
             ),
-            // Soft vignette so content stays readable.
             DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -104,6 +103,97 @@ class _Blob extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Bold answer panel used across calculator tools.
+class PremiumResultCard extends StatelessWidget {
+  final String eyebrow;
+  final String value;
+  final String? detail;
+  final List<Color>? colors;
+
+  const PremiumResultCard({
+    super.key,
+    required this.eyebrow,
+    required this.value,
+    this.detail,
+    this.colors,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final washes = colors ??
+        (dark
+            ? const [Color(0xFF243028), Color(0xFF1E2430)]
+            : const [Color(0xFFE8FFF3), Color(0xFFE8F4FF), Color(0xFFEDE8FF)]);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(20, 18, 20, 18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: washes,
+        ),
+        border: Border.all(
+          color: dark
+              ? AppColors.lineDark
+              : Colors.white.withValues(alpha: 0.75),
+        ),
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.accentGreen.withValues(alpha: 0.12),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            eyebrow,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: dark ? AppColors.mutedDark : AppColors.muted,
+            ),
+          ),
+          const SizedBox(height: 6),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 42,
+                fontWeight: FontWeight.w800,
+                height: 1.05,
+                letterSpacing: -0.6,
+                color: dark ? AppColors.inkDark : AppColors.ink,
+              ),
+            ),
+          ),
+          if (detail != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              detail!,
+              style: GoogleFonts.inter(
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+                color: dark ? AppColors.mutedDark : AppColors.muted,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -20,7 +20,6 @@ class _TipScreenState extends State<TipScreen> {
   String? tipAmount;
   String? total;
   String? perPerson;
-  bool calculating = false;
 
   final presets = const [10, 15, 20, 25];
 
@@ -28,15 +27,16 @@ class _TipScreenState extends State<TipScreen> {
   void initState() {
     super.initState();
     for (final c in [bill, customTip, people]) {
-      c.addListener(() => setState(() {}));
+      c.addListener(_recalc);
     }
   }
 
   @override
   void dispose() {
-    bill.dispose();
-    customTip.dispose();
-    people.dispose();
+    for (final c in [bill, customTip, people]) {
+      c.removeListener(_recalc);
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -50,21 +50,25 @@ class _TipScreenState extends State<TipScreen> {
     });
   }
 
-  Future<void> _calculate() async {
+  void _recalc() {
     final billAmount = double.tryParse(bill.text);
     final tipPercent = double.tryParse(customTip.text) ?? selectedTip.toDouble();
     final nPeople = int.tryParse(people.text) ?? 1;
-    if (billAmount == null || nPeople <= 0) return;
-    setState(() => calculating = true);
-    await Future<void>.delayed(const Duration(milliseconds: 180));
+    if (billAmount == null || nPeople <= 0) {
+      setState(() => tipAmount = total = perPerson = null);
+      return;
+    }
     final tip = billAmount * (tipPercent / 100);
     final tot = billAmount + tip;
     setState(() {
       tipAmount = tip.toStringAsFixed(2);
       total = tot.toStringAsFixed(2);
       perPerson = (tot / nPeople).toStringAsFixed(2);
-      calculating = false;
     });
+  }
+
+  void _commitHistory() {
+    if (total == null) return;
     AppState.instance.addHistory(
       route: '/tip',
       title: 'Tip',
@@ -76,9 +80,6 @@ class _TipScreenState extends State<TipScreen> {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final ready = bill.text.isNotEmpty &&
-        customTip.text.isNotEmpty &&
-        people.text.isNotEmpty;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -104,31 +105,24 @@ class _TipScreenState extends State<TipScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          if (AppState.instance.showTips)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Split the bill and tip fairly.',
-                style: AppFonts.body2(
-                  color: dark ? AppColors.mutedDark : AppColors.muted,
-                ),
-              ),
-            ),
           if (tipAmount != null)
-            AppCard(
-              child: Column(
-                children: [
-                  Text(
-                    'Total',
-                    style: AppFonts.body2(
-                      color: dark ? AppColors.mutedDark : AppColors.muted,
-                    ),
-                  ),
-                  Text('\$$total', style: AppFonts.result()),
-                  const SizedBox(height: 8),
-                  Text('Tip \$$tipAmount · Per person \$$perPerson',
-                      style: AppFonts.body1()),
-                ],
+            PremiumResultCard(
+              eyebrow: 'Total with tip',
+              value: '\$$total',
+              detail: 'Tip \$$tipAmount · Per person \$$perPerson',
+              colors: dark
+                  ? null
+                  : const [
+                      Color(0xFFEDE8FF),
+                      Color(0xFFFFF0F5),
+                      Color(0xFFE8F4FF),
+                    ],
+            )
+          else
+            Text(
+              'Enter a bill — tip updates instantly.',
+              style: AppFonts.body2(
+                color: dark ? AppColors.mutedDark : AppColors.muted,
               ),
             ),
           const SizedBox(height: 16),
@@ -153,6 +147,7 @@ class _TipScreenState extends State<TipScreen> {
                             selectedTip = p;
                             customTip.text = '$p';
                           });
+                          _recalc();
                         },
                       ),
                   ],
@@ -170,13 +165,10 @@ class _TipScreenState extends State<TipScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          if (calculating)
-            const Center(child: CircularProgressIndicator())
-          else
-            PrimaryButton(
-              label: 'Calculate',
-              onPressed: ready ? _calculate : null,
-            ),
+          PrimaryButton(
+            label: tipAmount == null ? 'Enter bill above' : 'Save to history',
+            onPressed: tipAmount == null ? null : _commitHistory,
+          ),
         ],
       ),
     );

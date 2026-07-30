@@ -202,45 +202,29 @@ class _MortgageScreenState extends State<MortgageScreen> {
             ),
             const SizedBox(height: 20),
             if (mode == 0 && monthlyPayment != null)
-              AppCard(
-                color: AppColors.resultBg,
-                child: Column(
-                  children: [
-                    Text('Monthly payment', style: AppFonts.body2()),
-                    const SizedBox(height: 4),
-                    Text(
-                      currency.format(double.tryParse(monthlyPayment!) ?? 0),
-                      style: AppFonts.result(),
-                    ),
-                    if (totalInterest != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        'Total interest ${currency.format(double.tryParse(totalInterest!) ?? 0)}',
-                        style: AppFonts.body1(),
-                      ),
-                    ],
-                  ],
-                ),
+              PremiumResultCard(
+                eyebrow: 'Monthly payment',
+                value: currency.format(double.tryParse(monthlyPayment!) ?? 0),
+                detail: totalInterest == null
+                    ? null
+                    : 'Total interest ${currency.format(double.tryParse(totalInterest!) ?? 0)}',
+                colors: const [
+                  Color(0xFFE8F4FF),
+                  Color(0xFFEDE8FF),
+                  Color(0xFFE8FFF3),
+                ],
               ),
             if (mode == 1 && affordableHome != null)
-              AppCard(
-                color: AppColors.resultBg,
-                child: Column(
-                  children: [
-                    Text('You can afford about', style: AppFonts.body2()),
-                    const SizedBox(height: 4),
-                    Text(
-                      currency.format(double.tryParse(affordableHome!) ?? 0),
-                      style: AppFonts.result(),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Loan ${currency.format(double.tryParse(affordableLoan!) ?? 0)} · Max housing ${currency.format(double.tryParse(maxMonthly!) ?? 0)}/mo',
-                      textAlign: TextAlign.center,
-                      style: AppFonts.body1(),
-                    ),
-                  ],
-                ),
+              PremiumResultCard(
+                eyebrow: 'You can afford about',
+                value: currency.format(double.tryParse(affordableHome!) ?? 0),
+                detail:
+                    'Loan ${currency.format(double.tryParse(affordableLoan!) ?? 0)} · Max housing ${currency.format(double.tryParse(maxMonthly!) ?? 0)}/mo',
+                colors: const [
+                  Color(0xFFE8FFF3),
+                  Color(0xFFE8F4FF),
+                  Color(0xFFEDE8FF),
+                ],
               ),
             const SizedBox(height: 20),
             AppCard(

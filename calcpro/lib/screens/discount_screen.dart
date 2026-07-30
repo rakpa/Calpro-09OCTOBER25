@@ -121,14 +121,15 @@ class _DiscountScreenState extends State<DiscountScreen> {
           ),
           const SizedBox(height: 16),
           if (finalPrice != null)
-            AppCard(
-              child: Column(
-                children: [
-                  Text('Sale price', style: AppFonts.body2()),
-                  Text('\$$finalPrice', style: AppFonts.result()),
-                  Text('You save \$$saved', style: AppFonts.body1()),
-                ],
-              ),
+            PremiumResultCard(
+              eyebrow: 'Sale price',
+              value: '\$$finalPrice',
+              detail: 'You save \$$saved',
+              colors: const [
+                Color(0xFFFFF0F3),
+                Color(0xFFFFF1E6),
+                Color(0xFFEDE8FF),
+              ],
             ),
           const SizedBox(height: 16),
           AppCard(
