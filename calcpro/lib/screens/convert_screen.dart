@@ -63,7 +63,6 @@ class _ConvertScreenState extends State<ConvertScreen> {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final units = unitsFor(category);
-    final labels = UnitCategory.values.map(categoryLabel).toList();
 
     return Scaffold(
       backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
@@ -88,10 +87,26 @@ class _ConvertScreenState extends State<ConvertScreen> {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          SegmentControl(
-            labels: labels,
-            index: UnitCategory.values.indexOf(category),
-            onChanged: _onCategory,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final c in UnitCategory.values)
+                FilterChip(
+                  selected: category == c,
+                  label: Text(categoryLabel(c)),
+                  onSelected: (_) =>
+                      _onCategory(UnitCategory.values.indexOf(c)),
+                  selectedColor: AppColors.primaryMuted,
+                  checkmarkColor: AppColors.primary,
+                  labelStyle: TextStyle(
+                    color: category == c
+                        ? AppColors.primary
+                        : (dark ? AppColors.mutedDark : AppColors.muted),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 16),
           if (result != null)

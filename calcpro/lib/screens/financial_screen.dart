@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/services/widget_sync.dart';
@@ -8,6 +9,7 @@ import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
+/// Real EMI + compound interest — matches top finance calculator apps.
 class FinancialScreen extends StatefulWidget {
   const FinancialScreen({super.key});
 
@@ -16,26 +18,32 @@ class FinancialScreen extends StatefulWidget {
 }
 
 class _FinancialScreenState extends State<FinancialScreen> {
-  final principal = TextEditingController();
-  final rate = TextEditingController();
-  final time = TextEditingController();
+  int mode = 0; // 0 EMI, 1 Compound
+  final principal = TextEditingController(text: '250000');
+  final rate = TextEditingController(text: '8.5');
+  final tenure = TextEditingController(text: '20');
+  final currency = NumberFormat.currency(symbol: '\$');
+
+  double? emi;
+  double? totalPayment;
+  double? totalInterest;
   double? futureValue;
   double? interestEarned;
-  final currency = NumberFormat.currency(symbol: '\$');
 
   @override
   void initState() {
     super.initState();
-    for (final c in [principal, rate, time]) {
+    for (final c in [principal, rate, tenure]) {
       c.addListener(() => setState(() {}));
     }
+    _calculate();
   }
 
   @override
   void dispose() {
     principal.dispose();
     rate.dispose();
-    time.dispose();
+    tenure.dispose();
     super.dispose();
   }
 
@@ -43,27 +51,51 @@ class _FinancialScreenState extends State<FinancialScreen> {
     setState(() {
       principal.clear();
       rate.clear();
-      time.clear();
-      futureValue = null;
-      interestEarned = null;
+      tenure.clear();
+      emi = totalPayment = totalInterest = futureValue = interestEarned = null;
     });
   }
 
   void _calculate() {
     final p = double.tryParse(principal.text);
-    final r = double.tryParse(rate.text);
-    final t = double.tryParse(time.text);
-    if (p == null || r == null || t == null) return;
-    final amount = p * math.pow(1 + r / 100, t);
-    setState(() {
-      futureValue = double.parse(amount.toStringAsFixed(2));
-      interestEarned = futureValue! - p;
-    });
-    AppState.instance.addHistory(
-      route: '/financial',
-      title: 'EMI / Interest',
-      result: currency.format(futureValue),
-    );
+    final annual = double.tryParse(rate.text);
+    final years = double.tryParse(tenure.text);
+    if (p == null || annual == null || years == null || years <= 0) return;
+
+    if (mode == 0) {
+      final r = (annual / 100) / 12;
+      final n = years * 12;
+      double payment;
+      if (r == 0) {
+        payment = p / n;
+      } else {
+        payment = p * r * math.pow(1 + r, n) / (math.pow(1 + r, n) - 1);
+      }
+      final total = payment * n;
+      setState(() {
+        emi = double.parse(payment.toStringAsFixed(2));
+        totalPayment = double.parse(total.toStringAsFixed(2));
+        totalInterest = double.parse((total - p).toStringAsFixed(2));
+        futureValue = interestEarned = null;
+      });
+      AppState.instance.addHistory(
+        route: '/financial',
+        title: 'EMI',
+        result: '${currency.format(emi)}/mo',
+      );
+    } else {
+      final amount = p * math.pow(1 + annual / 100, years);
+      setState(() {
+        futureValue = double.parse(amount.toStringAsFixed(2));
+        interestEarned = double.parse((futureValue! - p).toStringAsFixed(2));
+        emi = totalPayment = totalInterest = null;
+      });
+      AppState.instance.addHistory(
+        route: '/financial',
+        title: 'Compound Interest',
+        result: currency.format(futureValue),
+      );
+    }
     WidgetSync.publish();
   }
 
@@ -72,7 +104,7 @@ class _FinancialScreenState extends State<FinancialScreen> {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final ready = principal.text.isNotEmpty &&
         rate.text.isNotEmpty &&
-        time.text.isNotEmpty;
+        tenure.text.isNotEmpty;
 
     return Scaffold(
       backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
@@ -93,20 +125,63 @@ class _FinancialScreenState extends State<FinancialScreen> {
               );
             },
           ),
-          IconButton(onPressed: _clear, icon: const Icon(Icons.refresh_rounded)),
+          IconButton(
+            onPressed: _clear,
+            icon: const Icon(Icons.refresh_rounded),
+          ),
         ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
         children: [
-          if (futureValue != null)
+          SegmentControl(
+            labels: const ['EMI Loan', 'Compound'],
+            index: mode,
+            onChanged: (i) {
+              setState(() => mode = i);
+              _calculate();
+            },
+          ),
+          const SizedBox(height: 16),
+          if (mode == 0 && emi != null)
             AppCard(
+              color: AppColors.resultBg,
+              child: Column(
+                children: [
+                  Text('Monthly EMI', style: AppFonts.body2()),
+                  const SizedBox(height: 4),
+                  Text(currency.format(emi), style: AppFonts.result()),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _Stat(
+                          label: 'Total interest',
+                          value: currency.format(totalInterest),
+                        ),
+                      ),
+                      Expanded(
+                        child: _Stat(
+                          label: 'Total payment',
+                          value: currency.format(totalPayment),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          if (mode == 1 && futureValue != null)
+            AppCard(
+              color: AppColors.resultBg,
               child: Column(
                 children: [
                   Text('Future value', style: AppFonts.body2()),
+                  const SizedBox(height: 4),
                   Text(currency.format(futureValue), style: AppFonts.result()),
+                  const SizedBox(height: 8),
                   Text(
-                    'Interest ${currency.format(interestEarned)}',
+                    'Interest earned ${currency.format(interestEarned)}',
                     style: AppFonts.body1(),
                   ),
                 ],
@@ -116,18 +191,68 @@ class _FinancialScreenState extends State<FinancialScreen> {
           AppCard(
             child: Column(
               children: [
-                LabeledField(label: 'Principal', controller: principal, compact: true),
+                LabeledField(
+                  label: mode == 0 ? 'Loan amount' : 'Principal',
+                  controller: principal,
+                  compact: true,
+                ),
                 const Divider(height: 24),
-                LabeledField(label: 'Rate % / yr', controller: rate, compact: true),
+                LabeledField(
+                  label: 'Annual interest rate (%)',
+                  controller: rate,
+                  compact: true,
+                ),
                 const Divider(height: 24),
-                LabeledField(label: 'Years', controller: time, compact: true),
+                LabeledField(
+                  label: mode == 0 ? 'Tenure (years)' : 'Time (years)',
+                  controller: tenure,
+                  compact: true,
+                ),
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          Text(
+            mode == 0
+                ? 'EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ − 1) · r = monthly rate'
+                : 'A = P(1 + r)ᵗ · annual compounding',
+            style: AppFonts.body2(
+              color: dark ? AppColors.mutedDark : AppColors.muted,
+            ),
+          ),
           const SizedBox(height: 20),
-          PrimaryButton(label: 'Calculate', onPressed: ready ? _calculate : null),
+          PrimaryButton(
+            label: 'Calculate',
+            onPressed: ready
+                ? () {
+                    HapticFeedback.lightImpact();
+                    _calculate();
+                  }
+                : null,
+          ),
         ],
       ),
+    );
+  }
+}
+
+class _Stat extends StatelessWidget {
+  final String label;
+  final String value;
+  const _Stat({required this.label, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(label, style: AppFonts.body2()),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: AppFonts.body1().copyWith(fontWeight: FontWeight.w700),
+          textAlign: TextAlign.center,
+        ),
+      ],
     );
   }
 }

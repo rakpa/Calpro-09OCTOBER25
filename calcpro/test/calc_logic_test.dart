@@ -18,6 +18,22 @@ void main() {
       final result = convertUnits(value: 1, from: kg, to: lb);
       expect(result, closeTo(2.20462, 0.00001));
     });
+
+    test('celsius to fahrenheit', () {
+      final c = temperatureUnits.firstWhere((u) => u.name == 'Celsius');
+      final f = temperatureUnits.firstWhere((u) => u.name == 'Fahrenheit');
+      expect(convertUnits(value: 0, from: c, to: f), closeTo(32, 0.001));
+      expect(convertUnits(value: 100, from: c, to: f), closeTo(212, 0.001));
+    });
+
+    test('liters to gallons', () {
+      final l = volumeUnits.firstWhere((u) => u.name == 'Liters');
+      final g = volumeUnits.firstWhere((u) => u.name == 'Gallons (US)');
+      expect(
+        convertUnits(value: 1, from: l, to: g),
+        closeTo(0.264172, 0.00001),
+      );
+    });
   });
 
   group('Mortgage math', () {
@@ -45,6 +61,18 @@ void main() {
       const t = 10.0;
       final amount = p * math.pow(1 + r, t);
       expect(amount, closeTo(1628.89, 0.01));
+    });
+  });
+
+  group('EMI math', () {
+    test('standard EMI amortization', () {
+      const p = 250000.0;
+      const annual = 8.5;
+      const years = 20.0;
+      final r = (annual / 100) / 12;
+      final n = years * 12;
+      final emi = p * r * math.pow(1 + r, n) / (math.pow(1 + r, n) - 1);
+      expect(emi, closeTo(2167.0, 5));
     });
   });
 
@@ -76,6 +104,45 @@ void main() {
         current -= (current * d) / 100;
       }
       expect(current, closeTo(81.0, 0.001));
+    });
+  });
+
+  group('Sales tax', () {
+    test('add tax', () {
+      const price = 100.0;
+      const rate = 8.25;
+      final tax = price * rate / 100;
+      expect(price + tax, closeTo(108.25, 0.001));
+    });
+
+    test('remove tax', () {
+      const total = 108.25;
+      const rate = 8.25;
+      final pretax = total / (1 + rate / 100);
+      expect(pretax, closeTo(100.0, 0.01));
+    });
+  });
+
+  group('Unit price', () {
+    test('cheaper per unit wins', () {
+      final a = 4.99 / 12;
+      final b = 7.49 / 20;
+      expect(a > b, isTrue);
+    });
+  });
+
+  group('Mortgage affordability', () {
+    test('loan from payment inverts EMI', () {
+      const payment = 1500.0;
+      const annual = 6.5;
+      const years = 30.0;
+      final r = (annual / 100) / 12;
+      final n = years * 12;
+      final loan =
+          payment * (math.pow(1 + r, n) - 1) / (r * math.pow(1 + r, n));
+      final check =
+          loan * r * math.pow(1 + r, n) / (math.pow(1 + r, n) - 1);
+      expect(check, closeTo(payment, 0.5));
     });
   });
 }

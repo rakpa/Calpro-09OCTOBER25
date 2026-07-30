@@ -144,6 +144,15 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                               const SizedBox(width: 8),
                               _QuickPill(
+                                label: 'Tax',
+                                icon: Icons.receipt_long_rounded,
+                                background: AppColors.pastelOrange,
+                                foreground: const Color(0xFFC45C12),
+                                onTap: () =>
+                                    Navigator.of(context).pushNamed('/sales-tax'),
+                              ),
+                              const SizedBox(width: 8),
+                              _QuickPill(
                                 label: 'Convert',
                                 icon: Icons.currency_exchange_rounded,
                                 background: AppColors.pastelBlue,

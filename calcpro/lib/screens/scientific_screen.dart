@@ -47,7 +47,13 @@ class _ScientificScreenState extends State<ScientificScreen> {
 
   void _evaluate() {
     try {
-      final expr = display.replaceAll('π', '(${math.pi})').replaceAll('×', '*').replaceAll('÷', '/').replaceAll('−', '-');
+      final expr = display
+          .replaceAll('π', '(${math.pi})')
+          .replaceAll('ℯ', '(${math.e})')
+          .replaceAll('×', '*')
+          .replaceAll('÷', '/')
+          .replaceAll('−', '-')
+          .replaceAll('√(', 'sqrt(');
       final parser = GrammarParser();
       final parsed = parser.parse(expr);
       final evaluator = RealEvaluator(ContextModel());
@@ -88,7 +94,8 @@ class _ScientificScreenState extends State<ScientificScreen> {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     const rows = [
-      [('sin', 'sin('), ('cos', 'cos('), ('tan', 'tan('), ('^', '^')],
+      [('sin', 'sin('), ('cos', 'cos('), ('tan', 'tan('), ('√', '√(')],
+      [('log', 'log('), ('ln', 'ln('), ('^', '^'), ('e', 'ℯ')],
       [('7', '7'), ('8', '8'), ('9', '9'), ('÷', '/')],
       [('4', '4'), ('5', '5'), ('6', '6'), ('×', '*')],
       [('1', '1'), ('2', '2'), ('3', '3'), ('−', '-')],

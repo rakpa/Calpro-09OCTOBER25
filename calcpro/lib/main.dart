@@ -17,6 +17,8 @@ import 'package:calcpro/screens/date_diff_screen.dart';
 import 'package:calcpro/screens/discount_screen.dart';
 import 'package:calcpro/screens/tip_screen.dart';
 import 'package:calcpro/screens/health_screen.dart';
+import 'package:calcpro/screens/sales_tax_screen.dart';
+import 'package:calcpro/screens/unit_price_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +56,8 @@ class CalcProApp extends StatelessWidget {
             '/discount': (_) => const DiscountScreen(),
             '/tip': (_) => const TipScreen(),
             '/health': (_) => const HealthScreen(),
+            '/sales-tax': (_) => const SalesTaxScreen(),
+            '/unit-price': (_) => const UnitPriceScreen(),
           },
         );
       },
