@@ -23,13 +23,23 @@ class _PercentageScreenState extends State<PercentageScreen> {
   Color changeColor = AppColors.resultText;
 
   @override
+  void initState() {
+    super.initState();
+    for (final c in [p1a, p1b, p2a, p2b, p3a, p3b]) {
+      c.addListener(_onFieldChanged);
+    }
+  }
+
+  void _onFieldChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
   void dispose() {
-    p1a.dispose();
-    p1b.dispose();
-    p2a.dispose();
-    p2b.dispose();
-    p3a.dispose();
-    p3b.dispose();
+    for (final c in [p1a, p1b, p2a, p2b, p3a, p3b]) {
+      c.removeListener(_onFieldChanged);
+      c.dispose();
+    }
     super.dispose();
   }
 
