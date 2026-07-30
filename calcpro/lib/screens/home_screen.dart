@@ -52,41 +52,23 @@ class _HomeScreenState extends State<HomeScreen>
           c.route == '/financial')
       .toList();
 
-  List<CalculatorItem> get _categoryItems {
-    switch (_category) {
-      case 'Health':
-        return kCalculators
-            .where((c) => c.route == '/health' || c.route == '/age')
-            .toList();
-      case 'Everyday':
-        return kCalculators
-            .where((c) =>
-                c.route == '/percentage' ||
-                c.route == '/basic' ||
-                c.route == '/convert' ||
-                c.route == '/tip' ||
-                c.route == '/discount' ||
-                c.route == '/scientific' ||
-                c.route == '/time' ||
-                c.route == '/date-diff')
-            .toList();
-      case 'Finance':
-      default:
-        return kCalculators
-            .where((c) =>
-                c.route == '/mortgage' ||
-                c.route == '/financial' ||
-                c.route == '/tip' ||
-                c.route == '/discount' ||
-                c.route == '/percentage')
-            .toList();
-    }
+  /// Full catalog under the popular grid (order preserved).
+  List<CalculatorItem> get _all => List<CalculatorItem>.from(kCalculators);
+
+  void _openCategory(String category) {
+    setState(() => _category = category);
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => CategoryScreen(category: category),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     final popular = _popular;
+    final all = _all;
 
     return ListenableBuilder(
       listenable: AppState.instance,
@@ -181,8 +163,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 label: 'Finance',
                                 icon: Icons.account_balance_wallet_outlined,
                                 selected: _category == 'Finance',
-                                onTap: () =>
-                                    setState(() => _category = 'Finance'),
+                                onTap: () => _openCategory('Finance'),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -191,8 +172,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 label: 'Health',
                                 icon: Icons.favorite_border_rounded,
                                 selected: _category == 'Health',
-                                onTap: () =>
-                                    setState(() => _category = 'Health'),
+                                onTap: () => _openCategory('Health'),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -201,8 +181,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 label: 'Everyday',
                                 icon: Icons.calendar_today_outlined,
                                 selected: _category == 'Everyday',
-                                onTap: () =>
-                                    setState(() => _category = 'Everyday'),
+                                onTap: () => _openCategory('Everyday'),
                               ),
                             ),
                           ],
@@ -224,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 Navigator.of(context).push(
                                   MaterialPageRoute(
                                     builder: (_) =>
-                                        CategoryScreen(category: _category),
+                                        const CategoryScreen(category: 'Popular'),
                                   ),
                                 );
                               },
@@ -278,33 +257,22 @@ class _HomeScreenState extends State<HomeScreen>
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
                 child: Text(
-                  '$_category Calculators',
+                  'All Calculators',
                   style: AppFonts.h3(
                     color: dark ? AppColors.inkDark : AppColors.ink,
                   ),
                 ),
               ),
             ),
-            if (_categoryItems.isEmpty)
-              SliverToBoxAdapter(
-                child: SizedBox(
-                  height: 200,
-                  child: AppStatusView.empty(
-                    title: 'Nothing here yet',
-                    message: 'Try another category.',
-                  ),
-                ),
-              )
-            else
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
-                sliver: SliverList.separated(
-                  itemCount: _categoryItems.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) =>
-                      _ListCalcCard(item: _categoryItems[index]),
-                ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 28),
+              sliver: SliverList.separated(
+                itemCount: all.length,
+                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                itemBuilder: (context, index) =>
+                    _ListCalcCard(item: all[index]),
               ),
+            ),
           ],
         );
       },

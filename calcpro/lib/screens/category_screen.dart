@@ -33,11 +33,15 @@ class CategoryScreen extends StatelessWidget {
                 c.route == '/mortgage' ||
                 c.route == '/financial' ||
                 c.route == '/tip' ||
-                c.route == '/discount')
+                c.route == '/discount' ||
+                c.route == '/percentage')
             .toList();
       case 'Health':
         return kCalculators
-            .where((c) => c.route == '/health' || c.route == '/bmi')
+            .where((c) =>
+                c.route == '/health' ||
+                c.route == '/age' ||
+                c.route == '/bmi')
             .toList();
       case 'Everyday':
         return kCalculators
@@ -45,7 +49,12 @@ class CategoryScreen extends StatelessWidget {
                 c.route == '/percentage' ||
                 c.route == '/basic' ||
                 c.route == '/convert' ||
-                c.route == '/scientific')
+                c.route == '/scientific' ||
+                c.route == '/time' ||
+                c.route == '/date-diff' ||
+                c.route == '/tip' ||
+                c.route == '/discount' ||
+                c.route == '/age')
             .toList();
       default:
         return kCalculators;
