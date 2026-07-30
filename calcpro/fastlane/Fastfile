@@ -90,9 +90,18 @@ platform :ios do
       create_or_export_distribution_cert.call(false)
     end
 
-    # setup_ci sets MATCH_READONLY=true which conflicts with sigh(force:). Override.
-    ENV['MATCH_READONLY'] = 'false'
-    ENV['SIGH_READONLY'] = 'false'
+    # setup_ci sets MATCH_READONLY=true. String "false" is still truthy in Ruby — delete instead.
+    ENV.delete('MATCH_READONLY')
+    ENV.delete('SIGH_READONLY')
+
+    fetch_profile = lambda do
+      sigh(
+        api_key: api_key,
+        app_identifier: bundle_id,
+        adhoc: false,
+        readonly: false
+      )
+    end
 
     if ENV['BUILD_PROVISION_PROFILE_PATH'] && File.exist?(ENV['BUILD_PROVISION_PROFILE_PATH'])
       install_provisioning_profile(path: ENV['BUILD_PROVISION_PROFILE_PATH'])
@@ -100,26 +109,18 @@ platform :ios do
       profile_name = ENV['PROVISIONING_PROFILE_NAME']
     else
       begin
-        # force: recreate when App ID capabilities (e.g. App Groups) change.
-        profile_uuid = sigh(
-          api_key: api_key,
-          app_identifier: bundle_id,
-          adhoc: false,
-          readonly: false,
-          force: true
-        )
+        profile_uuid = fetch_profile.call
       rescue StandardError => e
         # Restored .p12 may be revoked on the portal; create a fresh Distribution cert.
-        if e.message.to_s.match?(/matching code signing identity|Could not find Bundle Identifier|No code signing/i)
-          UI.important("sigh failed (#{e.message}) — creating a fresh Distribution certificate and retrying")
-          create_or_export_distribution_cert.call(true)
-          profile_uuid = sigh(
-            api_key: api_key,
-            app_identifier: bundle_id,
-            adhoc: false,
-            readonly: false,
-            force: true
-          )
+        if e.message.to_s.match?(/matching code signing identity|Could not find Bundle Identifier|No code signing|Provisioning profile.*not valid/i)
+          UI.important("sigh failed (#{e.message}) — repairing Distribution certificate and retrying")
+          begin
+            create_or_export_distribution_cert.call(false)
+          rescue StandardError
+            UI.important('Reuse failed — forcing a new Distribution certificate (may require revoking an unused cert)')
+            create_or_export_distribution_cert.call(true)
+          end
+          profile_uuid = fetch_profile.call
         else
           raise e
         end

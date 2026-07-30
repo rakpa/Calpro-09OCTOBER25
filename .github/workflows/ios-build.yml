@@ -108,7 +108,8 @@ jobs:
         with:
           name: calcpro-distribution-p12
           workflow: ios-build.yml
-          workflow_conclusion: completed
+          # Prefer a successful TestFlight job's .p12 (not a later failed restore copy).
+          workflow_conclusion: success
           search_artifacts: true
           path: ${{ runner.temp }}/restored-signing
           github_token: ${{ secrets.GITHUB_TOKEN }}
