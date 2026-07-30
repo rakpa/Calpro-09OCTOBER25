@@ -5,7 +5,6 @@ import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
-import 'package:calcpro/widgets/app_status.dart';
 import 'package:calcpro/screens/search_screen.dart';
 import 'package:calcpro/screens/category_screen.dart';
 
