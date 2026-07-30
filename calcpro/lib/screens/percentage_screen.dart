@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 
 class PercentageScreen extends StatefulWidget {
   const PercentageScreen({super.key});
@@ -15,13 +16,22 @@ class PercentageScreen extends StatefulWidget {
 class _PercentageScreenState extends State<PercentageScreen> {
   /// 0 = X% of Y, 1 = what %, 2 = percent change
   int mode = 0;
-  int activeField = 0; // which input receives keypad digits
+  int activeField = 0;
   final fields = ['25', '200'];
+
+  /// Answer is only shown after tapping Calculate (search-style flow).
+  bool _showAnswer = false;
+  _PctResult? _committed;
+
+  bool get _canCalculate =>
+      fields[0].isNotEmpty &&
+      fields[1].isNotEmpty &&
+      double.tryParse(fields[0]) != null &&
+      double.tryParse(fields[1]) != null;
 
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final result = _result;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -52,7 +62,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
           child: Column(
             children: [
               _ModeTabs(
@@ -62,15 +72,17 @@ class _PercentageScreenState extends State<PercentageScreen> {
                   setState(() {
                     mode = i;
                     activeField = 0;
+                    _showAnswer = false;
+                    _committed = null;
                     fields[0] = i == 0 ? '25' : (i == 1 ? '50' : '100');
                     fields[1] = i == 0 ? '200' : (i == 1 ? '200' : '150');
                   });
                 },
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 16),
               Expanded(
                 child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 220),
+                  duration: const Duration(milliseconds: 280),
                   switchInCurve: Curves.easeOutCubic,
                   switchOutCurve: Curves.easeInCubic,
                   transitionBuilder: (child, animation) {
@@ -78,66 +90,48 @@ class _PercentageScreenState extends State<PercentageScreen> {
                       opacity: animation,
                       child: SlideTransition(
                         position: Tween<Offset>(
-                          begin: const Offset(0, 0.03),
+                          begin: const Offset(0, 0.04),
                           end: Offset.zero,
                         ).animate(animation),
                         child: child,
                       ),
                     );
                   },
-                  child: KeyedSubtree(
-                    key: ValueKey<int>(mode),
-                    child: Column(
-                      children: [
-                        _ResultHero(
+                  child: _showAnswer && _committed != null
+                      ? _AnswerView(
+                          key: const ValueKey('answer'),
                           dark: dark,
                           eyebrow: _eyebrow,
                           formula: _formulaLine,
-                          answer: result?.display ?? '—',
-                          accent: result?.positive,
-                          onCopy: result == null
-                              ? null
-                              : () {
-                                  Clipboard.setData(
-                                    ClipboardData(
-                                      text: '$_formulaLine = ${result.display}',
-                                    ),
-                                  );
-                                  _saveHistoryIfReady();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Copied')),
-                                  );
-                                },
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: _InputTile(
-                                label: _labelA,
-                                value: fields[0],
-                                selected: activeField == 0,
-                                accent: AppColors.accentPink,
-                                onTap: () => setState(() => activeField = 0),
+                          result: _committed!,
+                          onCopy: () {
+                            Clipboard.setData(
+                              ClipboardData(
+                                text: '$_formulaLine = ${_committed!.display}',
                               ),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: _InputTile(
-                                label: _labelB,
-                                value: fields[1],
-                                selected: activeField == 1,
-                                accent: AppColors.primary,
-                                onTap: () => setState(() => activeField = 1),
-                              ),
-                            ),
-                          ],
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Copied')),
+                            );
+                          },
+                          onEdit: () => setState(() {
+                            _showAnswer = false;
+                          }),
+                          onNew: _clear,
+                        )
+                      : _InputView(
+                          key: ValueKey('input-$mode'),
+                          dark: dark,
+                          labelA: _labelA,
+                          labelB: _labelB,
+                          valueA: fields[0],
+                          valueB: fields[1],
+                          activeField: activeField,
+                          canCalculate: _canCalculate,
+                          onSelectField: (i) => setState(() => activeField = i),
+                          onKey: _onKey,
+                          onCalculate: _calculate,
                         ),
-                        const SizedBox(height: 14),
-                        Expanded(child: _Keypad(onKey: _onKey)),
-                      ],
-                    ),
-                  ),
                 ),
               ),
             ],
@@ -175,7 +169,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
     };
   }
 
-  _PctResult? get _result {
+  _PctResult? get _liveResult {
     final a = double.tryParse(fields[0]);
     final b = double.tryParse(fields[1]);
     if (a == null || b == null) return null;
@@ -202,12 +196,31 @@ class _PercentageScreenState extends State<PercentageScreen> {
     return v.toStringAsFixed(2);
   }
 
+  void _calculate() {
+    final r = _liveResult;
+    if (r == null) return;
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _committed = r;
+      _showAnswer = true;
+    });
+    if (r.display != 'Error') {
+      AppState.instance.addHistory(
+        route: '/percentage',
+        title: 'Percentage',
+        result: '$_formulaLine = ${r.display}',
+      );
+    }
+  }
+
   void _clear() {
     HapticFeedback.mediumImpact();
     setState(() {
       fields[0] = '';
       fields[1] = '';
       activeField = 0;
+      _showAnswer = false;
+      _committed = null;
     });
   }
 
@@ -218,6 +231,8 @@ class _PercentageScreenState extends State<PercentageScreen> {
     }
     if (key == '⌫') {
       setState(() {
+        _showAnswer = false;
+        _committed = null;
         final cur = fields[activeField];
         if (cur.isNotEmpty) {
           fields[activeField] = cur.substring(0, cur.length - 1);
@@ -229,11 +244,12 @@ class _PercentageScreenState extends State<PercentageScreen> {
     }
     if (key == 'next') {
       setState(() => activeField = activeField == 0 ? 1 : 0);
-      _saveHistoryIfReady();
       return;
     }
 
     setState(() {
+      _showAnswer = false;
+      _committed = null;
       var cur = fields[activeField];
       if (key == '.') {
         if (cur.contains('.')) return;
@@ -248,17 +264,6 @@ class _PercentageScreenState extends State<PercentageScreen> {
         fields[activeField] = '$cur$key';
       }
     });
-  }
-
-  void _saveHistoryIfReady() {
-    final r = _result;
-    if (r == null || r.display == 'Error') return;
-    if (fields[0].isEmpty || fields[1].isEmpty) return;
-    AppState.instance.addHistory(
-      route: '/percentage',
-      title: 'Percentage',
-      result: '$_formulaLine = ${r.display}',
-    );
   }
 }
 
@@ -282,7 +287,7 @@ class _ModeTabs extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: dark ? AppColors.keyBgDark : AppColors.pastelLavender,
+        color: dark ? AppColors.keyBgDark : const Color(0xFFE8E6F0),
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
@@ -303,9 +308,9 @@ class _ModeTabs extends StatelessWidget {
                     boxShadow: index == i && !dark
                         ? [
                             BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.14),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
+                              color: Colors.black.withValues(alpha: 0.06),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
                           ]
                         : null,
@@ -317,7 +322,7 @@ class _ModeTabs extends StatelessWidget {
                       fontWeight: FontWeight.w700,
                       fontSize: 13,
                       color: index == i
-                          ? AppColors.primary
+                          ? AppColors.ink
                           : (dark ? AppColors.mutedDark : AppColors.muted),
                     ),
                   ),
@@ -330,134 +335,212 @@ class _ModeTabs extends StatelessWidget {
   }
 }
 
-class _ResultHero extends StatelessWidget {
+class _InputView extends StatelessWidget {
   final bool dark;
-  final String eyebrow;
-  final String formula;
-  final String answer;
-  final bool? accent;
-  final VoidCallback? onCopy;
+  final String labelA;
+  final String labelB;
+  final String valueA;
+  final String valueB;
+  final int activeField;
+  final bool canCalculate;
+  final ValueChanged<int> onSelectField;
+  final ValueChanged<String> onKey;
+  final VoidCallback onCalculate;
 
-  const _ResultHero({
+  const _InputView({
+    super.key,
     required this.dark,
-    required this.eyebrow,
-    required this.formula,
-    required this.answer,
-    required this.accent,
-    this.onCopy,
+    required this.labelA,
+    required this.labelB,
+    required this.valueA,
+    required this.valueB,
+    required this.activeField,
+    required this.canCalculate,
+    required this.onSelectField,
+    required this.onKey,
+    required this.onCalculate,
   });
 
   @override
   Widget build(BuildContext context) {
-    final answerColor = accent == null
-        ? (dark ? AppColors.inkDark : AppColors.ink)
-        : (accent! ? AppColors.resultText : const Color(0xFFB91C1C));
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 18, 16, 18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: dark
-              ? [
-                  const Color(0xFF2A2438),
-                  const Color(0xFF1E2430),
-                ]
-              : const [
-                  Color(0xFFFFF0F5),
-                  Color(0xFFEDE8FF),
-                  Color(0xFFE8F4FF),
-                ],
+    return Column(
+      children: [
+        _FieldCard(
+          label: labelA,
+          value: valueA,
+          selected: activeField == 0,
+          onTap: () => onSelectField(0),
         ),
-        border: Border.all(
-          color: dark
-              ? AppColors.lineDark
-              : Colors.white.withValues(alpha: 0.8),
+        const SizedBox(height: 10),
+        _FieldCard(
+          label: labelB,
+          value: valueB,
+          selected: activeField == 1,
+          onTap: () => onSelectField(1),
         ),
-        boxShadow: dark
-            ? null
-            : [
-                BoxShadow(
-                  color: AppColors.accentPink.withValues(alpha: 0.12),
-                  blurRadius: 22,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  eyebrow,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: dark ? AppColors.mutedDark : AppColors.muted,
-                  ),
-                ),
-              ),
-              if (onCopy != null)
-                IconButton(
-                  tooltip: 'Copy',
-                  onPressed: onCopy,
-                  visualDensity: VisualDensity.compact,
-                  icon: Icon(
-                    Icons.copy_rounded,
-                    size: 18,
-                    color: dark ? AppColors.mutedDark : AppColors.muted,
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            formula,
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: dark ? AppColors.inkDark : AppColors.ink,
-            ),
-          ),
-          const SizedBox(height: 10),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            alignment: Alignment.centerLeft,
-            child: Text(
-              answer,
-              style: GoogleFonts.inter(
-                fontSize: 48,
-                fontWeight: FontWeight.w800,
-                height: 1.05,
-                color: answerColor,
-                letterSpacing: -0.8,
-              ),
-            ),
-          ),
-        ],
-      ),
+        const SizedBox(height: 14),
+        Expanded(child: _Keypad(onKey: onKey)),
+        const SizedBox(height: 12),
+        PrimaryButton(
+          label: 'Calculate',
+          icon: Icons.calculate_rounded,
+          color: AppColors.ctaMagenta,
+          onPressed: canCalculate ? onCalculate : null,
+        ),
+      ],
     );
   }
 }
 
-class _InputTile extends StatelessWidget {
+class _AnswerView extends StatelessWidget {
+  final bool dark;
+  final String eyebrow;
+  final String formula;
+  final _PctResult result;
+  final VoidCallback onCopy;
+  final VoidCallback onEdit;
+  final VoidCallback onNew;
+
+  const _AnswerView({
+    super.key,
+    required this.dark,
+    required this.eyebrow,
+    required this.formula,
+    required this.result,
+    required this.onCopy,
+    required this.onEdit,
+    required this.onNew,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final answerColor = result.positive == null
+        ? (dark ? AppColors.inkDark : AppColors.ink)
+        : (result.positive! ? AppColors.resultText : const Color(0xFFB91C1C));
+
+    return Column(
+      children: [
+        Expanded(
+          child: Center(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: dark ? AppColors.surfaceDark : Colors.white,
+                boxShadow: dark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          eyebrow,
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: dark ? AppColors.mutedDark : AppColors.muted,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: onCopy,
+                        icon: Icon(
+                          Icons.copy_rounded,
+                          size: 20,
+                          color: dark ? AppColors.mutedDark : AppColors.muted,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    formula,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: dark ? AppColors.inkDark : AppColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    'Answer',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      color: AppColors.ctaMagenta,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      result.display,
+                      style: GoogleFonts.inter(
+                        fontSize: 56,
+                        fontWeight: FontWeight.w800,
+                        height: 1.05,
+                        letterSpacing: -1,
+                        color: answerColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        PrimaryButton(
+          label: 'Edit numbers',
+          color: AppColors.ctaMagenta,
+          icon: Icons.edit_rounded,
+          onPressed: onEdit,
+        ),
+        const SizedBox(height: 10),
+        OutlinedButton(
+          onPressed: onNew,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.ctaMagenta,
+            side: const BorderSide(color: AppColors.ctaMagenta, width: 1.4),
+            minimumSize: const Size.fromHeight(52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+          child: Text(
+            'New calculation',
+            style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 16),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _FieldCard extends StatelessWidget {
   final String label;
   final String value;
   final bool selected;
-  final Color accent;
   final VoidCallback onTap;
 
-  const _InputTile({
+  const _FieldCard({
     required this.label,
     required this.value,
     required this.selected,
-    required this.accent,
     required this.onTap,
   });
 
@@ -471,29 +554,17 @@ class _InputTile extends StatelessWidget {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+        width: double.infinity,
+        padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
         decoration: BoxDecoration(
-          color: dark
-              ? AppColors.surfaceDark
-              : (selected
-                  ? accent.withValues(alpha: 0.10)
-                  : AppColors.surfaceRaised),
-          borderRadius: BorderRadius.circular(20),
+          color: dark ? AppColors.surfaceDark : const Color(0xFFECEAF3),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: selected
-                ? accent
-                : (dark ? AppColors.lineDark : AppColors.line),
-            width: selected ? 1.8 : 1,
+                ? AppColors.ctaMagenta
+                : Colors.transparent,
+            width: 1.6,
           ),
-          boxShadow: selected && !dark
-              ? [
-                  BoxShadow(
-                    color: accent.withValues(alpha: 0.18),
-                    blurRadius: 14,
-                    offset: const Offset(0, 6),
-                  ),
-                ]
-              : null,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,9 +574,9 @@ class _InputTile extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
+                letterSpacing: 0.8,
                 color: selected
-                    ? accent
+                    ? AppColors.ctaMagenta
                     : (dark ? AppColors.mutedDark : AppColors.muted),
               ),
             ),
@@ -515,9 +586,9 @@ class _InputTile extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.inter(
-                fontSize: 26,
-                fontWeight: FontWeight.w700,
-                color: dark ? AppColors.inkDark : AppColors.ink,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: dark ? AppColors.inkDark : const Color(0xFF2B1B4E),
               ),
             ),
           ],
@@ -544,24 +615,25 @@ class _Keypad extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final gap = 10.0;
+        const gap = 10.0;
         final rowCount = rows.length;
         final available = constraints.maxHeight - gap * (rowCount - 1);
-        final keyH = (available / rowCount).clamp(48.0, 68.0);
+        final keyH = (available / rowCount).clamp(44.0, 64.0);
 
         return Column(
           children: [
             for (var r = 0; r < rows.length; r++) ...[
-              if (r > 0) SizedBox(height: gap),
+              if (r > 0) const SizedBox(height: gap),
               Expanded(
                 child: Row(
                   children: [
                     for (var i = 0; i < rows[r].length; i++) ...[
-                      if (i > 0) SizedBox(width: gap),
+                      if (i > 0) const SizedBox(width: gap),
                       Expanded(
                         flex: rows[r][i].$1 == '0' ? 2 : 1,
                         child: _PadKey(
-                          label: rows[r][i].$1 == 'next' ? 'Next' : rows[r][i].$1,
+                          label:
+                              rows[r][i].$1 == 'next' ? 'Next' : rows[r][i].$1,
                           style: rows[r][i].$2,
                           height: keyH,
                           onTap: () => onKey(rows[r][i].$1),
@@ -600,37 +672,37 @@ class _PadKey extends StatelessWidget {
     late Color fg;
     switch (style) {
       case KeyStyle.equals:
-        bg = AppColors.primary;
+        bg = AppColors.ctaMagenta;
         fg = Colors.white;
       case KeyStyle.function:
-        bg = dark ? AppColors.keyFnDark : AppColors.pastelLavender;
-        fg = AppColors.primary;
+        bg = dark ? AppColors.keyFnDark : const Color(0xFFECEAF3);
+        fg = dark ? AppColors.inkDark : const Color(0xFF2B1B4E);
       case KeyStyle.danger:
         bg = dark
-            ? AppColors.accentPink.withValues(alpha: 0.22)
-            : AppColors.pastelPink;
-        fg = AppColors.accentPink;
+            ? AppColors.ctaMagenta.withValues(alpha: 0.22)
+            : const Color(0xFFFCE4F1);
+        fg = AppColors.ctaMagenta;
       case KeyStyle.number:
-        bg = dark ? AppColors.keyBgDark : const Color(0xFFF4F6FB);
+        bg = dark ? AppColors.keyBgDark : const Color(0xFFF7F6FA);
         fg = dark ? AppColors.inkDark : AppColors.keyText;
     }
 
     return Material(
       color: bg,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: () {
           AppState.instance.lightFeedback();
           onTap();
         },
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         child: SizedBox(
           height: height,
           child: Center(
             child: Text(
               label,
               style: GoogleFonts.inter(
-                fontSize: label.length > 2 ? 16 : 26,
+                fontSize: label.length > 2 ? 15 : 24,
                 fontWeight: FontWeight.w700,
                 color: fg,
               ),

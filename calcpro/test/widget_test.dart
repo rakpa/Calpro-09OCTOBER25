@@ -54,7 +54,24 @@ void main() {
     expect(find.text('X% of Y'), findsOneWidget);
     expect(find.text('What %'), findsOneWidget);
     expect(find.text('Change'), findsOneWidget);
+    expect(find.text('Calculate'), findsOneWidget);
     expect(find.text('AC'), findsOneWidget);
-    expect(find.text('Next'), findsOneWidget);
+  });
+
+  testWidgets('percentage calculate opens answer', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: ThemeData(useMaterial3: true),
+        home: const PercentageScreen(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Calculate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Answer'), findsOneWidget);
+    expect(find.text('50'), findsOneWidget);
+    expect(find.text('Edit numbers'), findsOneWidget);
   });
 }

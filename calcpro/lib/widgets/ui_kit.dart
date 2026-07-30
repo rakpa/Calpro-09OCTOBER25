@@ -203,21 +203,24 @@ class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool expand;
+  final Color? color;
+  final IconData? icon;
 
   const PrimaryButton({
     super.key,
     required this.label,
     this.onPressed,
     this.expand = true,
+    this.color,
+    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
+    final base = color ?? AppColors.ctaMagenta;
     final child = Material(
-      color: onPressed == null
-          ? AppColors.primary.withValues(alpha: 0.35)
-          : AppColors.primary,
-      borderRadius: BorderRadius.circular(AppRadii.pill),
+      color: onPressed == null ? base.withValues(alpha: 0.35) : base,
+      borderRadius: BorderRadius.circular(14),
       child: InkWell(
         onTap: onPressed == null
             ? null
@@ -225,17 +228,26 @@ class PrimaryButton extends StatelessWidget {
                 HapticFeedback.lightImpact();
                 onPressed!();
               },
-        borderRadius: BorderRadius.circular(AppRadii.pill),
+        borderRadius: BorderRadius.circular(14),
         child: SizedBox(
-          height: 58,
+          height: 56,
           child: Center(
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: 18,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, color: Colors.white, size: 22),
+                  const SizedBox(width: 10),
+                ],
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 17,
+                  ),
+                ),
+              ],
             ),
           ),
         ),

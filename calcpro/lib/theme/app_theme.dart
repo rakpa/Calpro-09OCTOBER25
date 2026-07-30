@@ -87,6 +87,10 @@ class AppColors {
   static const Color accentTeal = Color(0xFF3FD0C9);
   static const Color accentPurple = Color(0xFF5A31F4);
 
+  /// High-energy CTA magenta (search / calculate actions).
+  static const Color ctaMagenta = Color(0xFFC5007E);
+  static const Color ctaMagentaDeep = Color(0xFFA10066);
+
   /// Soft pastel card washes from Calcara home snip.
   static const Color pastelPink = Color(0xFFFFF0F3);
   static const Color pastelBlue = Color(0xFFE8F4FF);
@@ -308,16 +312,18 @@ class AppTheme {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.ctaMagenta,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.35),
+          disabledBackgroundColor: AppColors.ctaMagenta.withValues(alpha: 0.35),
           disabledForegroundColor: Colors.white.withValues(alpha: 0.85),
           elevation: 0,
-          minimumSize: const Size.fromHeight(58),
-          shape: const StadiumBorder(),
+          minimumSize: const Size.fromHeight(56),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
           textStyle: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
