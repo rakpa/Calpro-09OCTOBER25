@@ -319,7 +319,7 @@ class SegmentControl extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: dark ? AppColors.keyBgDark : AppColors.surfaceAlt,
+        color: dark ? AppColors.keyBgDark : AppColors.pastelLavender,
         borderRadius: BorderRadius.circular(AppRadii.pill),
       ),
       child: Row(
@@ -328,6 +328,7 @@ class SegmentControl extends StatelessWidget {
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  if (i == index) return;
                   HapticFeedback.selectionClick();
                   onChanged(i);
                 },
@@ -337,15 +338,15 @@ class SegmentControl extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 11),
                   decoration: BoxDecoration(
                     color: index == i
-                        ? (dark ? AppColors.surfaceDark : AppColors.surfaceRaised)
+                        ? (dark ? AppColors.surfaceDark : Colors.white)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                     boxShadow: index == i && !dark
                         ? [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.06),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+                              color: AppColors.primary.withValues(alpha: 0.14),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
                           ]
                         : null,
@@ -354,7 +355,7 @@ class SegmentControl extends StatelessWidget {
                     labels[i],
                     textAlign: TextAlign.center,
                     style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       fontSize: 14,
                       color: index == i
                           ? AppColors.primary

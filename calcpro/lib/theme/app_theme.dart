@@ -1,6 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+/// Fade page transitions so prior sections don't flash underneath.
+class SoftFadeTransitionsBuilder extends PageTransitionsBuilder {
+  const SoftFadeTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    if (route.settings.name == Navigator.defaultRouteName) {
+      return child;
+    }
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final out = CurvedAnimation(
+      parent: secondaryAnimation,
+      curve: Curves.easeIn,
+    );
+    return FadeTransition(
+      opacity: Tween<double>(begin: 1, end: 0).animate(out),
+      child: FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.018),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      ),
+    );
+  }
+}
+
 /// Calcara design system — Inter typography + playful accents.
 class AppColors {
   static const Color primary = Color(0xFF5A31F4);
@@ -241,6 +281,15 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.iOS: SoftFadeTransitionsBuilder(),
+          TargetPlatform.macOS: SoftFadeTransitionsBuilder(),
+          TargetPlatform.android: SoftFadeTransitionsBuilder(),
+          TargetPlatform.linux: SoftFadeTransitionsBuilder(),
+          TargetPlatform.windows: SoftFadeTransitionsBuilder(),
+        },
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: dark ? AppColors.inkDark : AppColors.ink,

@@ -68,50 +68,78 @@ class _PercentageScreenState extends State<PercentageScreen> {
                 },
               ),
               const SizedBox(height: 14),
-              _ResultHero(
-                dark: dark,
-                eyebrow: _eyebrow,
-                formula: _formulaLine,
-                answer: result?.display ?? '—',
-                accent: result?.positive,
-                onCopy: result == null
-                    ? null
-                    : () {
-                        Clipboard.setData(
-                          ClipboardData(text: '$_formulaLine = ${result.display}'),
-                        );
-                        _saveHistoryIfReady();
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Copied')),
-                        );
-                      },
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _InputTile(
-                      label: _labelA,
-                      value: fields[0],
-                      selected: activeField == 0,
-                      accent: AppColors.accentPink,
-                      onTap: () => setState(() => activeField = 0),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 220),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.03),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: KeyedSubtree(
+                    key: ValueKey<int>(mode),
+                    child: Column(
+                      children: [
+                        _ResultHero(
+                          dark: dark,
+                          eyebrow: _eyebrow,
+                          formula: _formulaLine,
+                          answer: result?.display ?? '—',
+                          accent: result?.positive,
+                          onCopy: result == null
+                              ? null
+                              : () {
+                                  Clipboard.setData(
+                                    ClipboardData(
+                                      text: '$_formulaLine = ${result.display}',
+                                    ),
+                                  );
+                                  _saveHistoryIfReady();
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Copied')),
+                                  );
+                                },
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _InputTile(
+                                label: _labelA,
+                                value: fields[0],
+                                selected: activeField == 0,
+                                accent: AppColors.accentPink,
+                                onTap: () => setState(() => activeField = 0),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _InputTile(
+                                label: _labelB,
+                                value: fields[1],
+                                selected: activeField == 1,
+                                accent: AppColors.primary,
+                                onTap: () => setState(() => activeField = 1),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        Expanded(child: _Keypad(onKey: _onKey)),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _InputTile(
-                      label: _labelB,
-                      value: fields[1],
-                      selected: activeField == 1,
-                      accent: AppColors.primary,
-                      onTap: () => setState(() => activeField = 1),
-                    ),
-                  ),
-                ],
+                ),
               ),
-              const SizedBox(height: 14),
-              Expanded(child: _Keypad(onKey: _onKey)),
             ],
           ),
         ),

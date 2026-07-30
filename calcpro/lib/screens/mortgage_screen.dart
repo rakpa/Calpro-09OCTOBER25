@@ -196,8 +196,12 @@ class _MortgageScreenState extends State<MortgageScreen> {
               labels: const ['Payment', 'Affordability'],
               index: mode,
               onChanged: (i) {
-                setState(() => mode = i);
-                _calculate();
+                if (i == mode) return;
+                setState(() {
+                  mode = i;
+                  monthlyPayment = totalPayment = totalInterest = null;
+                  affordableHome = affordableLoan = maxMonthly = null;
+                });
               },
             ),
             const SizedBox(height: 20),

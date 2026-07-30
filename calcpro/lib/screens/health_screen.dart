@@ -137,35 +137,71 @@ class _HealthScreenState extends State<HealthScreen> {
           SegmentControl(
             labels: const ['BMI', 'Ideal', 'BMR', 'TDEE'],
             index: mode,
-            onChanged: (i) => setState(() => mode = i),
+            onChanged: (i) {
+              if (i == mode) return;
+              setState(() {
+                mode = i;
+                bmi = category = idealKg = bmr = tdee = null;
+              });
+            },
           ),
           const SizedBox(height: 16),
-          if (bmi != null)
-            AppCard(
-              color: AppColors.resultBg,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: child,
+            ),
+            child: KeyedSubtree(
+              key: ValueKey('health-$mode-$bmi-$idealKg-$bmr'),
               child: Column(
                 children: [
-                  Text('BMI $bmi', style: AppFonts.result()),
-                  Text(category!, style: AppFonts.body1().copyWith(color: categoryColor)),
+                  if (mode == 0 && bmi != null)
+                    AppCard(
+                      color: AppColors.resultBg,
+                      child: Column(
+                        children: [
+                          Text('BMI $bmi', style: AppFonts.result()),
+                          Text(
+                            category!,
+                            style: AppFonts.body1().copyWith(color: categoryColor),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (mode == 1 && idealKg != null)
+                    AppCard(
+                      color: AppColors.resultBg,
+                      child: Text(
+                        'Ideal ~ $idealKg kg',
+                        style: AppFonts.result(),
+                      ),
+                    ),
+                  if ((mode == 2 || mode == 3) && bmr != null)
+                    AppCard(
+                      color: AppColors.resultBg,
+                      child: Column(
+                        children: [
+                          Text(
+                            mode == 2
+                                ? 'BMR $bmr kcal/day'
+                                : 'TDEE $tdee kcal/day',
+                            style: AppFonts.result(),
+                          ),
+                          if (mode == 3 && tdee != null)
+                            Text(
+                              'BMR $bmr kcal/day',
+                              style: AppFonts.body1(),
+                            ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
-          if (idealKg != null)
-            AppCard(
-              color: AppColors.resultBg,
-              child: Text('Ideal ~ $idealKg kg', style: AppFonts.result()),
-            ),
-          if (bmr != null)
-            AppCard(
-              color: AppColors.resultBg,
-              child: Column(
-                children: [
-                  Text('BMR $bmr kcal/day', style: AppFonts.result()),
-                  if (tdee != null)
-                    Text('TDEE $tdee kcal/day', style: AppFonts.body1()),
-                ],
-              ),
-            ),
+          ),
           const SizedBox(height: 16),
           AppCard(
             child: Column(

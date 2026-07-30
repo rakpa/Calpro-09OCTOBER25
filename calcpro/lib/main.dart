@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/services/widget_sync.dart';
-import 'package:calcpro/widgets/ui_kit.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:calcpro/screens/splash_screen.dart';
 import 'package:calcpro/screens/onboarding_screen.dart';
 import 'package:calcpro/screens/main_shell.dart';
@@ -38,6 +38,32 @@ void main() async {
   runApp(const CalcProApp());
 }
 
+final Map<String, WidgetBuilder> kAppRoutes = {
+  '/basic': (_) => const BasicScreen(),
+  '/scientific': (_) => const ScientificScreen(),
+  '/percentage': (_) => const PercentageScreen(),
+  '/convert': (_) => const ConvertScreen(),
+  '/financial': (_) => const FinancialScreen(),
+  '/mortgage': (_) => const MortgageScreen(),
+  '/age': (_) => const AgeScreen(),
+  '/time': (_) => const TimeScreen(),
+  '/date-diff': (_) => const DateDiffScreen(),
+  '/discount': (_) => const DiscountScreen(),
+  '/tip': (_) => const TipScreen(),
+  '/health': (_) => const HealthScreen(),
+  '/sales-tax': (_) => const SalesTaxScreen(),
+  '/unit-price': (_) => const UnitPriceScreen(),
+  '/currency': (_) => const CurrencyScreen(),
+  '/savings': (_) => const SavingsScreen(),
+  '/markup': (_) => const MarkupScreen(),
+  '/roi': (_) => const RoiScreen(),
+  '/fraction': (_) => const FractionScreen(),
+  '/loan-compare': (_) => const LoanCompareScreen(),
+  '/refinance': (_) => const RefinanceScreen(),
+  '/fuel': (_) => const FuelScreen(),
+  '/pregnancy': (_) => const PregnancyScreen(),
+};
+
 class CalcProApp extends StatelessWidget {
   const CalcProApp({super.key});
 
@@ -52,40 +78,15 @@ class CalcProApp extends StatelessWidget {
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
           themeMode: AppState.instance.themeMode,
-          builder: (context, child) {
-            return Stack(
-              fit: StackFit.expand,
-              children: [
-                const AtmosphereBackground(),
-                child ?? const SizedBox.shrink(),
-              ],
+          // Atmosphere lives per SoftPage — not globally — so routes don't bleed.
+          home: const SoftPage(child: _RootGate()),
+          onGenerateRoute: (settings) {
+            final builder = kAppRoutes[settings.name];
+            if (builder == null) return null;
+            return SoftPageRoute(
+              settings: settings,
+              builder: builder,
             );
-          },
-          home: const _RootGate(),
-          routes: {
-            '/basic': (_) => const BasicScreen(),
-            '/scientific': (_) => const ScientificScreen(),
-            '/percentage': (_) => const PercentageScreen(),
-            '/convert': (_) => const ConvertScreen(),
-            '/financial': (_) => const FinancialScreen(),
-            '/mortgage': (_) => const MortgageScreen(),
-            '/age': (_) => const AgeScreen(),
-            '/time': (_) => const TimeScreen(),
-            '/date-diff': (_) => const DateDiffScreen(),
-            '/discount': (_) => const DiscountScreen(),
-            '/tip': (_) => const TipScreen(),
-            '/health': (_) => const HealthScreen(),
-            '/sales-tax': (_) => const SalesTaxScreen(),
-            '/unit-price': (_) => const UnitPriceScreen(),
-            '/currency': (_) => const CurrencyScreen(),
-            '/savings': (_) => const SavingsScreen(),
-            '/markup': (_) => const MarkupScreen(),
-            '/roi': (_) => const RoiScreen(),
-            '/fraction': (_) => const FractionScreen(),
-            '/loan-compare': (_) => const LoanCompareScreen(),
-            '/refinance': (_) => const RefinanceScreen(),
-            '/fuel': (_) => const FuelScreen(),
-            '/pregnancy': (_) => const PregnancyScreen(),
           },
         );
       },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
@@ -70,7 +71,7 @@ class FavoritesScreen extends StatelessWidget {
                           label: 'Explore Calculators',
                           onPressed: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(
+                              SoftPageRoute(
                                 builder: (_) => const SearchScreen(),
                               ),
                             );

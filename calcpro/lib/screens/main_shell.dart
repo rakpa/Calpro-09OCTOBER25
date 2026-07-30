@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:calcpro/screens/home_screen.dart';
 import 'package:calcpro/screens/favorites_screen.dart';
 import 'package:calcpro/screens/history_screen.dart';
@@ -26,12 +27,19 @@ class _MainShellState extends State<MainShell> {
     _TabSpec(Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
   ];
 
+  int get _bodyIndex {
+    if (_index == 2) return 0;
+    if (_index > 2) return _index - 1;
+    return _index;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: IndexedStack(
-        index: _index == 2 ? 0 : (_index > 2 ? _index - 1 : _index),
+        index: _bodyIndex,
+        sizing: StackFit.expand,
         children: const [
           HomeScreen(),
           FavoritesScreen(),
@@ -46,10 +54,11 @@ class _MainShellState extends State<MainShell> {
           HapticFeedback.selectionClick();
           if (i == 2) {
             Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const SearchScreen()),
+              SoftPageRoute(builder: (_) => const SearchScreen()),
             );
             return;
           }
+          if (i == _index) return;
           setState(() => _index = i);
         },
       ),
@@ -83,7 +92,9 @@ class _BottomNav extends StatelessWidget {
         color: dark ? AppColors.surfaceDark : AppColors.surfaceRaised,
         border: Border(
           top: BorderSide(
-            color: dark ? AppColors.lineDark : Colors.white.withValues(alpha: 0.8),
+            color: dark
+                ? AppColors.lineDark
+                : Colors.white.withValues(alpha: 0.8),
           ),
         ),
         boxShadow: dark

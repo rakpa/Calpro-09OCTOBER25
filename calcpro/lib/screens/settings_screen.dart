@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
@@ -132,7 +133,7 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(
+                        SoftPageRoute(
                           builder: (_) => const PremiumScreen(),
                         ),
                       );
@@ -144,7 +145,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.info_outline_rounded,
                     label: 'About Calcara',
                     trailing: Text(
-                      '1.6.2',
+                      '1.6.3',
                       style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,

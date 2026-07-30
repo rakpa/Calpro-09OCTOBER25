@@ -140,8 +140,12 @@ class _FinancialScreenState extends State<FinancialScreen> {
             labels: const ['EMI Loan', 'Compound'],
             index: mode,
             onChanged: (i) {
-              setState(() => mode = i);
-              _calculate();
+              if (i == mode) return;
+              setState(() {
+                mode = i;
+                emi = totalPayment = totalInterest = null;
+                futureValue = interestEarned = null;
+              });
             },
           ),
           const SizedBox(height: 16),

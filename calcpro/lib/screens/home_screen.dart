@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
@@ -57,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen>
   void _openCategory(String category) {
     setState(() => _category = category);
     Navigator.of(context).push(
-      MaterialPageRoute(
+      SoftPageRoute(
         builder: (_) => CategoryScreen(category: category),
       ),
     );
@@ -101,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen>
                           hint: 'Search calculators...',
                           onTap: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(
+                              SoftPageRoute(
                                 builder: (_) => const SearchScreen(),
                               ),
                             );
@@ -118,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 foreground: AppColors.primary,
                                 onTap: () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(
+                                    SoftPageRoute(
                                       builder: (_) => const SearchScreen(),
                                     ),
                                   );
@@ -218,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen>
                             TextButton(
                               onPressed: () {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(
+                                  SoftPageRoute(
                                     builder: (_) =>
                                         const CategoryScreen(category: 'Popular'),
                                   ),
