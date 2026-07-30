@@ -19,6 +19,15 @@ import 'package:calcpro/screens/tip_screen.dart';
 import 'package:calcpro/screens/health_screen.dart';
 import 'package:calcpro/screens/sales_tax_screen.dart';
 import 'package:calcpro/screens/unit_price_screen.dart';
+import 'package:calcpro/screens/currency_screen.dart';
+import 'package:calcpro/screens/savings_screen.dart';
+import 'package:calcpro/screens/markup_screen.dart';
+import 'package:calcpro/screens/roi_screen.dart';
+import 'package:calcpro/screens/fraction_screen.dart';
+import 'package:calcpro/screens/loan_compare_screen.dart';
+import 'package:calcpro/screens/refinance_screen.dart';
+import 'package:calcpro/screens/fuel_screen.dart';
+import 'package:calcpro/screens/pregnancy_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +67,15 @@ class CalcProApp extends StatelessWidget {
             '/health': (_) => const HealthScreen(),
             '/sales-tax': (_) => const SalesTaxScreen(),
             '/unit-price': (_) => const UnitPriceScreen(),
+            '/currency': (_) => const CurrencyScreen(),
+            '/savings': (_) => const SavingsScreen(),
+            '/markup': (_) => const MarkupScreen(),
+            '/roi': (_) => const RoiScreen(),
+            '/fraction': (_) => const FractionScreen(),
+            '/loan-compare': (_) => const LoanCompareScreen(),
+            '/refinance': (_) => const RefinanceScreen(),
+            '/fuel': (_) => const FuelScreen(),
+            '/pregnancy': (_) => const PregnancyScreen(),
           },
         );
       },
@@ -86,7 +104,7 @@ class _RootGateState extends State<_RootGate> {
       return OnboardingScreen(
         onDone: () async {
           await AppState.instance.completeOnboarding();
-          setState(() {});
+          if (mounted) setState(() {});
         },
       );
     }

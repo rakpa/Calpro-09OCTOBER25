@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:calcpro/models/unit_data.dart';
+import 'package:calcpro/services/finance_math.dart';
 
 void main() {
   group('Unit conversion', () {
@@ -143,6 +144,78 @@ void main() {
       final check =
           loan * r * math.pow(1 + r, n) / (math.pow(1 + r, n) - 1);
       expect(check, closeTo(payment, 0.5));
+    });
+  });
+
+  group('FinanceMath', () {
+    test('emi matches standard amortization', () {
+      final payment = FinanceMath.emi(
+        principal: 200000,
+        annualPercent: 6,
+        years: 30,
+      );
+      expect(payment, closeTo(1199.10, 0.5));
+    });
+
+    test('loanFromPayment inverts emi', () {
+      final payment = FinanceMath.emi(
+        principal: 250000,
+        annualPercent: 6.5,
+        years: 30,
+      );
+      final loan = FinanceMath.loanFromPayment(
+        payment: payment,
+        annualPercent: 6.5,
+        years: 30,
+      );
+      expect(loan, closeTo(250000, 1));
+    });
+
+    test('futureValue with deposits grows', () {
+      final fv = FinanceMath.futureValue(
+        principal: 1000,
+        annualPercent: 6,
+        years: 1,
+        monthlyDeposit: 100,
+      );
+      expect(fv, greaterThan(1000 + 1200));
+    });
+
+    test('amortization schedule ends near zero', () {
+      final rows = FinanceMath.amortizationSchedule(
+        principal: 10000,
+        annualPercent: 5,
+        years: 2,
+      );
+      expect(rows.length, 24);
+      expect(rows.last.balance, closeTo(0, 0.05));
+    });
+
+    test('currency convert USD to EUR', () {
+      final eur = CurrencyRates.convert(amount: 100, from: 'USD', to: 'EUR');
+      expect(eur, closeTo(92, 0.01));
+    });
+  });
+
+  group('Fraction reduce', () {
+    test('add 1/2 + 1/3 = 5/6', () {
+      const an = 1, ad = 2, bn = 1, bd = 3;
+      final num = an * bd + bn * ad;
+      final den = ad * bd;
+      int gcd(int a, int b) {
+        a = a.abs();
+        b = b.abs();
+        while (b != 0) {
+          final t = b;
+          b = a % b;
+          a = t;
+        }
+        return a == 0 ? 1 : a;
+      }
+
+      final g = gcd(num, den);
+      expect(num ~/ g, 5);
+      expect(den ~/ g, 6);
     });
   });
 }

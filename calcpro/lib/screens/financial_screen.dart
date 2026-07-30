@@ -1,11 +1,11 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/finance_math.dart';
 import 'package:calcpro/services/widget_sync.dart';
 import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/amortization_sheet.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
@@ -63,14 +63,12 @@ class _FinancialScreenState extends State<FinancialScreen> {
     if (p == null || annual == null || years == null || years <= 0) return;
 
     if (mode == 0) {
-      final r = (annual / 100) / 12;
+      final payment = FinanceMath.emi(
+        principal: p,
+        annualPercent: annual,
+        years: years,
+      );
       final n = years * 12;
-      double payment;
-      if (r == 0) {
-        payment = p / n;
-      } else {
-        payment = p * r * math.pow(1 + r, n) / (math.pow(1 + r, n) - 1);
-      }
       final total = payment * n;
       setState(() {
         emi = double.parse(payment.toStringAsFixed(2));
@@ -84,7 +82,11 @@ class _FinancialScreenState extends State<FinancialScreen> {
         result: '${currency.format(emi)}/mo',
       );
     } else {
-      final amount = p * math.pow(1 + annual / 100, years);
+      final amount = FinanceMath.futureValue(
+        principal: p,
+        annualPercent: annual,
+        years: years,
+      );
       setState(() {
         futureValue = double.parse(amount.toStringAsFixed(2));
         interestEarned = double.parse((futureValue! - p).toStringAsFixed(2));
@@ -230,6 +232,25 @@ class _FinancialScreenState extends State<FinancialScreen> {
                   }
                 : null,
           ),
+          if (mode == 0 && emi != null) ...[
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () {
+                final p = double.tryParse(principal.text);
+                final annual = double.tryParse(rate.text);
+                final years = double.tryParse(tenure.text);
+                if (p == null || annual == null || years == null) return;
+                showAmortizationSheet(
+                  context,
+                  principal: p,
+                  annualPercent: annual,
+                  years: years,
+                  title: 'EMI amortization',
+                );
+              },
+              child: const Text('View amortization schedule'),
+            ),
+          ],
         ],
       ),
     );

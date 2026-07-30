@@ -28,38 +28,11 @@ class CategoryScreen extends StatelessWidget {
       case 'Popular':
         return kCalculators.where((c) => c.tags.contains('Popular')).toList();
       case 'Finance':
-        return kCalculators
-            .where((c) =>
-                c.route == '/mortgage' ||
-                c.route == '/financial' ||
-                c.route == '/tip' ||
-                c.route == '/discount' ||
-                c.route == '/percentage' ||
-                c.route == '/sales-tax' ||
-                c.route == '/unit-price')
-            .toList();
+        return kCalculators.where((c) => c.tags.contains('Finance')).toList();
       case 'Health':
-        return kCalculators
-            .where((c) =>
-                c.route == '/health' ||
-                c.route == '/age' ||
-                c.route == '/bmi')
-            .toList();
+        return kCalculators.where((c) => c.tags.contains('Health')).toList();
       case 'Everyday':
-        return kCalculators
-            .where((c) =>
-                c.route == '/percentage' ||
-                c.route == '/basic' ||
-                c.route == '/convert' ||
-                c.route == '/scientific' ||
-                c.route == '/time' ||
-                c.route == '/date-diff' ||
-                c.route == '/tip' ||
-                c.route == '/discount' ||
-                c.route == '/age' ||
-                c.route == '/sales-tax' ||
-                c.route == '/unit-price')
-            .toList();
+        return kCalculators.where((c) => c.tags.contains('Everyday')).toList();
       default:
         return kCalculators;
     }

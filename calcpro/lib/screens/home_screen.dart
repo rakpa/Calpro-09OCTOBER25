@@ -153,12 +153,21 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                               const SizedBox(width: 8),
                               _QuickPill(
-                                label: 'Convert',
+                                label: 'Currency',
                                 icon: Icons.currency_exchange_rounded,
                                 background: AppColors.pastelBlue,
                                 foreground: const Color(0xFF1F6FB5),
                                 onTap: () =>
-                                    Navigator.of(context).pushNamed('/convert'),
+                                    Navigator.of(context).pushNamed('/currency'),
+                              ),
+                              const SizedBox(width: 8),
+                              _QuickPill(
+                                label: 'Savings',
+                                icon: Icons.savings_outlined,
+                                background: AppColors.pastelGreen,
+                                foreground: const Color(0xFF1B7A4A),
+                                onTap: () =>
+                                    Navigator.of(context).pushNamed('/savings'),
                               ),
                             ],
                           ),

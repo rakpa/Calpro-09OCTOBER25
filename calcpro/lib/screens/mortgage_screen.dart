@@ -1,9 +1,9 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/finance_math.dart';
 import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/widgets/amortization_sheet.dart';
 import 'package:calcpro/widgets/calc_scaffold.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 
@@ -83,22 +83,6 @@ class _MortgageScreenState extends State<MortgageScreen> {
     });
   }
 
-  double _loanPayment(double p, double annualRate, double years) {
-    final r = (annualRate / 100) / 12;
-    final n = years * 12;
-    if (n <= 0) return 0;
-    if (r == 0) return p / n;
-    return p * (r * math.pow(1 + r, n)) / (math.pow(1 + r, n) - 1);
-  }
-
-  double _loanFromPayment(double payment, double annualRate, double years) {
-    final r = (annualRate / 100) / 12;
-    final n = years * 12;
-    if (n <= 0) return 0;
-    if (r == 0) return payment * n;
-    return payment * (math.pow(1 + r, n) - 1) / (r * math.pow(1 + r, n));
-  }
-
   void _calculate() {
     final annualRate = double.tryParse(rate.text);
     final years = double.tryParse(term.text);
@@ -115,7 +99,11 @@ class _MortgageScreenState extends State<MortgageScreen> {
       final monthlyIns = insurance.text.isEmpty
           ? 0.0
           : (double.tryParse(insurance.text) ?? 0) / 12;
-      final mortgagePayment = _loanPayment(p, annualRate, years);
+      final mortgagePayment = FinanceMath.emi(
+        principal: p,
+        annualPercent: annualRate,
+        years: years,
+      );
       final totalMonthly = mortgagePayment + monthlyTax + monthlyIns;
       final n = years * 12;
       setState(() {
@@ -142,8 +130,13 @@ class _MortgageScreenState extends State<MortgageScreen> {
       final monthlyIns = insurance.text.isEmpty
           ? 0.0
           : (double.tryParse(insurance.text) ?? 0) / 12;
-      final mortgageBudget = (budget - monthlyTax - monthlyIns).clamp(0, double.infinity).toDouble();
-      final loan = _loanFromPayment(mortgageBudget, annualRate, years);
+      final mortgageBudget =
+          (budget - monthlyTax - monthlyIns).clamp(0, double.infinity).toDouble();
+      final loan = FinanceMath.loanFromPayment(
+        payment: mortgageBudget,
+        annualPercent: annualRate,
+        years: years,
+      );
       final home = loan + downPayment;
       setState(() {
         maxMonthly = mortgageBudget.toStringAsFixed(2);
@@ -154,7 +147,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
       AppState.instance.addHistory(
         route: '/mortgage',
         title: 'Affordability',
-        result: 'Up to \$${affordableHome}',
+        result: 'Up to \$$affordableHome',
       );
     }
   }
@@ -328,6 +321,28 @@ class _MortgageScreenState extends State<MortgageScreen> {
               label: 'Calculate',
               onPressed: ready ? _calculate : null,
             ),
+            if (mode == 0 && monthlyPayment != null) ...[
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () {
+                  final home = double.tryParse(principal.text);
+                  final downPayment = double.tryParse(down.text) ?? 0;
+                  final annualRate = double.tryParse(rate.text);
+                  final years = double.tryParse(term.text);
+                  if (home == null || annualRate == null || years == null) {
+                    return;
+                  }
+                  showAmortizationSheet(
+                    context,
+                    principal: (home - downPayment).clamp(0, double.infinity),
+                    annualPercent: annualRate,
+                    years: years,
+                    title: 'Mortgage amortization',
+                  );
+                },
+                child: const Text('View amortization schedule'),
+              ),
+            ],
           ],
         ),
       ),
