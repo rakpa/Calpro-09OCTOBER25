@@ -55,7 +55,7 @@ class HistoryScreen extends StatelessWidget {
                           onPressed: () => AppState.instance.clearHistory(),
                           child: Text(
                             'Clear',
-                            style: GoogleFonts.fredoka(
+                            style: GoogleFonts.inter(
                               fontWeight: FontWeight.w600,
                               color: AppColors.primary,
                             ),
@@ -105,7 +105,7 @@ class HistoryScreen extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                     child: Text(
                       entry.key,
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
                         fontSize: 14,
                         color: dark ? AppColors.mutedDark : AppColors.muted,
@@ -156,7 +156,7 @@ class HistoryScreen extends StatelessWidget {
                                     children: [
                                       Text(
                                         h.title,
-                                        style: GoogleFonts.fredoka(
+                                        style: GoogleFonts.inter(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 15,
                                         ),
@@ -178,7 +178,7 @@ class HistoryScreen extends StatelessWidget {
                                     h.result,
                                     textAlign: TextAlign.right,
                                     overflow: TextOverflow.ellipsis,
-                                    style: GoogleFonts.fredoka(
+                                    style: GoogleFonts.inter(
                                       fontWeight: FontWeight.w600,
                                       color: AppColors.primary,
                                       fontSize: 14,

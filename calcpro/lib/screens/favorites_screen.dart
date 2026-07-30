@@ -114,7 +114,7 @@ class FavoritesScreen extends StatelessWidget {
                                   children: [
                                     Text(
                                       item.shortTitle,
-                                      style: GoogleFonts.fredoka(
+                                      style: GoogleFonts.inter(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 16,
                                       ),

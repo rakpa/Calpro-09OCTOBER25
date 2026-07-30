@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Calcara design system — Fredoka typography + playful accents.
+/// Calcara design system — Inter typography + playful accents.
 class AppColors {
   static const Color primary = Color(0xFF5A31F4);
   static const Color primaryDeep = Color(0xFF4520D4);
@@ -79,62 +79,62 @@ class AppRadii {
 }
 
 class AppFonts {
-  static TextStyle display({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle display({Color? color}) => GoogleFonts.inter(
         fontSize: 44,
         fontWeight: FontWeight.w700,
         color: color ?? AppColors.brandNavy,
         height: 1.1,
       );
 
-  static TextStyle h1({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle h1({Color? color}) => GoogleFonts.inter(
         fontSize: 34,
         fontWeight: FontWeight.w700,
         color: color ?? AppColors.ink,
         height: 1.2,
       );
 
-  static TextStyle h2({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle h2({Color? color}) => GoogleFonts.inter(
         fontSize: 26,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.ink,
         height: 1.25,
       );
 
-  static TextStyle h3({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle h3({Color? color}) => GoogleFonts.inter(
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.ink,
         height: 1.3,
       );
 
-  static TextStyle body1({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle body1({Color? color}) => GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w400,
         color: color ?? AppColors.ink,
         height: 1.4,
       );
 
-  static TextStyle body2({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle body2({Color? color}) => GoogleFonts.inter(
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: color ?? AppColors.muted,
         height: 1.4,
       );
 
-  static TextStyle caption({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle caption({Color? color}) => GoogleFonts.inter(
         fontSize: 14,
         fontWeight: FontWeight.w500,
         color: color ?? AppColors.muted,
         height: 1.3,
       );
 
-  static TextStyle keypad({Color? color, double size = 28}) => GoogleFonts.fredoka(
+  static TextStyle keypad({Color? color, double size = 28}) => GoogleFonts.inter(
         fontSize: size,
         fontWeight: FontWeight.w600,
         color: color ?? AppColors.keyText,
       );
 
-  static TextStyle result({Color? color}) => GoogleFonts.fredoka(
+  static TextStyle result({Color? color}) => GoogleFonts.inter(
         fontSize: 48,
         fontWeight: FontWeight.w700,
         color: color ?? AppColors.ink,
@@ -144,7 +144,7 @@ class AppFonts {
 
 class AppTheme {
   static TextTheme _textTheme(Color ink) {
-    final base = GoogleFonts.fredokaTextTheme().apply(
+    final base = GoogleFonts.interTextTheme().apply(
       bodyColor: ink,
       displayColor: ink,
     );
@@ -156,7 +156,7 @@ class AppTheme {
       titleMedium: AppFonts.h3(color: ink),
       bodyLarge: AppFonts.body1(color: ink),
       bodyMedium: AppFonts.body2(color: ink),
-      labelLarge: GoogleFonts.fredoka(
+      labelLarge: GoogleFonts.inter(
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: ink,
@@ -210,7 +210,7 @@ class AppTheme {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        titleTextStyle: GoogleFonts.fredoka(
+        titleTextStyle: GoogleFonts.inter(
           color: dark ? AppColors.inkDark : AppColors.ink,
           fontSize: 22,
           fontWeight: FontWeight.w600,
@@ -229,7 +229,7 @@ class AppTheme {
           elevation: 0,
           minimumSize: const Size.fromHeight(58),
           shape: const StadiumBorder(),
-          textStyle: GoogleFonts.fredoka(
+          textStyle: GoogleFonts.inter(
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
@@ -242,7 +242,7 @@ class AppTheme {
           side: BorderSide.none,
           minimumSize: const Size.fromHeight(52),
           shape: const StadiumBorder(),
-          textStyle: GoogleFonts.fredoka(
+          textStyle: GoogleFonts.inter(
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -253,7 +253,7 @@ class AppTheme {
         fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        hintStyle: GoogleFonts.fredoka(color: muted, fontSize: 17),
+        hintStyle: GoogleFonts.inter(color: muted, fontSize: 17),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadii.pill),
           borderSide: BorderSide.none,
@@ -271,7 +271,7 @@ class AppTheme {
       chipTheme: ChipThemeData(
         backgroundColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
         selectedColor: AppColors.primaryMuted,
-        labelStyle: GoogleFonts.fredoka(
+        labelStyle: GoogleFonts.inter(
           fontSize: 15,
           fontWeight: FontWeight.w500,
         ),

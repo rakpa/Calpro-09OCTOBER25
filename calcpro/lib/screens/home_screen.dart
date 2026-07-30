@@ -356,7 +356,7 @@ class _ColorCalcCardState extends State<_ColorCalcCard> {
                   const Spacer(),
                   Text(
                     item.shortTitle,
-                    style: GoogleFonts.fredoka(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
                       fontSize: 22,
@@ -367,7 +367,7 @@ class _ColorCalcCardState extends State<_ColorCalcCard> {
                     item.description,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.fredoka(
+                    style: GoogleFonts.inter(
                       color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
@@ -426,7 +426,7 @@ class _ListCalcCard extends StatelessWidget {
                   children: [
                     Text(
                       item.shortTitle,
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
                         fontSize: 18,
                         color: dark ? AppColors.inkDark : AppColors.ink,

@@ -133,7 +133,7 @@ class ResultPanel extends StatelessWidget {
           ),
         ),
         child: DefaultTextStyle(
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             color: foreground ??
                 (dark ? AppColors.inkDark : AppColors.resultText),
             fontSize: 16,
@@ -174,7 +174,7 @@ class LabeledField extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontWeight: FontWeight.w500,
                 fontSize: 15,
                 color: dark ? AppColors.inkDark : AppColors.ink,
@@ -188,7 +188,7 @@ class LabeledField extends StatelessWidget {
               keyboardType: keyboardType,
               onChanged: onChanged,
               textAlign: TextAlign.right,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontWeight: FontWeight.w600,
                 fontSize: 17,
                 color: dark ? AppColors.inkDark : AppColors.ink,
@@ -223,7 +223,7 @@ class LabeledField extends StatelessWidget {
       children: [
         Text(
           label,
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             fontWeight: FontWeight.w500,
             fontSize: 13,
             color: dark ? AppColors.mutedDark : AppColors.muted,
@@ -234,7 +234,7 @@ class LabeledField extends StatelessWidget {
           controller: controller,
           keyboardType: keyboardType,
           onChanged: onChanged,
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
             fontSize: 17,
             color: dark ? AppColors.inkDark : AppColors.ink,
@@ -322,7 +322,7 @@ class KeypadButton extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontSize: label.length > 2 ? 18 : 28,
                 fontWeight: FontWeight.w600,
                 color: fg,
@@ -367,7 +367,7 @@ class CalcDisplay extends StatelessWidget {
           if (subtitle != null && subtitle!.isNotEmpty) ...[
             Text(
               subtitle!,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 color: dark ? AppColors.mutedDark : AppColors.muted,
                 fontSize: 15,
                 fontWeight: FontWeight.w500,
@@ -381,7 +381,7 @@ class CalcDisplay extends StatelessWidget {
             child: Text(
               value,
               maxLines: 1,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 color: dark ? AppColors.inkDark : AppColors.ink,
                 fontSize: 52,
                 fontWeight: FontWeight.w700,
@@ -429,7 +429,7 @@ class QuickActionRow extends StatelessWidget {
         style: OutlinedButton.styleFrom(
           minimumSize: const Size.fromHeight(42),
           padding: EdgeInsets.zero,
-          textStyle: GoogleFonts.fredoka(
+          textStyle: GoogleFonts.inter(
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),

@@ -49,7 +49,7 @@ class PremiumScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 Text(
                   'Calcara Premium',
-                  style: GoogleFonts.fredoka(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
@@ -59,7 +59,7 @@ class PremiumScreen extends StatelessWidget {
                 Text(
                   'Unlock the full calculator suite.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.fredoka(
+                  style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.9),
                     fontSize: 18,
                   ),
@@ -89,7 +89,7 @@ class PremiumScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 b,
-                                style: GoogleFonts.fredoka(
+                                style: GoogleFonts.inter(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w500,
@@ -123,7 +123,7 @@ class PremiumScreen extends StatelessWidget {
                         child: Text(
                           'Start Free Trial',
                           textAlign: TextAlign.center,
-                          style: GoogleFonts.fredoka(
+                          style: GoogleFonts.inter(
                             color: AppColors.primary,
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
@@ -136,7 +136,7 @@ class PremiumScreen extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   '3 days free, then \$4.99/month.',
-                  style: GoogleFonts.fredoka(
+                  style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 15,
                   ),

@@ -86,7 +86,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           Text(
                             p.subtitle,
                             textAlign: TextAlign.center,
-                            style: GoogleFonts.fredoka(
+                            style: GoogleFonts.inter(
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
                               color: AppColors.brandMuted,
@@ -195,7 +195,7 @@ class _PopularPreview extends StatelessWidget {
                 const Spacer(),
                 Text(
                   c.$3,
-                  style: GoogleFonts.fredoka(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,

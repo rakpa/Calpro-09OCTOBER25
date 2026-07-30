@@ -35,7 +35,7 @@ class PrimaryButton extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
                 fontSize: 18,
@@ -136,7 +136,7 @@ class SegmentControl extends StatelessWidget {
                   child: Text(
                     labels[i],
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.fredoka(
+                    style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                       color: index == i
@@ -187,7 +187,7 @@ class SearchField extends StatelessWidget {
       autofocus: autofocus,
       onTap: onTap,
       onChanged: onChanged,
-      style: GoogleFonts.fredoka(
+      style: GoogleFonts.inter(
         fontWeight: FontWeight.w500,
         fontSize: 15,
         color: dark ? AppColors.inkDark : AppColors.ink,
@@ -386,7 +386,7 @@ class QuickActionButton extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             label,
-            style: GoogleFonts.fredoka(
+            style: GoogleFonts.inter(
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: selected ? color : AppColors.muted,

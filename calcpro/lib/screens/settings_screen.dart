@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
                     trailing: DropdownButtonHideUnderline(
                       child: DropdownButton<ThemeMode>(
                         value: mode,
-                        style: GoogleFonts.fredoka(
+                        style: GoogleFonts.inter(
                           color: dark ? AppColors.inkDark : AppColors.ink,
                           fontSize: 14,
                         ),
@@ -87,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
                     label: 'App Icon',
                     trailing: Text(
                       'Default',
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
                       ),
@@ -138,7 +138,7 @@ class SettingsScreen extends StatelessWidget {
                     label: 'Language',
                     trailing: Text(
                       'English',
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
                       ),
@@ -178,7 +178,7 @@ class SettingsScreen extends StatelessWidget {
                     label: 'About Calcara',
                     trailing: Text(
                       '1.3.0',
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
@@ -208,7 +208,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primary, size: 26),
       title: Text(
         label,
-        style: GoogleFonts.fredoka(
+        style: GoogleFonts.inter(
           fontWeight: FontWeight.w500,
           fontSize: 17,
           color: dark ? AppColors.inkDark : AppColors.ink,
@@ -230,7 +230,7 @@ class SettingsScreen extends StatelessWidget {
       leading: Icon(icon, color: AppColors.primary),
       title: Text(
         label,
-        style: GoogleFonts.fredoka(fontWeight: FontWeight.w500),
+        style: GoogleFonts.inter(fontWeight: FontWeight.w500),
       ),
       trailing: Switch.adaptive(
         value: value,
@@ -257,7 +257,7 @@ class _Section extends StatelessWidget {
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
             title,
-            style: GoogleFonts.fredoka(
+            style: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
               fontSize: 15,
               color: dark ? AppColors.mutedDark : AppColors.muted,

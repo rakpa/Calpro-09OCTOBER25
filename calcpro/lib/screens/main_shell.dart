@@ -160,7 +160,7 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               spec.label,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
                 color: AppColors.primary,
@@ -187,7 +187,7 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               spec.label,
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontSize: 11,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                 color: selected ? AppColors.primary : inactive,

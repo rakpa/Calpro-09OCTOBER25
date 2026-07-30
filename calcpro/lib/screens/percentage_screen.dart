@@ -201,7 +201,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                   child: Text(
                     _displayLine,
                     textAlign: TextAlign.center,
-                    style: GoogleFonts.fredoka(
+                    style: GoogleFonts.inter(
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
                       color: dark ? AppColors.inkDark : AppColors.ink,
@@ -257,7 +257,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
         ),
         child: Text(
           '$label: ${value.isEmpty ? '0' : value}',
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             fontWeight: FontWeight.w600,
             fontSize: 13,
             color: selected ? AppColors.primary : AppColors.muted,
@@ -318,7 +318,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
                     child: Center(
                       child: Text(
                         '=',
-                        style: GoogleFonts.fredoka(
+                        style: GoogleFonts.inter(
                           color: Colors.white,
                           fontSize: 32,
                           fontWeight: FontWeight.w600,

@@ -130,7 +130,7 @@ class _MascotPainter extends CustomPainter {
       final tp = TextPainter(
         text: TextSpan(
           text: labels[i],
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             color: Colors.white,
             fontSize: w * 0.09,
             fontWeight: FontWeight.w600,
@@ -258,7 +258,7 @@ class CalcaraBrandHeader extends StatelessWidget {
         Text(
           'Smart calculators for everyday life.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.fredoka(
+          style: GoogleFonts.inter(
             fontSize: 20,
             fontWeight: FontWeight.w500,
             color: AppColors.brandMuted,
@@ -308,7 +308,7 @@ class FeaturePitchCard extends StatelessWidget {
           Expanded(
             child: Text(
               'Fast. Beautiful. Accurate.\nAll in one place.',
-              style: GoogleFonts.fredoka(
+              style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 color: AppColors.brandNavy,

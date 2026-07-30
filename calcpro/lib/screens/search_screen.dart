@@ -78,7 +78,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     onPressed: () => Navigator.pop(context),
                     child: Text(
                       'Cancel',
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
                         color: AppColors.primary,
                       ),
@@ -117,7 +117,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             backgroundColor: dark
                                 ? AppColors.surfaceDark
                                 : AppColors.surfaceAlt,
-                            labelStyle: GoogleFonts.fredoka(
+                            labelStyle: GoogleFonts.inter(
                               fontWeight: FontWeight.w500,
                               color: dark ? AppColors.inkDark : AppColors.ink,
                             ),
@@ -143,7 +143,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           title: Text(
                             term,
-                            style: GoogleFonts.fredoka(
+                            style: GoogleFonts.inter(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -233,7 +233,7 @@ class _TrendCard extends StatelessWidget {
                   children: [
                     Text(
                       item.shortTitle,
-                      style: GoogleFonts.fredoka(
+                      style: GoogleFonts.inter(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
                         color: dark ? AppColors.inkDark : AppColors.ink,
