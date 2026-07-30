@@ -106,7 +106,6 @@ class _BasicScreenState extends State<BasicScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     const rows = [
       [
         ('AC', KeyStyle.danger),
@@ -135,7 +134,7 @@ class _BasicScreenState extends State<BasicScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Basic'),
         actions: [

@@ -47,11 +47,10 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final codes = CurrencyRates.perUsd.keys.toList()..sort();
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Currency'),
         actions: [

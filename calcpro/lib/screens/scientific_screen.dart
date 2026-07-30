@@ -92,7 +92,6 @@ class _ScientificScreenState extends State<ScientificScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     const rows = [
       [('sin', 'sin('), ('cos', 'cos('), ('tan', 'tan('), ('√', '√(')],
       [('log', 'log('), ('ln', 'ln('), ('^', '^'), ('e', 'ℯ')],
@@ -103,7 +102,7 @@ class _ScientificScreenState extends State<ScientificScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Scientific'),
         actions: [

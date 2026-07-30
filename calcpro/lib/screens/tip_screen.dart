@@ -81,7 +81,7 @@ class _TipScreenState extends State<TipScreen> {
         people.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Tip'),
         actions: [

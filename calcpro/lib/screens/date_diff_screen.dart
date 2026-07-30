@@ -77,9 +77,8 @@ class _DateDiffScreenState extends State<DateDiffScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Date Difference'),
         actions: [

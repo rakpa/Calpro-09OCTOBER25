@@ -43,7 +43,7 @@ class CategoryScreen extends StatelessWidget {
     final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: Text('$category Calculators')),
       body: ListenableBuilder(
         listenable: AppState.instance,
@@ -65,7 +65,7 @@ class CategoryScreen extends StatelessWidget {
               final item = items[i];
               final fav = AppState.instance.isFavorite(item.route);
               return Material(
-                color: dark ? AppColors.surfaceDark : Colors.white,
+                color: dark ? AppColors.surfaceDark : item.pastel,
                 borderRadius: BorderRadius.circular(AppRadii.xl),
                 child: InkWell(
                   onTap: () {
@@ -73,7 +73,26 @@ class CategoryScreen extends StatelessWidget {
                     Navigator.of(context).pushNamed(item.route);
                   },
                   borderRadius: BorderRadius.circular(AppRadii.xl),
-                  child: Padding(
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppRadii.xl),
+                      border: Border.all(
+                        color: dark
+                            ? AppColors.lineDark
+                            : Colors.white.withValues(alpha: 0.65),
+                      ),
+                      gradient: dark
+                          ? null
+                          : LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                item.pastel,
+                                Color.lerp(item.pastel, Colors.white, 0.4)!,
+                              ],
+                            ),
+                    ),
+                    child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Row(
                       children: [
@@ -121,6 +140,7 @@ class CategoryScreen extends StatelessWidget {
                         ),
                       ],
                     ),
+                  ),
                   ),
                 ),
               );

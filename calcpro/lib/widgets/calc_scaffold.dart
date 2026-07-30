@@ -35,7 +35,7 @@ class CalcScaffold extends StatelessWidget {
     final favRoute = route;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Text(title),
         actions: [

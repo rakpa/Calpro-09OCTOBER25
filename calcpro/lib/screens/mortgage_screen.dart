@@ -164,7 +164,7 @@ class _MortgageScreenState extends State<MortgageScreen> {
             term.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Mortgage'),
         actions: [

@@ -109,7 +109,7 @@ class _FinancialScreenState extends State<FinancialScreen> {
         tenure.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('EMI / Interest'),
         actions: [

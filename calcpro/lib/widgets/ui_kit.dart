@@ -3,6 +3,112 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 
+/// Soft multi-wash backdrop so pages never read as flat white.
+class AtmosphereBackground extends StatelessWidget {
+  final Color? accent;
+
+  const AtmosphereBackground({super.key, this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final tint = accent ?? AppColors.primarySoft;
+
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: dark ? AppColors.pageGradientDark : AppColors.pageGradient,
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _Blob(
+              alignment: const Alignment(-1.05, -0.95),
+              size: 280,
+              color: dark
+                  ? tint.withValues(alpha: 0.18)
+                  : AppColors.pastelLavender.withValues(alpha: 0.95),
+            ),
+            _Blob(
+              alignment: const Alignment(1.1, -0.55),
+              size: 240,
+              color: dark
+                  ? AppColors.accentTeal.withValues(alpha: 0.12)
+                  : AppColors.pastelBlue.withValues(alpha: 0.9),
+            ),
+            _Blob(
+              alignment: const Alignment(-0.85, 0.55),
+              size: 260,
+              color: dark
+                  ? AppColors.accentGreen.withValues(alpha: 0.10)
+                  : AppColors.pastelGreen.withValues(alpha: 0.85),
+            ),
+            _Blob(
+              alignment: const Alignment(0.95, 0.95),
+              size: 300,
+              color: dark
+                  ? AppColors.accentOrange.withValues(alpha: 0.10)
+                  : AppColors.pastelOrange.withValues(alpha: 0.8),
+            ),
+            // Soft vignette so content stays readable.
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: dark
+                      ? [
+                          Colors.black.withValues(alpha: 0.08),
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.18),
+                        ]
+                      : [
+                          Colors.white.withValues(alpha: 0.18),
+                          Colors.transparent,
+                          const Color(0xFF1A1A40).withValues(alpha: 0.04),
+                        ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Blob extends StatelessWidget {
+  final Alignment alignment;
+  final double size;
+  final Color color;
+
+  const _Blob({
+    required this.alignment,
+    required this.size,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: alignment,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [
+              color,
+              color.withValues(alpha: 0),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class PrimaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -64,11 +170,39 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
-      color: color ?? (dark ? AppColors.surfaceDark : AppColors.surface),
-      borderRadius: BorderRadius.circular(AppRadii.xl),
-      elevation: dark ? 0 : 2,
-      shadowColor: const Color(0xFF1C1C28).withValues(alpha: 0.18),
+    final fill = color ??
+        (dark ? AppColors.surfaceDark : AppColors.surfaceRaised);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(AppRadii.xl),
+        border: Border.all(
+          color: dark
+              ? AppColors.lineDark.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.72),
+          width: 1,
+        ),
+        boxShadow: dark
+            ? null
+            : [
+                BoxShadow(
+                  color: const Color(0xFF1C1C28).withValues(alpha: 0.07),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+        gradient: color == null && !dark
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFFFFDFB),
+                  Color(0xFFF5F7FC),
+                  Color(0xFFF2F8F5),
+                ],
+              )
+            : null,
+      ),
       child: Padding(
         padding: padding,
         child: child,
@@ -113,7 +247,7 @@ class SegmentControl extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 11),
                   decoration: BoxDecoration(
                     color: index == i
-                        ? (dark ? AppColors.surfaceDark : Colors.white)
+                        ? (dark ? AppColors.surfaceDark : AppColors.surfaceRaised)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(AppRadii.pill),
                     boxShadow: index == i && !dark
@@ -208,7 +342,7 @@ class SearchField extends StatelessWidget {
                   )
                 : null),
         filled: true,
-        fillColor: dark ? AppColors.surfaceDark : Colors.white,
+        fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceRaised,
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
         border: OutlineInputBorder(

@@ -100,7 +100,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final recent = AppState.instance.recentSearches;
     final trending = [
       calculatorByRoute('/percentage')!,
@@ -110,7 +109,7 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Column(
           children: [
@@ -235,7 +234,7 @@ class _TrendCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: dark ? AppColors.surfaceDark : Colors.white,
+      color: dark ? AppColors.surfaceDark : item.pastel,
       borderRadius: BorderRadius.circular(AppRadii.lg),
       child: InkWell(
         onTap: () {
@@ -244,7 +243,16 @@ class _TrendCard extends StatelessWidget {
           Navigator.of(context).pushNamed(item.route);
         },
         borderRadius: BorderRadius.circular(AppRadii.lg),
-        child: Padding(
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.lg),
+            border: Border.all(
+              color: dark
+                  ? AppColors.lineDark
+                  : Colors.white.withValues(alpha: 0.65),
+            ),
+          ),
+          child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
@@ -272,6 +280,7 @@ class _TrendCard extends StatelessWidget {
               const Icon(Icons.chevron_right_rounded),
             ],
           ),
+        ),
         ),
       ),
     );

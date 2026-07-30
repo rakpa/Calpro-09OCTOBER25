@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/widgets/ui_kit.dart';
 import 'package:calcpro/screens/splash_screen.dart';
 import 'package:calcpro/screens/onboarding_screen.dart';
 import 'package:calcpro/screens/main_shell.dart';
@@ -51,6 +52,15 @@ class CalcProApp extends StatelessWidget {
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
           themeMode: AppState.instance.themeMode,
+          builder: (context, child) {
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                const AtmosphereBackground(),
+                child ?? const SizedBox.shrink(),
+              ],
+            );
+          },
           home: const _RootGate(),
           routes: {
             '/basic': (_) => const BasicScreen(),

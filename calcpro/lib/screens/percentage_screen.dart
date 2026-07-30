@@ -124,7 +124,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
     final dark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Percentage Calculator'),
         actions: [

@@ -144,7 +144,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.info_outline_rounded,
                     label: 'About Calcara',
                     trailing: Text(
-                      '1.6.0',
+                      '1.6.1',
                       style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
@@ -235,11 +235,32 @@ class _Section extends StatelessWidget {
           ),
         ),
         Material(
-          color: dark ? AppColors.surfaceDark : Colors.white,
+          color: dark ? AppColors.surfaceDark : AppColors.surfaceRaised,
           borderRadius: BorderRadius.circular(AppRadii.xl),
-          elevation: dark ? 0 : 1.5,
+          elevation: dark ? 0 : 0,
           shadowColor: Colors.black.withValues(alpha: 0.12),
-          child: child,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(AppRadii.xl),
+              border: Border.all(
+                color: dark
+                    ? AppColors.lineDark
+                    : Colors.white.withValues(alpha: 0.7),
+              ),
+              gradient: dark
+                  ? null
+                  : const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFFFFFDFB),
+                        Color(0xFFF3F6FC),
+                        Color(0xFFF1F8F4),
+                      ],
+                    ),
+            ),
+            child: child,
+          ),
         ),
       ],
     );

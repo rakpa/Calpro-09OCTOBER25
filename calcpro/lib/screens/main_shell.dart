@@ -28,10 +28,8 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       body: IndexedStack(
         index: _index == 2 ? 0 : (_index > 2 ? _index - 1 : _index),
         children: const [
@@ -80,17 +78,21 @@ class _BottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
       decoration: BoxDecoration(
-        color: dark ? AppColors.surfaceDark : Colors.white,
+        color: dark ? AppColors.surfaceDark : AppColors.surfaceRaised,
+        border: Border(
+          top: BorderSide(
+            color: dark ? AppColors.lineDark : Colors.white.withValues(alpha: 0.8),
+          ),
+        ),
         boxShadow: dark
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 16,
-                  offset: const Offset(0, -4),
+                  color: AppColors.primary.withValues(alpha: 0.06),
+                  blurRadius: 20,
+                  offset: const Offset(0, -6),
                 ),
               ],
       ),

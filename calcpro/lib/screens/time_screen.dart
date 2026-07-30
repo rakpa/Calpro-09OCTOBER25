@@ -69,13 +69,12 @@ class _TimeScreenState extends State<TimeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final ready = mode == 0
         ? startTime != null && endTime != null
         : startDate != null && endDate != null;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Time'),
         actions: [

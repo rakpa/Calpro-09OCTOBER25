@@ -10,18 +10,22 @@ class AppColors {
   static const Color lavender = Color(0xFFF3F0FF);
 
   /// Splash / onboarding light wash from Calcara snip.
-  static const Color splashBgTop = Color(0xFFF7F8FC);
-  static const Color splashBgBottom = Color(0xFFEEF2FA);
+  static const Color splashBgTop = Color(0xFFF5F7FF);
+  static const Color splashBgBottom = Color(0xFFE8F3F0);
   static const Color brandNavy = Color(0xFF1A1A40);
   static const Color brandMuted = Color(0xFF6B7394);
   static const Color sparkle = Color(0xFFFFB020);
 
-  static const Color bg = Color(0xFFF7F8FC);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceAlt = Color(0xFFF0F2F7);
+  /// Soft cool wash — never flat white page chrome.
+  static const Color bg = Color(0xFFEEF2F8);
+  static const Color bgWarm = Color(0xFFF7F1EB);
+  static const Color bgMint = Color(0xFFE9F5F1);
+  static const Color surface = Color(0xFFF8FAFD);
+  static const Color surfaceRaised = Color(0xFFFFFCF9);
+  static const Color surfaceAlt = Color(0xFFE6ECF5);
   static const Color ink = Color(0xFF1A1A40);
   static const Color muted = Color(0xFF6B7394);
-  static const Color line = Color(0xFFE4E7F0);
+  static const Color line = Color(0xFFD8DEEA);
 
   static const Color keyBg = Color(0xFFFFFFFF);
   static const Color keyFn = Color(0xFFF0ECFF);
@@ -64,7 +68,32 @@ class AppColors {
   static const LinearGradient splashGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [splashBgTop, Color(0xFFF3F5FB), splashBgBottom],
+    colors: [splashBgTop, Color(0xFFEEF4F8), splashBgBottom],
+  );
+
+  /// Page atmosphere used behind transparent scaffolds.
+  static const LinearGradient pageGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFFF3F0FF),
+      Color(0xFFEEF4FB),
+      Color(0xFFE8F6F1),
+      Color(0xFFF8F1E9),
+    ],
+    stops: [0.0, 0.35, 0.7, 1.0],
+  );
+
+  static const LinearGradient pageGradientDark = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [
+      Color(0xFF161622),
+      Color(0xFF141820),
+      Color(0xFF121A18),
+      Color(0xFF1A1614),
+    ],
+    stops: [0.0, 0.35, 0.7, 1.0],
   );
 }
 
@@ -184,7 +213,7 @@ class AppTheme {
         surface: AppColors.surface,
         brightness: Brightness.light,
       ),
-      scaffoldBackgroundColor: AppColors.bg,
+      scaffoldBackgroundColor: Colors.transparent,
     );
     return _apply(base, _textTheme(AppColors.ink), dark: false);
   }
@@ -200,7 +229,7 @@ class AppTheme {
         surface: AppColors.surfaceDark,
         brightness: Brightness.dark,
       ),
-      scaffoldBackgroundColor: AppColors.bgDark,
+      scaffoldBackgroundColor: Colors.transparent,
     );
     return _apply(base, _textTheme(AppColors.inkDark), dark: true);
   }

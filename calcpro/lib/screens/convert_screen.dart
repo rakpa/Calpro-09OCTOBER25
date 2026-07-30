@@ -65,7 +65,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
     final units = unitsFor(category);
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Converter'),
         actions: [

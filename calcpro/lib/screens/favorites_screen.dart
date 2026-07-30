@@ -90,7 +90,7 @@ class FavoritesScreen extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final item = items[i];
                     return Material(
-                      color: dark ? AppColors.surfaceDark : Colors.white,
+                      color: dark ? AppColors.surfaceDark : item.pastel,
                       borderRadius: BorderRadius.circular(AppRadii.xl),
                       child: InkWell(
                         onTap: () {
@@ -98,7 +98,16 @@ class FavoritesScreen extends StatelessWidget {
                           Navigator.of(context).pushNamed(item.route);
                         },
                         borderRadius: BorderRadius.circular(AppRadii.xl),
-                        child: Padding(
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(AppRadii.xl),
+                            border: Border.all(
+                              color: dark
+                                  ? AppColors.lineDark
+                                  : Colors.white.withValues(alpha: 0.65),
+                            ),
+                          ),
+                          child: Padding(
                           padding: const EdgeInsets.all(14),
                           child: Row(
                             children: [
@@ -139,6 +148,7 @@ class FavoritesScreen extends StatelessWidget {
                               ),
                             ],
                           ),
+                        ),
                         ),
                       ),
                     );

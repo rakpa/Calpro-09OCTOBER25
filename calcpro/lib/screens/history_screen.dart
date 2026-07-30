@@ -122,7 +122,9 @@ class HistoryScreen extends StatelessWidget {
                       final h = entry.value[i];
                       final calc = calculatorByRoute(h.route);
                       return Material(
-                        color: dark ? AppColors.surfaceDark : Colors.white,
+                        color: dark
+                            ? AppColors.surfaceDark
+                            : (calc?.pastel ?? AppColors.surfaceRaised),
                         borderRadius: BorderRadius.circular(AppRadii.lg),
                         child: InkWell(
                           onTap: () {
@@ -130,7 +132,16 @@ class HistoryScreen extends StatelessWidget {
                             Navigator.of(context).pushNamed(h.route);
                           },
                           borderRadius: BorderRadius.circular(AppRadii.lg),
-                          child: Padding(
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(AppRadii.lg),
+                              border: Border.all(
+                                color: dark
+                                    ? AppColors.lineDark
+                                    : Colors.white.withValues(alpha: 0.65),
+                              ),
+                            ),
+                            child: Padding(
                             padding: const EdgeInsets.all(14),
                             child: Row(
                               children: [
@@ -187,6 +198,7 @@ class HistoryScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
+                          ),
                           ),
                         ),
                       );

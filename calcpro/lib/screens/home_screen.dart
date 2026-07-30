@@ -367,7 +367,7 @@ class _CategoryTab extends StatelessWidget {
     return Material(
       color: selected
           ? AppColors.primary
-          : (dark ? AppColors.surfaceDark : Colors.white),
+          : (dark ? AppColors.surfaceDark : AppColors.surfaceRaised),
       borderRadius: BorderRadius.circular(AppRadii.pill),
       elevation: selected || dark ? 0 : 0.5,
       shadowColor: Colors.black.withValues(alpha: 0.08),
@@ -506,9 +506,9 @@ class _ListCalcCard extends StatelessWidget {
     final fav = AppState.instance.isFavorite(item.route);
 
     return Material(
-      color: dark ? AppColors.surfaceDark : Colors.white,
+      color: dark ? AppColors.surfaceDark : item.pastel,
       borderRadius: BorderRadius.circular(AppRadii.xl),
-      elevation: dark ? 0 : 1,
+      elevation: dark ? 0 : 0,
       shadowColor: Colors.black.withValues(alpha: 0.08),
       child: InkWell(
         onTap: () {
@@ -516,7 +516,26 @@ class _ListCalcCard extends StatelessWidget {
           Navigator.of(context).pushNamed(item.route);
         },
         borderRadius: BorderRadius.circular(AppRadii.xl),
-        child: Padding(
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadii.xl),
+            border: Border.all(
+              color: dark
+                  ? AppColors.lineDark
+                  : Colors.white.withValues(alpha: 0.65),
+            ),
+            gradient: dark
+                ? null
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      item.pastel,
+                      Color.lerp(item.pastel, Colors.white, 0.35)!,
+                    ],
+                  ),
+          ),
+          child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
@@ -560,6 +579,7 @@ class _ListCalcCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

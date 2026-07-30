@@ -86,13 +86,12 @@ class _DiscountScreenState extends State<DiscountScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     final ready = mode == 0
         ? singlePrice.text.isNotEmpty && singleDiscount.text.isNotEmpty
         : multiPrice.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Discount'),
         actions: [

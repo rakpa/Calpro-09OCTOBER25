@@ -22,7 +22,7 @@ Future<void> showAmortizationSheet(
     isScrollControlled: true,
     backgroundColor: Theme.of(context).brightness == Brightness.dark
         ? AppColors.surfaceDark
-        : Colors.white,
+        : AppColors.surfaceRaised,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
     ),

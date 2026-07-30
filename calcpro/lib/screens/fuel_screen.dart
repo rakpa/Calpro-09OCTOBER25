@@ -59,9 +59,8 @@ class _FuelScreenState extends State<FuelScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: dark ? AppColors.bgDark : AppColors.bg,
+      backgroundColor: Colors.transparent,
       appBar: AppBar(title: const Text('Fuel Efficiency')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 28),
