@@ -42,8 +42,8 @@ void main() {
 
     expect(find.textContaining('Good'), findsOneWidget);
     expect(find.text('What would you like to calculate?'), findsOneWidget);
-    expect(find.textContaining('All Calculators'), findsOneWidget);
-    expect(find.textContaining('Sort by:'), findsOneWidget);
+    expect(find.text('Sort by Popular'), findsOneWidget);
+    expect(find.textContaining('Calculators'), findsWidgets);
     expect(find.text('Finance'), findsWidgets);
     expect(find.text('Compound'), findsOneWidget);
     expect(find.text('Mortgage'), findsOneWidget);

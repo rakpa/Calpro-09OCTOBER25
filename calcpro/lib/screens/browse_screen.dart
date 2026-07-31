@@ -409,10 +409,17 @@ class _BrowseRow extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: item.accent.withValues(alpha: 0.14),
+                  color: item.accent,
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: item.accent.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(item.icon, color: item.accent, size: 24),
+                child: Icon(item.icon, color: Colors.white, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(

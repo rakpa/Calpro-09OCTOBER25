@@ -79,13 +79,13 @@ class AppColors {
   static const Color keyBgDark = Color(0xFF2A2A36);
   static const Color keyFnDark = Color(0xFF322E48);
 
-  static const Color accentPink = Color(0xFFFF6B8A);
-  static const Color accentOrange = Color(0xFFFF8F3D);
-  static const Color accentBlue = Color(0xFF5BA8FF);
-  static const Color accentGreen = Color(0xFF3DDC84);
-  static const Color accentLime = Color(0xFFB8E63A);
-  static const Color accentTeal = Color(0xFF3FD0C9);
-  static const Color accentPurple = Color(0xFF5A31F4);
+  static const Color accentPink = Color(0xFFE84393);
+  static const Color accentOrange = Color(0xFFE17055);
+  static const Color accentBlue = Color(0xFF0984E3);
+  static const Color accentGreen = Color(0xFF00B894);
+  static const Color accentLime = Color(0xFF6AB04C);
+  static const Color accentTeal = Color(0xFF00A8A8);
+  static const Color accentPurple = Color(0xFF6C5CE7);
 
   /// High-energy CTA magenta (search / calculate actions).
   static const Color ctaMagenta = Color(0xFFC5007E);

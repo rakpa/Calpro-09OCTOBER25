@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
-import 'package:calcpro/screens/search_screen.dart';
 
 enum _HomeSort { popular, nameAz, nameZa }
 
@@ -25,32 +23,29 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _intro;
+class _HomeScreenState extends State<HomeScreen> {
+  final _controller = TextEditingController();
+  String _query = '';
   String _chip = 'All';
   _HomeSort _sort = _HomeSort.popular;
 
   static const _chips = [
     _ChipSpec('All', Icons.apps_rounded, AppColors.primary),
-    _ChipSpec('Finance', Icons.bar_chart_rounded, Color(0xFF4DABF7)),
-    _ChipSpec('Health', Icons.favorite_rounded, Color(0xFF2ECC71)),
-    _ChipSpec('Everyday', Icons.calendar_today_rounded, Color(0xFF4DABF7)),
-    _ChipSpec('Business', Icons.work_outline_rounded, Color(0xFFF5A623)),
+    _ChipSpec('Finance', Icons.bar_chart_rounded, Color(0xFF0984E3)),
+    _ChipSpec('Health', Icons.favorite_rounded, Color(0xFF00B894)),
+    _ChipSpec('Everyday', Icons.calendar_today_rounded, Color(0xFF0984E3)),
+    _ChipSpec('Business', Icons.work_outline_rounded, Color(0xFFE17055)),
   ];
 
   @override
   void initState() {
     super.initState();
-    _intro = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 650),
-    )..forward();
+    _controller.addListener(() => setState(() => _query = _controller.text));
   }
 
   @override
   void dispose() {
-    _intro.dispose();
+    _controller.dispose();
     super.dispose();
   }
 
@@ -65,6 +60,19 @@ class _HomeScreenState extends State<HomeScreen>
     var list = _chip == 'All'
         ? List<CalculatorItem>.from(kCalculators)
         : kCalculators.where((c) => c.tags.contains(_chip)).toList();
+
+    final q = _query.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      list = list
+          .where(
+            (c) =>
+                c.title.toLowerCase().contains(q) ||
+                c.shortTitle.toLowerCase().contains(q) ||
+                c.description.toLowerCase().contains(q) ||
+                c.tags.any((t) => t.toLowerCase().contains(q)),
+          )
+          .toList();
+    }
 
     switch (_sort) {
       case _HomeSort.popular:
@@ -82,16 +90,10 @@ class _HomeScreenState extends State<HomeScreen>
     return list;
   }
 
-  String get _sectionTitle {
-    final n = _items.length;
-    if (_chip == 'All') return 'All Calculators ($n)';
-    return '$_chip Calculators ($n)';
-  }
-
   String get _sortLabel => switch (_sort) {
-        _HomeSort.popular => 'Popular',
-        _HomeSort.nameAz => 'A–Z',
-        _HomeSort.nameZa => 'Z–A',
+        _HomeSort.popular => 'Sort by Popular',
+        _HomeSort.nameAz => 'Sort A–Z',
+        _HomeSort.nameZa => 'Sort Z–A',
       };
 
   Future<void> _pickSort() async {
@@ -151,12 +153,6 @@ class _HomeScreenState extends State<HomeScreen>
     if (choice != null) setState(() => _sort = choice);
   }
 
-  void _openSearch() {
-    Navigator.of(context).push(
-      SoftPageRoute(builder: (_) => const SearchScreen()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final dark = Theme.of(context).brightness == Brightness.dark;
@@ -174,151 +170,135 @@ class _HomeScreenState extends State<HomeScreen>
                 bottom: false,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                  child: FadeTransition(
-                    opacity: CurvedAnimation(
-                      parent: _intro,
-                      curve: Curves.easeOut,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '$_greeting 👋',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.15,
+                                    color: dark
+                                        ? AppColors.inkDark
+                                        : AppColors.ink,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'What would you like to calculate?',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    height: 1.35,
+                                    color: dark
+                                        ? AppColors.mutedDark
+                                        : AppColors.muted,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _NotificationButton(
+                            onTap: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('No new notifications'),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      SearchField(
+                        controller: _controller,
+                        hint: 'Search 120+ calculators...',
+                        onClear: () => _controller.clear(),
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        height: 42,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _chips.length,
+                          separatorBuilder: (_, __) =>
+                              const SizedBox(width: 8),
+                          itemBuilder: (context, i) {
+                            final chip = _chips[i];
+                            return _IconCategoryChip(
+                              label: chip.label,
+                              icon: chip.icon,
+                              accent: chip.accent,
+                              selected: _chip == chip.label,
+                              onTap: () =>
+                                  setState(() => _chip = chip.label),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              '${items.length} Calculator${items.length == 1 ? '' : 's'}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: dark
+                                    ? AppColors.mutedDark
+                                    : AppColors.muted,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          InkWell(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _pickSort();
+                            },
+                            borderRadius: BorderRadius.circular(10),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
-                                    '$_greeting 👋',
+                                    _sortLabel,
                                     style: GoogleFonts.inter(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      height: 1.15,
-                                      color: dark
-                                          ? AppColors.inkDark
-                                          : AppColors.ink,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    'What would you like to calculate?',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.35,
-                                      color: dark
-                                          ? AppColors.mutedDark
-                                          : AppColors.muted,
-                                    ),
+                                  const SizedBox(width: 2),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down_rounded,
+                                    size: 20,
+                                    color: AppColors.primary,
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            _NotificationButton(
-                              onTap: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('No new notifications'),
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 18),
-                        SearchField(
-                          readOnly: true,
-                          showMic: false,
-                          hint: 'Search 120+ calculators...',
-                          onTap: _openSearch,
-                        ),
-                        const SizedBox(height: 14),
-                        SizedBox(
-                          height: 42,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: _chips.length,
-                            separatorBuilder: (_, __) =>
-                                const SizedBox(width: 8),
-                            itemBuilder: (context, i) {
-                              final chip = _chips[i];
-                              return _IconCategoryChip(
-                                label: chip.label,
-                                icon: chip.icon,
-                                accent: chip.accent,
-                                selected: _chip == chip.label,
-                                onTap: () =>
-                                    setState(() => _chip = chip.label),
-                              );
-                            },
                           ),
-                        ),
-                        const SizedBox(height: 18),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                _sectionTitle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w800,
-                                  color: dark
-                                      ? AppColors.inkDark
-                                      : AppColors.ink,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            InkWell(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                _pickSort();
-                              },
-                              borderRadius: BorderRadius.circular(10),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 4,
-                                  vertical: 4,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      'Sort by: ',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w500,
-                                        color: dark
-                                            ? AppColors.mutedDark
-                                            : AppColors.muted,
-                                      ),
-                                    ),
-                                    Text(
-                                      _sortLabel,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: AppColors.primary,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 18,
-                                      color: AppColors.primary,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                    ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                   ),
                 ),
               ),
@@ -327,10 +307,14 @@ class _HomeScreenState extends State<HomeScreen>
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(
-                  child: Text(
-                    'No calculators in this category',
-                    style: GoogleFonts.inter(
-                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      'No calculators found',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                      ),
                     ),
                   ),
                 ),
@@ -338,30 +322,12 @@ class _HomeScreenState extends State<HomeScreen>
             else
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
-                sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 12,
-                    childAspectRatio: 1.55,
-                  ),
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final item = items[index];
-                      return FadeTransition(
-                        opacity: CurvedAnimation(
-                          parent: _intro,
-                          curve: Interval(
-                            (0.05 * index).clamp(0.0, 0.55),
-                            1,
-                            curve: Curves.easeOut,
-                          ),
-                        ),
-                        child: _HomeCalcCard(item: item),
-                      );
-                    },
-                    childCount: items.length,
-                  ),
+                sliver: SliverList.separated(
+                  itemCount: items.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) {
+                    return _HomeBrowseRow(item: items[index]);
+                  },
                 ),
               ),
           ],
@@ -493,10 +459,10 @@ class _IconCategoryChip extends StatelessWidget {
   }
 }
 
-class _HomeCalcCard extends StatelessWidget {
+class _HomeBrowseRow extends StatelessWidget {
   final CalculatorItem item;
 
-  const _HomeCalcCard({required this.item});
+  const _HomeBrowseRow({required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -505,7 +471,7 @@ class _HomeCalcCard extends StatelessWidget {
 
     return Material(
       color: dark ? AppColors.surfaceDark : Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(16),
       elevation: dark ? 0 : 2,
       shadowColor: Colors.black.withValues(alpha: 0.07),
       child: InkWell(
@@ -513,88 +479,77 @@ class _HomeCalcCard extends StatelessWidget {
           HapticFeedback.selectionClick();
           Navigator.of(context).pushNamed(item.route);
         },
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 48,
+                height: 48,
                 decoration: BoxDecoration(
                   color: item.accent,
                   borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: item.accent.withValues(alpha: 0.35),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                child: Icon(item.icon, color: Colors.white, size: 22),
+                child: Icon(item.icon, color: Colors.white, size: 24),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.shortTitle,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              height: 1.2,
-                              color: dark ? AppColors.inkDark : AppColors.ink,
-                            ),
-                          ),
-                        ),
-                        InkWell(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            AppState.instance.toggleFavorite(item.route);
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Padding(
-                            padding: const EdgeInsets.fromLTRB(4, 0, 2, 4),
-                            child: Icon(
-                              fav
-                                  ? Icons.favorite_rounded
-                                  : Icons.favorite_border_rounded,
-                              size: 18,
-                              color: fav
-                                  ? AppColors.primary
-                                  : (dark
-                                      ? AppColors.mutedDark
-                                      : AppColors.muted),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Expanded(
-                      child: Text(
-                        item.description,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          height: 1.3,
-                          color: dark ? AppColors.mutedDark : AppColors.muted,
-                        ),
+                    Text(
+                      item.shortTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: dark ? AppColors.inkDark : AppColors.ink,
                       ),
                     ),
-                    Align(
-                      alignment: Alignment.bottomRight,
-                      child: Icon(
-                        Icons.chevron_right_rounded,
-                        size: 18,
+                    const SizedBox(height: 2),
+                    Text(
+                      item.description,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 13,
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                       ),
                     ),
                   ],
                 ),
+              ),
+              InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  AppState.instance.toggleFavorite(item.route);
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Icon(
+                    fav
+                        ? Icons.favorite_rounded
+                        : Icons.favorite_border_rounded,
+                    size: 22,
+                    color: fav
+                        ? AppColors.primary
+                        : (dark ? AppColors.mutedDark : AppColors.muted),
+                  ),
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: dark ? AppColors.mutedDark : AppColors.muted,
               ),
             ],
           ),
