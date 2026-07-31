@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/models/calculator_item.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
-import 'package:calcpro/screens/search_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({super.key});
+  final VoidCallback? onExplore;
+
+  const FavoritesScreen({super.key, this.onExplore});
 
   @override
   Widget build(BuildContext context) {
@@ -70,11 +70,9 @@ class FavoritesScreen extends StatelessWidget {
                         PrimaryButton(
                           label: 'Explore Calculators',
                           onPressed: () {
-                            Navigator.of(context).push(
-                              SoftPageRoute(
-                                builder: (_) => const SearchScreen(),
-                              ),
-                            );
+                            if (onExplore != null) {
+                              onExplore!();
+                            }
                           },
                         ),
                       ],

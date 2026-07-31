@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
-import 'package:calcpro/widgets/soft_nav.dart';
 import 'package:calcpro/screens/home_screen.dart';
 import 'package:calcpro/screens/favorites_screen.dart';
+import 'package:calcpro/screens/browse_screen.dart';
 import 'package:calcpro/screens/history_screen.dart';
 import 'package:calcpro/screens/settings_screen.dart';
-import 'package:calcpro/screens/search_screen.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -27,10 +26,9 @@ class _MainShellState extends State<MainShell> {
     _TabSpec(Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
   ];
 
-  int get _bodyIndex {
-    if (_index == 2) return 0;
-    if (_index > 2) return _index - 1;
-    return _index;
+  void _goTo(int i) {
+    if (i == _index) return;
+    setState(() => _index = i);
   }
 
   @override
@@ -38,13 +36,14 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: IndexedStack(
-        index: _bodyIndex,
+        index: _index,
         sizing: StackFit.expand,
-        children: const [
-          HomeScreen(),
-          FavoritesScreen(),
-          HistoryScreen(),
-          SettingsScreen(),
+        children: [
+          const HomeScreen(),
+          FavoritesScreen(onExplore: () => _goTo(2)),
+          BrowseScreen(onOpenFavorites: () => _goTo(1)),
+          const HistoryScreen(),
+          const SettingsScreen(),
         ],
       ),
       bottomNavigationBar: _BottomNav(
@@ -52,14 +51,7 @@ class _MainShellState extends State<MainShell> {
         tabs: _tabs,
         onChanged: (i) {
           HapticFeedback.selectionClick();
-          if (i == 2) {
-            Navigator.of(context).push(
-              SoftPageRoute(builder: (_) => const SearchScreen()),
-            );
-            return;
-          }
-          if (i == _index) return;
-          setState(() => _index = i);
+          _goTo(i);
         },
       ),
     );
@@ -175,8 +167,8 @@ class _NavItem extends StatelessWidget {
               spec.label,
               style: GoogleFonts.inter(
                 fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: AppColors.primary,
+                fontWeight: FontWeight.w600,
+                color: selected ? AppColors.primary : AppColors.primary,
               ),
             ),
           ],

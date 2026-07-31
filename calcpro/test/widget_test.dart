@@ -50,6 +50,29 @@ void main() {
     expect(find.text('Compound Interest'), findsOneWidget);
   });
 
+  testWidgets('browse tab shows catalog list', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(const CalcProApp());
+    await tester.pump(const Duration(milliseconds: 3300));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Calculate'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Browse Calculators'), findsOneWidget);
+    expect(find.text('Sort by Popular'), findsOneWidget);
+    expect(find.textContaining('Calculators'), findsWidgets);
+    expect(find.text('Compound'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Sales Tax'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Sales Tax'), findsOneWidget);
+  });
+
   testWidgets('percentage screen shows keypad', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
