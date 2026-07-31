@@ -343,19 +343,21 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: dark ? AppColors.surfaceDark : AppColors.surfaceAlt,
+        // Keep labels outside fields — floating labels clip on filled pills.
+        floatingLabelBehavior: FloatingLabelBehavior.never,
         contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         hintStyle: GoogleFonts.inter(color: muted, fontSize: 17),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.pill),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.pill),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadii.pill),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),

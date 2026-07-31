@@ -125,10 +125,11 @@ class _ConvertScreenState extends State<ConvertScreen> {
           const SizedBox(height: 16),
           AppCard(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                DropdownButtonFormField<UnitDef>(
+                LabeledDropdown<UnitDef>(
+                  label: 'From',
                   value: fromUnit,
-                  decoration: const InputDecoration(labelText: 'From'),
                   items: units
                       .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
                       .toList(),
@@ -136,13 +137,19 @@ class _ConvertScreenState extends State<ConvertScreen> {
                     if (v != null) setState(() => fromUnit = v);
                   },
                 ),
-                IconButton(
-                  onPressed: _swap,
-                  icon: const Icon(Icons.swap_vert_rounded, color: AppColors.primary),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: IconButton(
+                    onPressed: _swap,
+                    icon: const Icon(
+                      Icons.swap_vert_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-                DropdownButtonFormField<UnitDef>(
+                LabeledDropdown<UnitDef>(
+                  label: 'To',
                   value: toUnit,
-                  decoration: const InputDecoration(labelText: 'To'),
                   items: units
                       .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
                       .toList(),
@@ -150,7 +157,7 @@ class _ConvertScreenState extends State<ConvertScreen> {
                     if (v != null) setState(() => toUnit = v);
                   },
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 LabeledField(label: 'Value', controller: valueController),
               ],
             ),

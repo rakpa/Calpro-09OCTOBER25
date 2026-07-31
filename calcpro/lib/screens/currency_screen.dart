@@ -87,12 +87,13 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
           const SizedBox(height: 16),
           AppCard(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                LabeledField(label: 'Amount', controller: amount, compact: true),
-                const Divider(height: 24),
-                DropdownButtonFormField<String>(
+                LabeledField(label: 'Amount', controller: amount),
+                const SizedBox(height: 16),
+                LabeledDropdown<String>(
+                  label: 'From',
                   value: from,
-                  decoration: const InputDecoration(labelText: 'From'),
                   items: codes
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                       .toList(),
@@ -100,14 +101,19 @@ class _CurrencyScreenState extends State<CurrencyScreen> {
                     if (v != null) setState(() => from = v);
                   },
                 ),
-                IconButton(
-                  onPressed: _swap,
-                  icon: const Icon(Icons.swap_vert_rounded,
-                      color: AppColors.primary),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: IconButton(
+                    onPressed: _swap,
+                    icon: const Icon(
+                      Icons.swap_vert_rounded,
+                      color: AppColors.primary,
+                    ),
+                  ),
                 ),
-                DropdownButtonFormField<String>(
+                LabeledDropdown<String>(
+                  label: 'To',
                   value: to,
-                  decoration: const InputDecoration(labelText: 'To'),
                   items: codes
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                       .toList(),

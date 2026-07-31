@@ -193,25 +193,7 @@ class LabeledField extends StatelessWidget {
                 fontSize: 17,
                 color: dark ? AppColors.inkDark : AppColors.ink,
               ),
-              decoration: InputDecoration(
-                hintText: hint ?? '0',
-                isDense: true,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadii.sm),
-                  borderSide:
-                      const BorderSide(color: AppColors.primary, width: 1.5),
-                ),
-              ),
+              decoration: _fieldDecoration(dark, hint: hint ?? '0', dense: true),
             ),
           ),
         ],
@@ -224,12 +206,13 @@ class LabeledField extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.inter(
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
             fontSize: 13,
+            letterSpacing: 0.2,
             color: dark ? AppColors.mutedDark : AppColors.muted,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
@@ -239,26 +222,89 @@ class LabeledField extends StatelessWidget {
             fontSize: 17,
             color: dark ? AppColors.inkDark : AppColors.ink,
           ),
-          decoration: InputDecoration(
-            hintText: hint,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadii.md),
-              borderSide:
-                  const BorderSide(color: AppColors.primary, width: 1.5),
-            ),
-          ),
+          decoration: _fieldDecoration(dark, hint: hint),
         ),
       ],
     );
   }
+}
+
+/// Label sits above the control — never floats into the filled field.
+class LabeledDropdown<T> extends StatelessWidget {
+  final String label;
+  final T? value;
+  final List<DropdownMenuItem<T>> items;
+  final ValueChanged<T?> onChanged;
+
+  const LabeledDropdown({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w600,
+            fontSize: 13,
+            letterSpacing: 0.2,
+            color: dark ? AppColors.mutedDark : AppColors.muted,
+          ),
+        ),
+        const SizedBox(height: 10),
+        DropdownButtonFormField<T>(
+          value: value,
+          isExpanded: true,
+          icon: Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: dark ? AppColors.mutedDark : AppColors.muted,
+          ),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            fontSize: 17,
+            color: dark ? AppColors.inkDark : AppColors.ink,
+          ),
+          dropdownColor: dark ? AppColors.surfaceDark : Colors.white,
+          decoration: _fieldDecoration(dark),
+          items: items,
+          onChanged: onChanged,
+        ),
+      ],
+    );
+  }
+}
+
+InputDecoration _fieldDecoration(
+  bool dark, {
+  String? hint,
+  bool dense = false,
+}) {
+  final radius = BorderRadius.circular(16);
+  return InputDecoration(
+    hintText: hint,
+    isDense: dense,
+    filled: true,
+    fillColor: dark ? AppColors.keyBgDark : AppColors.surfaceAlt,
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: dense ? 12 : 16,
+    ),
+    border: OutlineInputBorder(borderRadius: radius, borderSide: BorderSide.none),
+    enabledBorder:
+        OutlineInputBorder(borderRadius: radius, borderSide: BorderSide.none),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+    ),
+  );
 }
 
 enum KeyStyle { number, function, equals, danger }

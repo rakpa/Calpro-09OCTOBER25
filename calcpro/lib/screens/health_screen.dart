@@ -224,12 +224,15 @@ class _HealthScreenState extends State<HealthScreen> {
                 ],
                 if (mode == 3) ...[
                   const Divider(height: 20),
-                  DropdownButtonFormField<int>(
+                  LabeledDropdown<int>(
+                    label: 'Activity level',
                     value: activity,
-                    decoration: const InputDecoration(labelText: 'Activity level'),
                     items: [
                       for (var i = 0; i < _activity.length; i++)
-                        DropdownMenuItem(value: i, child: Text(_activity[i].$1)),
+                        DropdownMenuItem(
+                          value: i,
+                          child: Text(_activity[i].$1),
+                        ),
                     ],
                     onChanged: (v) {
                       if (v != null) setState(() => activity = v);
