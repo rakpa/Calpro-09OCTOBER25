@@ -43,10 +43,10 @@ class SoftFadeTransitionsBuilder extends PageTransitionsBuilder {
 
 /// Calcara design system — Inter typography + playful accents.
 class AppColors {
-  static const Color primary = Color(0xFF5A31F4);
-  static const Color primaryDeep = Color(0xFF4520D4);
-  static const Color primarySoft = Color(0xFF7B5CFF);
-  static const Color primaryMuted = Color(0xFFEDE8FF);
+  static const Color primary = Color(0xFF6C5CE7);
+  static const Color primaryDeep = Color(0xFF5A4BD6);
+  static const Color primarySoft = Color(0xFFA29BFE);
+  static const Color primaryMuted = Color(0xFFEEEAFF);
   static const Color lavender = Color(0xFFF3F0FF);
 
   /// Splash / onboarding light wash from Calcara snip.
@@ -63,9 +63,9 @@ class AppColors {
   static const Color surface = Color(0xFFF8FAFD);
   static const Color surfaceRaised = Color(0xFFFFFCF9);
   static const Color surfaceAlt = Color(0xFFE6ECF5);
-  static const Color ink = Color(0xFF1A1A40);
-  static const Color muted = Color(0xFF6B7394);
-  static const Color line = Color(0xFFD8DEEA);
+  static const Color ink = Color(0xFF1A1A1A);
+  static const Color muted = Color(0xFF6B7280);
+  static const Color line = Color(0xFFE5E7EB);
 
   static const Color keyBg = Color(0xFFFFFFFF);
   static const Color keyFn = Color(0xFFF0ECFF);

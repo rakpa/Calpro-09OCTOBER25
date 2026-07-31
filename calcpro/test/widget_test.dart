@@ -38,7 +38,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Good'), findsOneWidget);
-    expect(find.text('Popular Calculators'), findsOneWidget);
+    expect(find.text('What would you like to calculate?'), findsOneWidget);
+    expect(find.text('Popular this week'), findsOneWidget);
+    expect(find.text('Continue where you left off'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Calculator of the Day'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Calculator of the Day'), findsOneWidget);
+    expect(find.text('Compound Interest'), findsOneWidget);
   });
 
   testWidgets('percentage screen shows keypad', (tester) async {

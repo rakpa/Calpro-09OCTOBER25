@@ -92,7 +92,7 @@ const List<CalculatorItem> kCalculators = [
     icon: Icons.receipt_long_rounded,
     accent: AppColors.accentOrange,
     pastel: AppColors.pastelOrange,
-    tags: ['Popular', 'Finance', 'Everyday'],
+    tags: ['Popular', 'Finance', 'Business', 'Everyday'],
   ),
   CalculatorItem(
     title: 'Unit Price Calculator',
@@ -102,7 +102,7 @@ const List<CalculatorItem> kCalculators = [
     icon: Icons.shopping_bag_outlined,
     accent: AppColors.accentTeal,
     pastel: AppColors.pastelBlue,
-    tags: ['Everyday'],
+    tags: ['Everyday', 'Business'],
   ),
   CalculatorItem(
     title: 'Currency Converter',
@@ -115,14 +115,14 @@ const List<CalculatorItem> kCalculators = [
     tags: ['Popular', 'Finance', 'Everyday'],
   ),
   CalculatorItem(
-    title: 'Savings Growth',
-    shortTitle: 'Savings',
+    title: 'Compound Interest',
+    shortTitle: 'Compound',
     description: 'Compound growth + monthly deposits',
     route: '/savings',
     icon: Icons.savings_outlined,
     accent: AppColors.accentGreen,
     pastel: AppColors.pastelGreen,
-    tags: ['Finance'],
+    tags: ['Popular', 'Finance'],
   ),
   CalculatorItem(
     title: 'Markup / Margin',
@@ -132,7 +132,7 @@ const List<CalculatorItem> kCalculators = [
     icon: Icons.storefront_outlined,
     accent: AppColors.accentOrange,
     pastel: AppColors.pastelOrange,
-    tags: ['Finance'],
+    tags: ['Finance', 'Business'],
   ),
   CalculatorItem(
     title: 'ROI Calculator',
@@ -142,7 +142,7 @@ const List<CalculatorItem> kCalculators = [
     icon: Icons.trending_up_rounded,
     accent: Color(0xFF7CB518),
     pastel: AppColors.pastelLime,
-    tags: ['Finance'],
+    tags: ['Finance', 'Business'],
   ),
   CalculatorItem(
     title: 'Compare Loans',
@@ -152,7 +152,7 @@ const List<CalculatorItem> kCalculators = [
     icon: Icons.compare_arrows_rounded,
     accent: AppColors.accentPurple,
     pastel: AppColors.pastelLavender,
-    tags: ['Finance'],
+    tags: ['Finance', 'Business'],
   ),
   CalculatorItem(
     title: 'Refinance Calculator',

@@ -31,10 +31,16 @@ class CategoryScreen extends StatelessWidget {
         return kCalculators.where((c) => c.tags.contains('Finance')).toList();
       case 'Health':
         return kCalculators.where((c) => c.tags.contains('Health')).toList();
+      case 'Business':
+        return kCalculators.where((c) => c.tags.contains('Business')).toList();
       case 'Everyday':
         return kCalculators.where((c) => c.tags.contains('Everyday')).toList();
-      default:
+      case 'All':
         return kCalculators;
+      default:
+        return kCalculators
+            .where((c) => c.tags.contains(category))
+            .toList();
     }
   }
 
