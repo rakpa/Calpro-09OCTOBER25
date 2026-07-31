@@ -63,15 +63,18 @@ class _SplashScreenState extends State<SplashScreen>
                     const CalcaraBrandHeader(),
                     const SizedBox(height: 28),
                     const FeaturePitchCard(),
-                    const Spacer(),
-                    Image.asset(
-                      'assets/images/calcara_mascot.png',
-                      width: (h * 0.4).clamp(220.0, 320.0),
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) =>
-                          CalculatorMascot(width: (h * 0.38).clamp(220.0, 300.0)),
+                    Expanded(
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/calcara_mascot.png',
+                          width: (h * 0.38).clamp(220.0, 300.0),
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => CalculatorMascot(
+                            width: (h * 0.36).clamp(200.0, 280.0),
+                          ),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 8),
                   ],
                 ),
               ),

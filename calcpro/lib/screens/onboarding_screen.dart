@@ -66,16 +66,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             const CalcaraBrandHeader(),
                             const SizedBox(height: 28),
                             const FeaturePitchCard(),
-                            const Spacer(),
-                            const CalculatorMascot(width: 260),
-                            Image.asset(
-                              'assets/images/calcara_mascot.png',
-                              height: 1,
-                              opacity: const AlwaysStoppedAnimation(0),
-                              errorBuilder: (_, __, ___) =>
-                                  const SizedBox.shrink(),
+                            Expanded(
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/calcara_mascot.png',
+                                  width: 260,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) =>
+                                      const CalculatorMascot(width: 260),
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 8),
                           ],
                         ),
                       );
