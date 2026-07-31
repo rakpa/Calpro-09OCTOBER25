@@ -15,9 +15,9 @@ class FuelScreen extends StatefulWidget {
 }
 
 class _FuelScreenState extends State<FuelScreen> {
-  final distance = TextEditingController(text: '320');
-  final fuel = TextEditingController(text: '12.5');
-  final price = TextEditingController(text: '3.49');
+  final distance = TextEditingController();
+  final fuel = TextEditingController();
+  final price = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
   double? mpg;
   double? costPerMile;

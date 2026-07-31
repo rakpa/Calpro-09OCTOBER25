@@ -198,7 +198,7 @@ class _BrowseScreenState extends State<BrowseScreen> {
                       const SizedBox(height: 16),
                       SearchField(
                         controller: _controller,
-                        hint: 'Search 120+ calculators...',
+                        hint: 'Search ${kCalculators.length} calculators...',
                         onClear: () => _controller.clear(),
                       ),
                       const SizedBox(height: 14),

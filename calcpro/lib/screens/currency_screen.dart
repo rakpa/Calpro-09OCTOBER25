@@ -16,7 +16,7 @@ class CurrencyScreen extends StatefulWidget {
 }
 
 class _CurrencyScreenState extends State<CurrencyScreen> {
-  final amount = TextEditingController(text: '100');
+  final amount = TextEditingController();
   String from = 'USD';
   String to = 'EUR';
   final fmt = NumberFormat('#,##0.####');

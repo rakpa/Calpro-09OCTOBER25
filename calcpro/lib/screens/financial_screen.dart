@@ -19,9 +19,9 @@ class FinancialScreen extends StatefulWidget {
 
 class _FinancialScreenState extends State<FinancialScreen> {
   int mode = 0; // 0 EMI, 1 Compound
-  final principal = TextEditingController(text: '250000');
-  final rate = TextEditingController(text: '8.5');
-  final tenure = TextEditingController(text: '20');
+  final principal = TextEditingController();
+  final rate = TextEditingController();
+  final tenure = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
 
   double? emi;

@@ -16,10 +16,10 @@ class UnitPriceScreen extends StatefulWidget {
 }
 
 class _UnitPriceScreenState extends State<UnitPriceScreen> {
-  final aPrice = TextEditingController(text: '4.99');
-  final aQty = TextEditingController(text: '12');
-  final bPrice = TextEditingController(text: '7.49');
-  final bQty = TextEditingController(text: '20');
+  final aPrice = TextEditingController();
+  final aQty = TextEditingController();
+  final bPrice = TextEditingController();
+  final bQty = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
 
   double? aUnit;

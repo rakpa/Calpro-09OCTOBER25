@@ -16,8 +16,8 @@ class SalesTaxScreen extends StatefulWidget {
 }
 
 class _SalesTaxScreenState extends State<SalesTaxScreen> {
-  final price = TextEditingController(text: '49.99');
-  final taxRate = TextEditingController(text: '8.25');
+  final price = TextEditingController();
+  final taxRate = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
   bool addTax = true;
 

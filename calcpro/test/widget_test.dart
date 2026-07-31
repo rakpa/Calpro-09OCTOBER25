@@ -98,6 +98,20 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // Enter 25% of 200 via keypad (no prefabricated defaults).
+    await tester.tap(find.text('2'));
+    await tester.pump();
+    await tester.tap(find.text('5'));
+    await tester.pump();
+    await tester.tap(find.text('Next'));
+    await tester.pump();
+    await tester.tap(find.text('2'));
+    await tester.pump();
+    await tester.tap(find.text('0'));
+    await tester.pump();
+    await tester.tap(find.text('0'));
+    await tester.pump();
+
     await tester.tap(find.text('Calculate'));
     await tester.pumpAndSettle();
 

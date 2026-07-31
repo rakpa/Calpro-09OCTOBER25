@@ -14,10 +14,10 @@ class FractionScreen extends StatefulWidget {
 }
 
 class _FractionScreenState extends State<FractionScreen> {
-  final aNum = TextEditingController(text: '1');
-  final aDen = TextEditingController(text: '2');
-  final bNum = TextEditingController(text: '1');
-  final bDen = TextEditingController(text: '3');
+  final aNum = TextEditingController();
+  final aDen = TextEditingController();
+  final bNum = TextEditingController();
+  final bDen = TextEditingController();
   int op = 0; // + - × ÷
   String? result;
 

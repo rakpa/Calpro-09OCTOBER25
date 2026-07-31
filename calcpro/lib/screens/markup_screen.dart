@@ -16,8 +16,8 @@ class MarkupScreen extends StatefulWidget {
 
 class _MarkupScreenState extends State<MarkupScreen> {
   int mode = 0; // 0 markup, 1 margin
-  final cost = TextEditingController(text: '40');
-  final percent = TextEditingController(text: '50');
+  final cost = TextEditingController();
+  final percent = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
   double? price;
   double? profit;

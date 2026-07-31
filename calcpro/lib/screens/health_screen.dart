@@ -15,9 +15,9 @@ class HealthScreen extends StatefulWidget {
 
 class _HealthScreenState extends State<HealthScreen> {
   int mode = 0; // BMI, Ideal, BMR, TDEE
-  final weight = TextEditingController(text: '70');
-  final height = TextEditingController(text: '175');
-  final age = TextEditingController(text: '30');
+  final weight = TextEditingController();
+  final height = TextEditingController();
+  final age = TextEditingController();
   bool isMale = true;
   int activity = 2;
   String? bmi;

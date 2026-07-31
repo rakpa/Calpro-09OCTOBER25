@@ -21,8 +21,6 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
   @override
   void initState() {
     super.initState();
-    lmp = DateTime.now().subtract(const Duration(days: 60));
-    _recalc();
   }
 
   void _recalc() {
@@ -68,11 +66,18 @@ class _PregnancyScreenState extends State<PregnancyScreen> {
             child: ListTile(
               contentPadding: EdgeInsets.zero,
               title: const Text('First day of last period (LMP)'),
-              trailing: Text(_fmt(lmp!), style: AppFonts.body1()),
+              trailing: Text(
+                lmp == null ? 'Select date' : _fmt(lmp!),
+                style: AppFonts.body1(
+                  color: lmp == null
+                      ? (dark ? AppColors.mutedDark : AppColors.muted)
+                      : null,
+                ),
+              ),
               onTap: () async {
                 final picked = await showDatePicker(
                   context: context,
-                  initialDate: lmp!,
+                  initialDate: lmp ?? DateTime.now(),
                   firstDate: DateTime.now().subtract(const Duration(days: 300)),
                   lastDate: DateTime.now(),
                 );

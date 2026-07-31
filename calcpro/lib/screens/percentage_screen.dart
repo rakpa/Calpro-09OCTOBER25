@@ -17,7 +17,7 @@ class _PercentageScreenState extends State<PercentageScreen> {
   /// 0 = X% of Y, 1 = what %, 2 = percent change
   int mode = 0;
   int activeField = 0;
-  final fields = ['25', '200'];
+  final fields = ['', ''];
 
   /// Answer is only shown after tapping Calculate (search-style flow).
   bool _showAnswer = false;
@@ -74,8 +74,8 @@ class _PercentageScreenState extends State<PercentageScreen> {
                     activeField = 0;
                     _showAnswer = false;
                     _committed = null;
-                    fields[0] = i == 0 ? '25' : (i == 1 ? '50' : '100');
-                    fields[1] = i == 0 ? '200' : (i == 1 ? '200' : '150');
+                    fields[0] = '';
+                    fields[1] = '';
                   });
                 },
               ),

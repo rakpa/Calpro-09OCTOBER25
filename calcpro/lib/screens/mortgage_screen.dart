@@ -16,15 +16,15 @@ class MortgageScreen extends StatefulWidget {
 
 class _MortgageScreenState extends State<MortgageScreen> {
   int mode = 0; // 0 payment, 1 affordability
-  final principal = TextEditingController(text: '350000');
-  final down = TextEditingController(text: '70000');
-  final rate = TextEditingController(text: '6.5');
-  final term = TextEditingController(text: '30');
+  final principal = TextEditingController();
+  final down = TextEditingController();
+  final rate = TextEditingController();
+  final term = TextEditingController();
   final propertyTax = TextEditingController();
   final insurance = TextEditingController();
-  final income = TextEditingController(text: '9000');
-  final debts = TextEditingController(text: '500');
-  final dti = TextEditingController(text: '36');
+  final income = TextEditingController();
+  final debts = TextEditingController();
+  final dti = TextEditingController();
 
   String? monthlyPayment;
   String? totalPayment;

@@ -14,8 +14,8 @@ class TipScreen extends StatefulWidget {
 
 class _TipScreenState extends State<TipScreen> {
   final bill = TextEditingController();
-  final customTip = TextEditingController(text: '15');
-  final people = TextEditingController(text: '1');
+  final customTip = TextEditingController();
+  final people = TextEditingController();
   int selectedTip = 15;
   String? tipAmount;
   String? total;
@@ -43,8 +43,8 @@ class _TipScreenState extends State<TipScreen> {
   void _clear() {
     setState(() {
       bill.clear();
-      customTip.text = '15';
-      people.text = '1';
+      customTip.clear();
+      people.clear();
       selectedTip = 15;
       tipAmount = total = perPerson = null;
     });

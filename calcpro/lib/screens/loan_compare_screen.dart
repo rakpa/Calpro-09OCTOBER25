@@ -16,12 +16,12 @@ class LoanCompareScreen extends StatefulWidget {
 }
 
 class _LoanCompareScreenState extends State<LoanCompareScreen> {
-  final aP = TextEditingController(text: '200000');
-  final aR = TextEditingController(text: '6.5');
-  final aY = TextEditingController(text: '30');
-  final bP = TextEditingController(text: '200000');
-  final bR = TextEditingController(text: '5.9');
-  final bY = TextEditingController(text: '25');
+  final aP = TextEditingController();
+  final aR = TextEditingController();
+  final aY = TextEditingController();
+  final bP = TextEditingController();
+  final bR = TextEditingController();
+  final bY = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
 
   double? aEmi;

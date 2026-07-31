@@ -16,12 +16,12 @@ class RefinanceScreen extends StatefulWidget {
 }
 
 class _RefinanceScreenState extends State<RefinanceScreen> {
-  final balance = TextEditingController(text: '280000');
-  final oldRate = TextEditingController(text: '7.2');
-  final oldYearsLeft = TextEditingController(text: '25');
-  final newRate = TextEditingController(text: '6.1');
-  final newYears = TextEditingController(text: '25');
-  final closing = TextEditingController(text: '3500');
+  final balance = TextEditingController();
+  final oldRate = TextEditingController();
+  final oldYearsLeft = TextEditingController();
+  final newRate = TextEditingController();
+  final newYears = TextEditingController();
+  final closing = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
 
   double? oldEmi;

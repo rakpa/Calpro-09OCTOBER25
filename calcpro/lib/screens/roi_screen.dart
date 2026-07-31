@@ -15,8 +15,8 @@ class RoiScreen extends StatefulWidget {
 }
 
 class _RoiScreenState extends State<RoiScreen> {
-  final invested = TextEditingController(text: '10000');
-  final returned = TextEditingController(text: '12500');
+  final invested = TextEditingController();
+  final returned = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
   double? profit;
   double? roiPct;

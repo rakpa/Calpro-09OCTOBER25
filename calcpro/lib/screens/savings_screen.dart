@@ -16,10 +16,10 @@ class SavingsScreen extends StatefulWidget {
 }
 
 class _SavingsScreenState extends State<SavingsScreen> {
-  final principal = TextEditingController(text: '5000');
-  final monthly = TextEditingController(text: '300');
-  final rate = TextEditingController(text: '7');
-  final years = TextEditingController(text: '10');
+  final principal = TextEditingController();
+  final monthly = TextEditingController();
+  final rate = TextEditingController();
+  final years = TextEditingController();
   final currency = NumberFormat.currency(symbol: '\$');
   double? future;
   double? contributed;

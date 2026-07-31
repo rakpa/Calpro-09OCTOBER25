@@ -221,7 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 18),
                       SearchField(
                         controller: _controller,
-                        hint: 'Search 120+ calculators...',
+                        hint: 'Search ${kCalculators.length} calculators...',
                         onClear: () => _controller.clear(),
                       ),
                       const SizedBox(height: 14),
