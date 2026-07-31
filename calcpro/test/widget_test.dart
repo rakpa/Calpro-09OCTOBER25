@@ -32,6 +32,9 @@ void main() {
   });
 
   testWidgets('splash then home greeting', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(const CalcProApp());
     expect(find.text('Calcara'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 3300));
@@ -39,15 +42,11 @@ void main() {
 
     expect(find.textContaining('Good'), findsOneWidget);
     expect(find.text('What would you like to calculate?'), findsOneWidget);
-    expect(find.text('Popular this week'), findsOneWidget);
-    expect(find.text('Continue where you left off'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Calculator of the Day'),
-      200,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Calculator of the Day'), findsOneWidget);
-    expect(find.text('Compound Interest'), findsOneWidget);
+    expect(find.textContaining('All Calculators'), findsOneWidget);
+    expect(find.textContaining('Sort by:'), findsOneWidget);
+    expect(find.text('Finance'), findsWidgets);
+    expect(find.text('Compound'), findsOneWidget);
+    expect(find.text('Mortgage'), findsOneWidget);
   });
 
   testWidgets('browse tab shows catalog list', (tester) async {

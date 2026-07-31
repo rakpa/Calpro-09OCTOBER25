@@ -8,6 +8,16 @@ import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/widgets/ui_kit.dart';
 import 'package:calcpro/screens/search_screen.dart';
 
+enum _HomeSort { popular, nameAz, nameZa }
+
+class _ChipSpec {
+  final String label;
+  final IconData icon;
+  final Color accent;
+
+  const _ChipSpec(this.label, this.icon, this.accent);
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -19,8 +29,15 @@ class _HomeScreenState extends State<HomeScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _intro;
   String _chip = 'All';
+  _HomeSort _sort = _HomeSort.popular;
 
-  static const _chips = ['All', 'Finance', 'Health', 'Business', 'Everyday'];
+  static const _chips = [
+    _ChipSpec('All', Icons.apps_rounded, AppColors.primary),
+    _ChipSpec('Finance', Icons.bar_chart_rounded, Color(0xFF4DABF7)),
+    _ChipSpec('Health', Icons.favorite_rounded, Color(0xFF2ECC71)),
+    _ChipSpec('Everyday', Icons.calendar_today_rounded, Color(0xFF4DABF7)),
+    _ChipSpec('Business', Icons.work_outline_rounded, Color(0xFFF5A623)),
+  ];
 
   @override
   void initState() {
@@ -44,59 +61,94 @@ class _HomeScreenState extends State<HomeScreen>
     return 'Good evening,';
   }
 
-  List<CalculatorItem> get _filtered {
-    if (_chip == 'All') return List<CalculatorItem>.from(kCalculators);
-    return kCalculators.where((c) => c.tags.contains(_chip)).toList();
-  }
+  List<CalculatorItem> get _items {
+    var list = _chip == 'All'
+        ? List<CalculatorItem>.from(kCalculators)
+        : kCalculators.where((c) => c.tags.contains(_chip)).toList();
 
-  List<CalculatorItem> get _popular {
-    final pool = _chip == 'All'
-        ? kCalculators.where((c) => c.tags.contains('Popular')).toList()
-        : _filtered;
-    return pool.take(6).toList();
-  }
-
-  /// Recent history, or Mortgage + Health placeholders so the section matches the snip.
-  List<(CalculatorItem, String)> get _continueRows {
-    final seen = <String>{};
-    final out = <(CalculatorItem, String)>[];
-    for (final h in AppState.instance.history) {
-      if (seen.contains(h.route)) continue;
-      final item = calculatorByRoute(h.route);
-      if (item == null) continue;
-      seen.add(h.route);
-      out.add((item, 'Last used ${_relative(h.at)}'));
-      if (out.length >= 2) break;
+    switch (_sort) {
+      case _HomeSort.popular:
+        list.sort((a, b) {
+          final ap = a.tags.contains('Popular') ? 0 : 1;
+          final bp = b.tags.contains('Popular') ? 0 : 1;
+          if (ap != bp) return ap.compareTo(bp);
+          return a.shortTitle.compareTo(b.shortTitle);
+        });
+      case _HomeSort.nameAz:
+        list.sort((a, b) => a.shortTitle.compareTo(b.shortTitle));
+      case _HomeSort.nameZa:
+        list.sort((a, b) => b.shortTitle.compareTo(a.shortTitle));
     }
-    if (out.isNotEmpty) return out;
-
-    final defaults = <CalculatorItem?>[
-      calculatorByRoute('/mortgage'),
-      calculatorByRoute('/health'),
-    ];
-    for (final item in defaults) {
-      if (item == null) continue;
-      out.add((item, 'Suggested for you'));
-    }
-    return out;
+    return list;
   }
 
-  CalculatorItem get _calculatorOfDay {
-    // Snip features compound interest; Savings is our compound-growth tool.
-    final compound = calculatorByRoute('/savings');
-    if (compound != null) return compound;
-    final day =
-        DateTime.now().difference(DateTime(DateTime.now().year)).inDays;
-    return kCalculators[day % kCalculators.length];
+  String get _sectionTitle {
+    final n = _items.length;
+    if (_chip == 'All') return 'All Calculators ($n)';
+    return '$_chip Calculators ($n)';
   }
 
-  String _relative(DateTime at) {
-    final d = DateTime.now().difference(at);
-    if (d.inMinutes < 1) return 'just now';
-    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
-    if (d.inHours < 24) return '${d.inHours}h ago';
-    if (d.inDays == 1) return 'yesterday';
-    return '${d.inDays}d ago';
+  String get _sortLabel => switch (_sort) {
+        _HomeSort.popular => 'Popular',
+        _HomeSort.nameAz => 'A–Z',
+        _HomeSort.nameZa => 'Z–A',
+      };
+
+  Future<void> _pickSort() async {
+    final choice = await showModalBottomSheet<_HomeSort>(
+      context: context,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? AppColors.surfaceDark
+          : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final dark = Theme.of(context).brightness == Brightness.dark;
+        Widget option(_HomeSort value, String label) {
+          final selected = _sort == value;
+          return ListTile(
+            title: Text(
+              label,
+              style: GoogleFonts.inter(
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected
+                    ? AppColors.primary
+                    : (dark ? AppColors.inkDark : AppColors.ink),
+              ),
+            ),
+            trailing: selected
+                ? const Icon(Icons.check_rounded, color: AppColors.primary)
+                : null,
+            onTap: () => Navigator.pop(context, value),
+          );
+        }
+
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: dark ? AppColors.lineDark : AppColors.line,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                option(_HomeSort.popular, 'Popular'),
+                option(_HomeSort.nameAz, 'Name A–Z'),
+                option(_HomeSort.nameZa, 'Name Z–A'),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+    if (choice != null) setState(() => _sort = choice);
   }
 
   void _openSearch() {
@@ -112,9 +164,7 @@ class _HomeScreenState extends State<HomeScreen>
     return ListenableBuilder(
       listenable: AppState.instance,
       builder: (context, _) {
-        final continueRows = _continueRows;
-        final popular = _popular;
-        final ofDay = _calculatorOfDay;
+        final items = _items;
 
         return CustomScrollView(
           physics: const BouncingScrollPhysics(),
@@ -166,8 +216,7 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             ),
                             const SizedBox(width: 8),
-                            _RoundIconButton(
-                              icon: Icons.notifications_none_rounded,
+                            _NotificationButton(
                               onTap: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -187,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen>
                         ),
                         const SizedBox(height: 14),
                         SizedBox(
-                          height: 40,
+                          height: 42,
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: _chips.length,
@@ -195,50 +244,77 @@ class _HomeScreenState extends State<HomeScreen>
                                 const SizedBox(width: 8),
                             itemBuilder: (context, i) {
                               final chip = _chips[i];
-                              final selected = _chip == chip;
-                              return _CategoryChip(
-                                label: chip,
-                                selected: selected,
-                                onTap: () => setState(() => _chip = chip),
+                              return _IconCategoryChip(
+                                label: chip.label,
+                                icon: chip.icon,
+                                accent: chip.accent,
+                                selected: _chip == chip.label,
+                                onTap: () =>
+                                    setState(() => _chip = chip.label),
                               );
                             },
                           ),
                         ),
-                        if (continueRows.isNotEmpty) ...[
-                          const SizedBox(height: 22),
-                          Text(
-                            'Continue where you left off',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: dark ? AppColors.inkDark : AppColors.ink,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              for (var i = 0; i < continueRows.length; i++) ...[
-                                if (i > 0) const SizedBox(width: 12),
-                                Expanded(
-                                  child: _ContinueCard(
-                                    item: continueRows[i].$1,
-                                    subtitle: continueRows[i].$2,
-                                  ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _sectionTitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.inter(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  color: dark
+                                      ? AppColors.inkDark
+                                      : AppColors.ink,
                                 ),
-                              ],
-                              if (continueRows.length == 1)
-                                const Expanded(child: SizedBox.shrink()),
-                            ],
-                          ),
-                        ],
-                        const SizedBox(height: 22),
-                        Text(
-                          'Popular this week',
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: dark ? AppColors.inkDark : AppColors.ink,
-                          ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            InkWell(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                _pickSort();
+                              },
+                              borderRadius: BorderRadius.circular(10),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 4,
+                                  vertical: 4,
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Sort by: ',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                        color: dark
+                                            ? AppColors.mutedDark
+                                            : AppColors.muted,
+                                      ),
+                                    ),
+                                    Text(
+                                      _sortLabel,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      size: 18,
+                                      color: AppColors.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 12),
                       ],
@@ -247,40 +323,47 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
             ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 10,
-                  childAspectRatio: 0.78,
+            if (items.isEmpty)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Text(
+                    'No calculators in this category',
+                    style: GoogleFonts.inter(
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                  ),
                 ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final item = popular[index];
-                    return FadeTransition(
-                      opacity: CurvedAnimation(
-                        parent: _intro,
-                        curve: Interval(
-                          (0.08 * index).clamp(0.0, 0.55),
-                          1,
-                          curve: Curves.easeOut,
+              )
+            else
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                sliver: SliverGrid(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.55,
+                  ),
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final item = items[index];
+                      return FadeTransition(
+                        opacity: CurvedAnimation(
+                          parent: _intro,
+                          curve: Interval(
+                            (0.05 * index).clamp(0.0, 0.55),
+                            1,
+                            curve: Curves.easeOut,
+                          ),
                         ),
-                      ),
-                      child: _PopularCard(item: item),
-                    );
-                  },
-                  childCount: popular.length,
+                        child: _HomeCalcCard(item: item),
+                      );
+                    },
+                    childCount: items.length,
+                  ),
                 ),
               ),
-            ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-                child: _CalculatorOfDayBanner(item: ofDay),
-              ),
-            ),
           ],
         );
       },
@@ -288,11 +371,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
-class _RoundIconButton extends StatelessWidget {
-  final IconData icon;
+class _NotificationButton extends StatelessWidget {
   final VoidCallback onTap;
 
-  const _RoundIconButton({required this.icon, required this.onTap});
+  const _NotificationButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -311,10 +393,31 @@ class _RoundIconButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(
-            icon,
-            color: dark ? AppColors.inkDark : AppColors.ink,
-            size: 22,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.notifications_none_rounded,
+                color: dark ? AppColors.inkDark : AppColors.ink,
+                size: 22,
+              ),
+              Positioned(
+                top: 11,
+                right: 12,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: dark ? AppColors.surfaceDark : Colors.white,
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -322,13 +425,17 @@ class _RoundIconButton extends StatelessWidget {
   }
 }
 
-class _CategoryChip extends StatelessWidget {
+class _IconCategoryChip extends StatelessWidget {
   final String label;
+  final IconData icon;
+  final Color accent;
   final bool selected;
   final VoidCallback onTap;
 
-  const _CategoryChip({
+  const _IconCategoryChip({
     required this.label,
+    required this.icon,
+    required this.accent,
     required this.selected,
     required this.onTap,
   });
@@ -349,97 +456,34 @@ class _CategoryChip extends StatelessWidget {
           onTap();
         },
         borderRadius: BorderRadius.circular(999),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-              color: selected
-                  ? Colors.white
-                  : (dark ? AppColors.mutedDark : AppColors.muted),
-            ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(999),
+            border: selected
+                ? null
+                : Border.all(
+                    color: dark ? AppColors.lineDark : AppColors.line,
+                  ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ContinueCard extends StatelessWidget {
-  final CalculatorItem item;
-  final String subtitle;
-
-  const _ContinueCard({required this.item, required this.subtitle});
-
-  @override
-  Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Material(
-      color: dark ? AppColors.surfaceDark : Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      elevation: dark ? 0 : 2,
-      shadowColor: Colors.black.withValues(alpha: 0.07),
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          Navigator.of(context).pushNamed(item.route);
-        },
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: item.accent.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(item.icon, color: item.accent, size: 20),
+              Icon(
+                icon,
+                size: 16,
+                color: selected ? Colors.white : accent,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(width: 6),
               Text(
-                item.shortTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                label,
                 style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15,
-                  color: dark ? AppColors.inkDark : AppColors.ink,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: selected
+                      ? Colors.white
+                      : (dark ? AppColors.inkDark : AppColors.ink),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: dark ? AppColors.mutedDark : AppColors.muted,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                children: [
-                  Text(
-                    'Continue',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  const Icon(
-                    Icons.chevron_right_rounded,
-                    size: 18,
-                    color: AppColors.primary,
-                  ),
-                ],
               ),
             ],
           ),
@@ -449,10 +493,10 @@ class _ContinueCard extends StatelessWidget {
   }
 }
 
-class _PopularCard extends StatelessWidget {
+class _HomeCalcCard extends StatelessWidget {
   final CalculatorItem item;
 
-  const _PopularCard({required this.item});
+  const _HomeCalcCard({required this.item});
 
   @override
   Widget build(BuildContext context) {
@@ -461,7 +505,7 @@ class _PopularCard extends StatelessWidget {
 
     return Material(
       color: dark ? AppColors.surfaceDark : Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(18),
       elevation: dark ? 0 : 2,
       shadowColor: Colors.black.withValues(alpha: 0.07),
       child: InkWell(
@@ -469,167 +513,90 @@ class _PopularCard extends StatelessWidget {
           HapticFeedback.selectionClick();
           Navigator.of(context).pushNamed(item.route);
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 10, 8, 12),
-          child: Column(
+          padding: const EdgeInsets.fromLTRB(12, 12, 8, 12),
+          child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: item.accent.withValues(alpha: 0.14),
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                    child: Icon(item.icon, color: item.accent, size: 18),
-                  ),
-                  const Spacer(),
-                  InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      AppState.instance.toggleFavorite(item.route);
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: Icon(
-                        fav
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_border_rounded,
-                        size: 18,
-                        color: fav
-                            ? AppColors.primary
-                            : (dark ? AppColors.mutedDark : AppColors.muted),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Text(
-                item.shortTitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 13,
-                  color: dark ? AppColors.inkDark : AppColors.ink,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: item.accent,
+                  borderRadius: BorderRadius.circular(14),
                 ),
+                child: Icon(item.icon, color: Colors.white, size: 22),
               ),
-              const SizedBox(height: 3),
-              Text(
-                item.description,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  height: 1.25,
-                  color: dark ? AppColors.mutedDark : AppColors.muted,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CalculatorOfDayBanner extends StatelessWidget {
-  final CalculatorItem item;
-
-  const _CalculatorOfDayBanner({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      borderRadius: BorderRadius.circular(20),
-      elevation: 0,
-      child: InkWell(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          Navigator.of(context).pushNamed(item.route);
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Ink(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF6C5CE7),
-                Color(0xFF8B7CF7),
-                Color(0xFFA29BFE),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.28),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Icon(item.icon, color: Colors.white, size: 26),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Calculator of the Day',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white.withValues(alpha: 0.85),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.shortTitle,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                              height: 1.2,
+                              color: dark ? AppColors.inkDark : AppColors.ink,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                        InkWell(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            AppState.instance.toggleFavorite(item.route);
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(4, 0, 2, 4),
+                            child: Icon(
+                              fav
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              size: 18,
+                              color: fav
+                                  ? AppColors.primary
+                                  : (dark
+                                      ? AppColors.mutedDark
+                                      : AppColors.muted),
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Expanded(
+                      child: Text(
                         item.description,
-                        maxLines: 1,
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: Colors.white.withValues(alpha: 0.88),
+                          fontSize: 11,
+                          height: 1.3,
+                          color: dark ? AppColors.mutedDark : AppColors.muted,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Icon(
+                        Icons.chevron_right_rounded,
+                        size: 18,
+                        color: dark ? AppColors.mutedDark : AppColors.muted,
+                      ),
+                    ),
+                  ],
                 ),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.white.withValues(alpha: 0.9),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
