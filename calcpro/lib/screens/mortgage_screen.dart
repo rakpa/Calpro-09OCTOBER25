@@ -305,6 +305,13 @@ class _MortgageScreenState extends State<MortgageScreen> {
               ),
             ],
             const SizedBox(height: 20),
+            Text(
+              'Estimates only — not financial advice. Verify with your lender.',
+              style: AppFonts.body2(
+                color: dark ? AppColors.mutedDark : AppColors.muted,
+              ),
+            ),
+            const SizedBox(height: 16),
             PrimaryButton(
               label: 'Calculate',
               onPressed: ready ? _calculate : null,

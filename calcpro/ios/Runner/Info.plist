@@ -51,5 +51,11 @@
 	<string>Calcara uses speech recognition so you can search calculators by voice.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Calcara needs the microphone for voice search.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>mailto</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
 </dict>
 </plist>

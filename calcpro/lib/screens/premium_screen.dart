@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/services/app_state.dart';
 
+/// Honest local unlock — no paid IAP claims (required for App Store compliance
+/// until StoreKit subscriptions are implemented).
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
 
-  static const _benefits = [
-    'Unlimited History',
-    'Cloud Sync',
-    'Advanced Financial Tools',
-    'No Ads',
-    'Priority Support',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final unlocked = AppState.instance.isPremium;
+
     return Scaffold(
       body: Container(
         width: double.infinity,
@@ -49,7 +46,7 @@ class PremiumScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'Calcara Premium',
+                  'Calcara Plus',
                   style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 36,
@@ -58,11 +55,14 @@ class PremiumScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Unlock the full calculator suite.',
+                  unlocked
+                      ? 'Unlimited local history is on.'
+                      : 'Optionally keep more calculations in history — free, on this device only.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.9),
-                    fontSize: 18,
+                    fontSize: 17,
+                    height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 28),
@@ -77,75 +77,83 @@ class PremiumScreen extends StatelessWidget {
                     ),
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final b in _benefits) ...[
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              color: Colors.white,
-                              size: 26,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                b,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        if (b != _benefits.last) const SizedBox(height: 14),
-                      ],
+                      _benefit('Unlimited calculation history on this device'),
+                      const SizedBox(height: 14),
+                      _benefit('No account required'),
+                      const SizedBox(height: 14),
+                      _benefit('All calculators stay free to use'),
                     ],
                   ),
                 ),
                 const Spacer(),
-                SizedBox(
-                  width: double.infinity,
-                  child: Material(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppRadii.pill),
-                    child: InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              AppState.instance.isPremium
-                                  ? 'Premium is already active'
-                                  : 'Starting your 3-day free trial',
+                if (!unlocked)
+                  SizedBox(
+                    width: double.infinity,
+                    child: Material(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadii.pill),
+                      child: InkWell(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          AppState.instance.activatePremium();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Unlimited history enabled on this device',
+                              ),
+                            ),
+                          );
+                          if (Navigator.canPop(context)) Navigator.pop(context);
+                        },
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          child: Text(
+                            'Enable free',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: AppColors.primary,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
-                        );
-                        AppState.instance.startPremiumTrial();
-                        if (Navigator.canPop(context)) Navigator.pop(context);
-                      },
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: Material(
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(AppRadii.pill),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 18),
-                        child: Text(
-                          'Start Free Trial',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            color: AppColors.primary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
+                      child: InkWell(
+                        onTap: () => Navigator.pop(context),
+                        borderRadius: BorderRadius.circular(AppRadii.pill),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          child: Text(
+                            'Done',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
                 const SizedBox(height: 12),
                 Text(
-                  '3 days free, then \$4.99/month.',
+                  'No subscription · No in-app purchase in this version',
+                  textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.85),
-                    fontSize: 15,
+                    fontSize: 14,
                   ),
                 ),
               ],
@@ -153,6 +161,27 @@ class PremiumScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  static Widget _benefit(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Icon(Icons.check_circle_rounded, color: Colors.white, size: 26),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w500,
+              height: 1.35,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

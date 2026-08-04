@@ -107,7 +107,7 @@ const List<CalculatorItem> kCalculators = [
   CalculatorItem(
     title: 'Currency Converter',
     shortTitle: 'Currency',
-    description: 'Convert 20+ world currencies',
+    description: 'Offline mid-market currency estimates',
     route: '/currency',
     icon: Icons.currency_exchange_rounded,
     accent: AppColors.accentBlue,

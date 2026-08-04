@@ -208,10 +208,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           const SizedBox(width: 8),
                           _NotificationButton(
+                            showBadge: false,
                             onTap: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text('No new notifications'),
+                                  content: Text(
+                                    'Notifications coming in a future update',
+                                  ),
                                 ),
                               );
                             },
@@ -339,8 +342,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _NotificationButton extends StatelessWidget {
   final VoidCallback onTap;
+  final bool showBadge;
 
-  const _NotificationButton({required this.onTap});
+  const _NotificationButton({
+    required this.onTap,
+    this.showBadge = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -367,22 +374,23 @@ class _NotificationButton extends StatelessWidget {
                 color: dark ? AppColors.inkDark : AppColors.ink,
                 size: 22,
               ),
-              Positioned(
-                top: 11,
-                right: 12,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: dark ? AppColors.surfaceDark : Colors.white,
-                      width: 1.5,
+              if (showBadge)
+                Positioned(
+                  top: 11,
+                  right: 12,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: dark ? AppColors.surfaceDark : Colors.white,
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

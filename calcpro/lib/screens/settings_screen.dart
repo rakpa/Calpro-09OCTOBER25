@@ -4,9 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:calcpro/services/app_state.dart';
 import 'package:calcpro/theme/app_theme.dart';
 import 'package:calcpro/screens/premium_screen.dart';
+import 'package:calcpro/screens/legal_screen.dart';
+import 'package:calcpro/app_info.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      await launchUrl(uri);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,20 +78,6 @@ class SettingsScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Divider(height: 1),
-                  _tile(
-                    context,
-                    icon: Icons.palette_outlined,
-                    label: 'Accent Color',
-                    trailing: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -105,14 +101,6 @@ class SettingsScreen extends StatelessWidget {
                     value: state.soundEnabled,
                     onChanged: state.setSound,
                   ),
-                  const Divider(height: 1),
-                  _switchTile(
-                    context,
-                    icon: Icons.tips_and_updates_outlined,
-                    label: 'Show Tips',
-                    value: state.showTips,
-                    onChanged: state.setShowTips,
-                  ),
                 ],
               ),
             ),
@@ -125,8 +113,8 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     icon: Icons.workspace_premium_rounded,
                     label: state.isPremium
-                        ? 'Calcara Premium · Active'
-                        : 'Calcara Premium',
+                        ? 'Calcara Plus · Unlimited history'
+                        : 'Calcara Plus',
                     trailing: Icon(
                       Icons.chevron_right_rounded,
                       color: dark ? AppColors.mutedDark : AppColors.muted,
@@ -143,15 +131,96 @@ class SettingsScreen extends StatelessWidget {
                   _tile(
                     context,
                     icon: Icons.info_outline_rounded,
-                    label: 'About Calcara',
+                    label: 'About ${AppInfo.name}',
                     trailing: Text(
-                      '1.6.5',
+                      AppInfo.versionName,
                       style: GoogleFonts.inter(
                         color: dark ? AppColors.mutedDark : AppColors.muted,
                         fontWeight: FontWeight.w500,
                         fontSize: 16,
                       ),
                     ),
+                    onTap: () {
+                      showAboutDialog(
+                        context: context,
+                        applicationName: AppInfo.name,
+                        applicationVersion: AppInfo.versionName,
+                        applicationLegalese:
+                            '© 2026 Good Life\nCalculators for everyday life.',
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _Section(
+              title: 'Legal & Support',
+              child: Column(
+                children: [
+                  _tile(
+                    context,
+                    icon: Icons.privacy_tip_outlined,
+                    label: 'Privacy Policy',
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        SoftPageRoute(
+                          builder: (_) =>
+                              const LegalScreen(doc: LegalDoc.privacy),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
+                    icon: Icons.description_outlined,
+                    label: 'Terms of Use',
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        SoftPageRoute(
+                          builder: (_) =>
+                              const LegalScreen(doc: LegalDoc.terms),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
+                    icon: Icons.support_agent_rounded,
+                    label: 'Support',
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                    onTap: () {
+                      Navigator.of(context).push(
+                        SoftPageRoute(
+                          builder: (_) =>
+                              const LegalScreen(doc: LegalDoc.support),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  _tile(
+                    context,
+                    icon: Icons.open_in_new_rounded,
+                    label: 'Open Privacy Policy (web)',
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: dark ? AppColors.mutedDark : AppColors.muted,
+                    ),
+                    onTap: () => _openUrl(AppInfo.privacyPolicyUrl),
                   ),
                 ],
               ),

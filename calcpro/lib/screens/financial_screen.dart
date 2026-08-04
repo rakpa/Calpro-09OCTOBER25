@@ -199,7 +199,7 @@ class _FinancialScreenState extends State<FinancialScreen> {
           Text(
             mode == 0
                 ? 'EMI = P × r × (1+r)ⁿ / ((1+r)ⁿ − 1) · r = monthly rate'
-                : 'A = P(1 + r)ᵗ · annual compounding',
+                : 'A = P(1 + r/n)^(nt) · monthly compounding',
             style: AppFonts.body2(
               color: dark ? AppColors.mutedDark : AppColors.muted,
             ),
