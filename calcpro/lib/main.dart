@@ -1,0 +1,124 @@
+import 'package:flutter/material.dart';
+import 'package:calcpro/theme/app_theme.dart';
+import 'package:calcpro/services/app_state.dart';
+import 'package:calcpro/services/widget_sync.dart';
+import 'package:calcpro/widgets/soft_nav.dart';
+import 'package:calcpro/screens/splash_screen.dart';
+import 'package:calcpro/screens/onboarding_screen.dart';
+import 'package:calcpro/screens/main_shell.dart';
+import 'package:calcpro/screens/basic_screen.dart';
+import 'package:calcpro/screens/scientific_screen.dart';
+import 'package:calcpro/screens/percentage_screen.dart';
+import 'package:calcpro/screens/convert_screen.dart';
+import 'package:calcpro/screens/financial_screen.dart';
+import 'package:calcpro/screens/mortgage_screen.dart';
+import 'package:calcpro/screens/age_screen.dart';
+import 'package:calcpro/screens/time_screen.dart';
+import 'package:calcpro/screens/date_diff_screen.dart';
+import 'package:calcpro/screens/discount_screen.dart';
+import 'package:calcpro/screens/tip_screen.dart';
+import 'package:calcpro/screens/health_screen.dart';
+import 'package:calcpro/screens/sales_tax_screen.dart';
+import 'package:calcpro/screens/unit_price_screen.dart';
+import 'package:calcpro/screens/currency_screen.dart';
+import 'package:calcpro/screens/savings_screen.dart';
+import 'package:calcpro/screens/markup_screen.dart';
+import 'package:calcpro/screens/roi_screen.dart';
+import 'package:calcpro/screens/fraction_screen.dart';
+import 'package:calcpro/screens/loan_compare_screen.dart';
+import 'package:calcpro/screens/refinance_screen.dart';
+import 'package:calcpro/screens/fuel_screen.dart';
+import 'package:calcpro/screens/pregnancy_screen.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await AppState.instance.load();
+  await WidgetSync.init();
+  await WidgetSync.publish();
+  runApp(const CalcProApp());
+}
+
+final Map<String, WidgetBuilder> kAppRoutes = {
+  '/basic': (_) => const BasicScreen(),
+  '/scientific': (_) => const ScientificScreen(),
+  '/percentage': (_) => const PercentageScreen(),
+  '/convert': (_) => const ConvertScreen(),
+  '/financial': (_) => const FinancialScreen(),
+  '/mortgage': (_) => const MortgageScreen(),
+  '/age': (_) => const AgeScreen(),
+  '/time': (_) => const TimeScreen(),
+  '/date-diff': (_) => const DateDiffScreen(),
+  '/discount': (_) => const DiscountScreen(),
+  '/tip': (_) => const TipScreen(),
+  '/health': (_) => const HealthScreen(),
+  '/sales-tax': (_) => const SalesTaxScreen(),
+  '/unit-price': (_) => const UnitPriceScreen(),
+  '/currency': (_) => const CurrencyScreen(),
+  '/savings': (_) => const SavingsScreen(),
+  '/markup': (_) => const MarkupScreen(),
+  '/roi': (_) => const RoiScreen(),
+  '/fraction': (_) => const FractionScreen(),
+  '/loan-compare': (_) => const LoanCompareScreen(),
+  '/refinance': (_) => const RefinanceScreen(),
+  '/fuel': (_) => const FuelScreen(),
+  '/pregnancy': (_) => const PregnancyScreen(),
+};
+
+class CalcProApp extends StatelessWidget {
+  const CalcProApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AppState.instance,
+      builder: (context, _) {
+        return MaterialApp(
+          title: 'Calcara',
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          themeMode: AppState.instance.themeMode,
+          // Atmosphere lives per SoftPage — not globally — so routes don't bleed.
+          home: const SoftPage(child: _RootGate()),
+          onGenerateRoute: (settings) {
+            final builder = kAppRoutes[settings.name];
+            if (builder == null) return null;
+            return SoftPageRoute(
+              settings: settings,
+              builder: builder,
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _RootGate extends StatefulWidget {
+  const _RootGate();
+
+  @override
+  State<_RootGate> createState() => _RootGateState();
+}
+
+class _RootGateState extends State<_RootGate> {
+  bool _showSplash = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showSplash) {
+      return SplashScreen(
+        onFinished: () => setState(() => _showSplash = false),
+      );
+    }
+    if (!AppState.instance.onboarded) {
+      return OnboardingScreen(
+        onDone: () async {
+          await AppState.instance.completeOnboarding();
+          if (mounted) setState(() {});
+        },
+      );
+    }
+    return const MainShell();
+  }
+}

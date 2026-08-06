@@ -1,0 +1,387 @@
+name: iOS Build & TestFlight
+
+on:
+  push:
+    branches: [main, 'cursor/**']
+    paths:
+      - 'calcpro/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'calcpro/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  BUNDLE_ID: www.calpro.app
+  APP_NAME: CalcPro
+
+jobs:
+  test:
+    name: Flutter tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: calcpro
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  testflight:
+    name: Sign, build IPA & upload TestFlight
+    needs: test
+    # Manual dispatch, or a push whose commit message contains [testflight].
+    # Keeps routine pushes from auto-uploading; agents can request TF via commit tag.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' &&
+       contains(github.event.head_commit.message, '[testflight]'))
+    # Apple requires iOS 26 SDK (Xcode 26+) for App Store / TestFlight uploads.
+    runs-on: macos-26
+    defaults:
+      run:
+        working-directory: calcpro
+    env:
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      ASC_PRIVATE_KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+      BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+      P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+      BUILD_PROVISION_PROFILE_BASE64: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64 }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: '26'
+
+      - name: Validate secrets
+        run: |
+          missing=0
+          for name in APPLE_TEAM_ID ASC_KEY_ID ASC_ISSUER_ID ASC_PRIVATE_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::Missing GitHub secret: $name"
+              missing=1
+            fi
+          done
+          if [ -z "${BUILD_CERTIFICATE_BASE64}" ]; then
+            echo "::warning::BUILD_CERTIFICATE_BASE64 not set — CI will try to create/reuse a Distribution certificate."
+            echo "::warning::Download artifact calcpro-distribution-p12 from the previous successful signing run and add it as secrets to avoid creating more certs."
+          fi
+          exit "$missing"
+
+      - name: Decode Distribution certificate (.p12)
+        if: ${{ env.BUILD_CERTIFICATE_BASE64 != '' }}
+        run: |
+          set -euo pipefail
+          CERT_PATH="$RUNNER_TEMP/distribution.p12"
+          printf '%s' "$BUILD_CERTIFICATE_BASE64" | base64 --decode > "$CERT_PATH"
+          echo "BUILD_CERTIFICATE_PATH=$CERT_PATH" >> "$GITHUB_ENV"
+          ls -la "$CERT_PATH"
+
+      # Previous run built a valid Distribution identity but failed later on SDK upload.
+      # Reuse that .p12 artifact so we don't hit Apple's Distribution cert limit again.
+      - name: Restore Distribution .p12 from prior CI artifact
+        if: ${{ env.BUILD_CERTIFICATE_BASE64 == '' }}
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: calcpro-distribution-p12
+          workflow: ios-build.yml
+          # Prefer a successful TestFlight job's .p12 (not a later failed restore copy).
+          workflow_conclusion: success
+          search_artifacts: true
+          path: ${{ runner.temp }}/restored-signing
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          if_no_artifact_found: warn
+
+      - name: Use restored Distribution .p12
+        if: ${{ env.BUILD_CERTIFICATE_BASE64 == '' }}
+        run: |
+          set -euo pipefail
+          CANDIDATE="$RUNNER_TEMP/restored-signing/distribution.p12"
+          if [ -f "$CANDIDATE" ]; then
+            echo "BUILD_CERTIFICATE_PATH=$CANDIDATE" >> "$GITHUB_ENV"
+            if [ -z "${P12_PASSWORD:-}" ]; then
+              echo "P12_PASSWORD=CalcProTempExport!" >> "$GITHUB_ENV"
+            fi
+            echo "Restored Distribution .p12 ($(wc -c < "$CANDIDATE") bytes)"
+          else
+            echo "::warning::No prior .p12 artifact found; cert creation may hit Apple limit"
+          fi
+
+      - name: Decode provisioning profile (optional)
+        if: ${{ env.BUILD_PROVISION_PROFILE_BASE64 != '' }}
+        run: |
+          set -euo pipefail
+          PROFILE_PATH="$RUNNER_TEMP/profile.mobileprovision"
+          printf '%s' "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode > "$PROFILE_PATH"
+          UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID raw -)
+          NAME=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Name raw -)
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/$UUID.mobileprovision"
+          echo "BUILD_PROVISION_PROFILE_PATH=$PROFILE_PATH" >> "$GITHUB_ENV"
+          echo "PROVISIONING_PROFILE_UUID=$UUID" >> "$GITHUB_ENV"
+          echo "PROVISIONING_PROFILE_NAME=$NAME" >> "$GITHUB_ENV"
+          echo "Installed profile $NAME ($UUID)"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Xcode / iOS SDK versions
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Install App Store Connect API key
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/private_keys" "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/private_keys"
+          KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+
+          # Normalize secret: trim, expand literal \n, support base64
+          RAW="$ASC_PRIVATE_KEY"
+          RAW="$(printf '%s' "$RAW" | sed -e 's/\r//g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          if printf '%s' "$RAW" | grep -q 'BEGIN PRIVATE KEY'; then
+            printf '%s' "$RAW" | sed 's/\\n/\n/g' > "$KEY_PATH"
+          else
+            printf '%s' "$RAW" | base64 --decode > "$KEY_PATH"
+          fi
+          # Ensure trailing newline
+          printf '\n' >> "$KEY_PATH"
+
+          if ! grep -q "BEGIN PRIVATE KEY" "$KEY_PATH"; then
+            echo "::error::ASC_PRIVATE_KEY does not look like a valid .p8 private key"
+            exit 1
+          fi
+
+          # Quick OpenSSL parse check
+          openssl pkey -in "$KEY_PATH" -noout
+          echo "Private key parses OK ($(wc -c < "$KEY_PATH") bytes)"
+
+          cp "$KEY_PATH" "$HOME/.appstoreconnect/private_keys/"
+          cp "$KEY_PATH" "$RUNNER_TEMP/private_keys/"
+          echo "API_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+          ls -la "$HOME/private_keys"
+
+      - name: Ensure App Store Connect app exists
+        continue-on-error: true
+        run: |
+          sudo gem install jwt --no-document
+          ruby <<'RUBY'
+          require 'jwt'
+          require 'net/http'
+          require 'json'
+          require 'openssl'
+          require 'uri'
+
+          key_id = ENV.fetch('ASC_KEY_ID').strip
+          issuer_id = ENV.fetch('ASC_ISSUER_ID').strip
+          key_path = ENV.fetch('API_KEY_PATH')
+          bundle_id = ENV.fetch('BUNDLE_ID')
+          app_name = ENV.fetch('APP_NAME')
+
+          puts "Using Key ID=#{key_id} Issuer=#{issuer_id}"
+          private_key = OpenSSL::PKey.read(File.read(key_path))
+          now = Time.now.to_i
+          token = JWT.encode(
+            {
+              iss: issuer_id,
+              iat: now,
+              exp: now + 20 * 60,
+              aud: 'appstoreconnect-v1'
+            },
+            private_key,
+            'ES256',
+            { kid: key_id, typ: 'JWT' }
+          )
+
+          def request(method, path, token, body: nil)
+            uri = URI("https://api.appstoreconnect.apple.com#{path}")
+            http = Net::HTTP.new(uri.host, uri.port)
+            http.use_ssl = true
+            req = case method
+                  when :get then Net::HTTP::Get.new(uri)
+                  when :post then Net::HTTP::Post.new(uri)
+                  else raise "unsupported #{method}"
+                  end
+            req['Authorization'] = "Bearer #{token}"
+            req['Content-Type'] = 'application/json'
+            req.body = JSON.generate(body) if body
+            res = http.request(req)
+            [res.code.to_i, res.body]
+          end
+
+          code, body = request(:get, "/v1/apps?filter[bundleId]=#{bundle_id}", token)
+          unless code == 200
+            warn "List apps failed (#{code}): #{body}"
+            warn "Check that ASC_KEY_ID / ASC_ISSUER_ID / ASC_PRIVATE_KEY match the same App Store Connect API key."
+            exit 1
+          end
+          apps = JSON.parse(body).fetch('data')
+          app_exists = apps.any?
+          if app_exists
+            puts "App already exists: #{apps.first.dig('id')} (#{bundle_id})"
+          end
+
+          # Ensure bundle ID exists on the developer portal
+          code, body = request(:get, "/v1/bundleIds?filter[identifier]=#{bundle_id}", token)
+          unless code == 200
+            warn "List bundleIds failed (#{code}): #{body}"
+            exit 1
+          end
+          bundle_ids = JSON.parse(body).fetch('data')
+          if bundle_ids.empty?
+            payload = {
+              data: {
+                type: 'bundleIds',
+                attributes: {
+                  identifier: bundle_id,
+                  name: app_name,
+                  platform: 'IOS'
+                }
+              }
+            }
+            code, body = request(:post, '/v1/bundleIds', token, body: payload)
+            if code.between?(200, 299)
+              puts "Registered bundle ID #{bundle_id}"
+              bundle_id_resource = JSON.parse(body).fetch('data')
+            else
+              warn "Could not register bundle ID (#{code}): #{body}"
+              exit 0
+            end
+          else
+            puts "Bundle ID already registered: #{bundle_id}"
+            bundle_id_resource = bundle_ids.first
+          end
+
+          # Enable App Groups so Runner.entitlements (group.www.calpro.app) can be profiled.
+          bid = bundle_id_resource.fetch('id')
+          code, body = request(:get, "/v1/bundleIds/#{bid}/bundleIdCapabilities", token)
+          if code == 200
+            caps = JSON.parse(body).fetch('data')
+            has_groups = caps.any? { |c| c.dig('attributes', 'capabilityType') == 'APP_GROUPS' }
+            unless has_groups
+              payload = {
+                data: {
+                  type: 'bundleIdCapabilities',
+                  attributes: {
+                    capabilityType: 'APP_GROUPS',
+                    settings: []
+                  },
+                  relationships: {
+                    bundleId: {
+                      data: { type: 'bundleIds', id: bid }
+                    }
+                  }
+                }
+              }
+              code, body = request(:post, '/v1/bundleIdCapabilities', token, body: payload)
+              if code.between?(200, 299)
+                puts "Enabled APP_GROUPS on #{bundle_id}"
+              else
+                warn "Could not enable APP_GROUPS (#{code}): #{body}"
+              end
+            else
+              puts "APP_GROUPS already enabled on #{bundle_id}"
+            end
+          else
+            warn "List capabilities failed (#{code}): #{body}"
+          end
+
+          exit 0 if app_exists
+
+          payload = {
+            data: {
+              type: 'apps',
+              attributes: {
+                name: app_name,
+                primaryLocale: 'en-US',
+                sku: 'calcpro-ios',
+                bundleId: bundle_id
+              },
+              relationships: {
+                bundleId: {
+                  data: {
+                    type: 'bundleIds',
+                    id: bundle_id_resource.fetch('id')
+                  }
+                }
+              }
+            }
+          }
+          code, body = request(:post, '/v1/apps', token, body: payload)
+          if code.between?(200, 299)
+            puts "Created App Store Connect app for #{bundle_id}"
+          else
+            warn "Could not auto-create ASC app (#{code}): #{body}"
+            warn "If upload fails, create an iOS app with bundle ID #{bundle_id} in App Store Connect."
+          end
+          RUBY
+
+      - name: Flutter build ios (compile, no codesign)
+        run: |
+          # Use GitHub run number so each CI upload has a unique CFBundleVersion.
+          flutter build ios --release --no-codesign \
+            --build-name=1.0.0 \
+            --build-number="${{ github.run_number }}"
+
+      - name: Install Fastlane
+        run: |
+          bundle config set --local path 'vendor/bundle'
+          bundle install --jobs 4 --retry 3
+
+      - name: Sign, archive, export IPA & upload TestFlight
+        env:
+          FASTLANE_SKIP_UPDATE_CHECK: "1"
+          FL_OUTPUT_DIR: build/ios/ipa
+        run: bundle exec fastlane beta
+
+      - name: Upload Distribution .p12 artifact (for saving as secret — no Mac needed)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calcpro-distribution-p12
+          path: |
+            calcpro/build/ios/signing/distribution.p12
+            calcpro/build/ios/signing/README.txt
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload IPA artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: calcpro-ios-ipa
+          path: calcpro/build/ios/ipa/*.ipa
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Clean API key
+        if: always()
+        run: rm -rf "$HOME/private_keys" "$HOME/.appstoreconnect/private_keys" "$RUNNER_TEMP/private_keys"
