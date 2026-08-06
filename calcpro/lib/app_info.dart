@@ -1,7 +1,7 @@
 /// Single source for display version (keep in sync with pubspec.yaml).
 class AppInfo {
   static const name = 'Calcara';
-  static const versionName = '1.6.16';
+  static const versionName = '1.6.17';
   static const supportEmail = 'anubundu1@gmail.com';
 
   /// GitHub Pages site from `/docs` (enable Pages on this repo first).

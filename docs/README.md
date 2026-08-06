@@ -1,23 +1,27 @@
-# Calcara web (GitHub Pages)
+# Calcara web (live legal pages)
 
-Static site for App Store Connect **Privacy Policy** and **Support** URLs.
+Brand-matched static site for App Store Connect.
 
-## Enable hosting (one-time)
+## Open these pages now (live preview)
 
-1. Open the GitHub repo → **Settings** → **Pages**
-2. **Build and deployment** → Source: **Deploy from a branch**
-3. Branch: `main` (or merge this PR first) → folder: **`/docs`** → Save
-4. Wait 1–2 minutes, then open:
-   - https://rakpa.github.io/Calpro-09OCTOBER25/
-   - https://rakpa.github.io/Calpro-09OCTOBER25/privacy.html
-   - https://rakpa.github.io/Calpro-09OCTOBER25/support.html
+While this Cloud Agent is running, the site is also served here:
 
-## Paste into App Store Connect
+- Home: https://steel-twisted-rap-portsmouth.trycloudflare.com/
+- Privacy: https://steel-twisted-rap-portsmouth.trycloudflare.com/privacy.html
+- Support: https://steel-twisted-rap-portsmouth.trycloudflare.com/support.html
+- Terms: https://steel-twisted-rap-portsmouth.trycloudflare.com/terms.html
 
-| Field | URL |
-|-------|-----|
-| Privacy Policy URL | `https://rakpa.github.io/Calpro-09OCTOBER25/privacy.html` |
-| Support URL | `https://rakpa.github.io/Calpro-09OCTOBER25/support.html` |
-| Marketing URL (optional) | `https://rakpa.github.io/Calpro-09OCTOBER25/` |
+> Temporary preview tunnel (agent session). For App Store Connect you need a permanent host (GitHub Pages below).
 
-If you prefer this feature branch before merge, set Pages source to `cursor/flutter-calcpro-ios-8ad1` + `/docs` temporarily.
+## Permanent hosting (GitHub Pages) — one click
+
+1. Repo → **Settings** → **Pages**
+2. Build and deployment → Source: **GitHub Actions**
+3. Re-run workflow **Deploy Calcara web (GitHub Pages)** (or push any `docs/` change)
+4. Then use:
+
+| ASC field | Permanent URL |
+|-----------|----------------|
+| Privacy Policy | `https://rakpa.github.io/Calpro-09OCTOBER25/privacy.html` |
+| Support | `https://rakpa.github.io/Calpro-09OCTOBER25/support.html` |
+| Marketing | `https://rakpa.github.io/Calpro-09OCTOBER25/` |
