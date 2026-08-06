@@ -90,11 +90,20 @@ calculator,percentage,mortgage,tip,discount,bmi,emi,converter,finance,math
 (88 characters — do **not** repeat the app name “Calcara”)
 
 ### Support URL (required)
-Live URL of `support.html` (example after GitHub Pages):
-`https://rakpa.github.io/Calpro-09OCTOBER25/calcpro/store_assets/legal/support.html`
+```
+https://rakpa.github.io/Calpro-09OCTOBER25/support.html
+```
+(Enable GitHub Pages → `/docs` first — see `docs/README.md`)
+
+### Privacy Policy URL (App Information)
+```
+https://rakpa.github.io/Calpro-09OCTOBER25/privacy.html
+```
 
 ### Marketing URL (optional)
-Leave blank.
+```
+https://rakpa.github.io/Calpro-09OCTOBER25/
+```
 
 ### What’s New (1.0 / first release)
 ```
