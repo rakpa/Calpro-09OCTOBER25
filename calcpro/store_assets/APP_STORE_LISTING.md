@@ -11,8 +11,8 @@
 
 | Item | Status | Action |
 |------|--------|--------|
-| **Privacy Policy URL (HTTPS, live)** | Draft HTML ready in-repo | Host `store_assets/legal/privacy.html` (GitHub Pages or your domain), then paste URL in App Store Connect |
-| **Support URL (HTTPS, live)** | Draft HTML ready | Host `store_assets/legal/support.html` |
+| **Privacy Policy URL (HTTPS, live)** | Webapp in `/docs` | Enable GitHub Pages → `/docs`, then use URLs below |
+| **Support URL (HTTPS, live)** | Webapp in `/docs` | Same |
 | **Marketing URL** | Optional | Leave blank unless you have a landing page |
 | **Reviewer phone number** | Missing | Your real mobile with country code |
 | **Copyright legal entity** | Draft: `2026 Good Life` | Confirm legal name |
@@ -188,13 +188,16 @@ Declare honestly for current app:
 
 ---
 
-## 6) Hosting legal pages (GitHub Pages quick path)
+## 6) Hosting legal pages (GitHub Pages)
 
-1. Repo Settings → Pages → Deploy from branch `main` (or this PR branch) `/ (root)` or `/docs`  
-2. Or copy `calcpro/store_assets/legal/*.html` to any HTTPS host  
-3. Paste the live Privacy + Support URLs into App Store Connect **before** submit  
+Site lives in repo folder **`/docs`** (Calcara-branded home + Privacy + Terms + Support).
 
-In-app copies work offline even if web hosting is delayed — **ASC still requires live URLs**.
+1. GitHub → **Settings → Pages**
+2. Source: **Deploy from a branch** → branch with `/docs` → Save
+3. Open https://rakpa.github.io/Calpro-09OCTOBER25/privacy.html and `/support.html`
+4. Paste those into App Store Connect
+
+Details: `docs/README.md`
 
 ---
 
